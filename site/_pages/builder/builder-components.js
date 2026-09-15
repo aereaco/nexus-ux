@@ -1,5 +1,5 @@
 // Nexus Builder Component Registry & Dynamic Property Schema Engine
-// Aligned with VvvebJs dynamic component property architecture & DaisyUI 5 / Tailwind CSS
+// 1:1 Parity with VvvebJs Dynamic Component Property Architecture mapped to DaisyUI 5 & Tailwind CSS
 (function() {
   'use strict';
 
@@ -11,8 +11,123 @@
     return el && el.tagName ? el.tagName.toLowerCase() : '';
   }
 
+  // Wave Separators Database (VvvebJs Parity)
+  const WAVE_SHAPES = {
+    'wave-smooth': {
+      name: 'Smooth Wave',
+      svg: '<svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-12 fill-current"><path d="M0,0 C150,90 350,-40 500,60 C650,160 900,10 1200,40 L1200,120 L0,120 Z"></path></svg>'
+    },
+    'wave-curved': {
+      name: 'Curved Sweep',
+      svg: '<svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-12 fill-current"><path d="M0,0 C300,120 600,0 900,100 C1050,150 1150,80 1200,60 L1200,120 L0,120 Z"></path></svg>'
+    },
+    'wave-hills': {
+      name: 'Twin Peaks',
+      svg: '<svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-12 fill-current"><path d="M0,60 C200,120 400,0 600,60 C800,120 1000,0 1200,60 L1200,120 L0,120 Z"></path></svg>'
+    },
+    'wave-slant': {
+      name: 'Diagonal Slant',
+      svg: '<svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-12 fill-current"><polygon points="0,120 1200,30 1200,120"></polygon></svg>'
+    },
+    'wave-triangle': {
+      name: 'Center Peak',
+      svg: '<svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-12 fill-current"><polygon points="0,120 600,20 1200,120"></polygon></svg>'
+    },
+    'wave-steps': {
+      name: 'Multi-Crest',
+      svg: '<svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-12 fill-current"><path d="M0,40 Q300,120 600,40 T1200,40 L1200,120 L0,120 Z"></path></svg>'
+    }
+  };
+
+  // SVG Icons Database (VvvebJs Parity)
+  const ICON_SHAPES = {
+    'star': {
+      name: 'Star',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>'
+    },
+    'heart': {
+      name: 'Heart',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>'
+    },
+    'check': {
+      name: 'Check',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+    },
+    'arrow': {
+      name: 'Arrow Right',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>'
+    },
+    'home': {
+      name: 'Home',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>'
+    },
+    'user': {
+      name: 'User',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'
+    },
+    'settings': {
+      name: 'Settings',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>'
+    },
+    'shield': {
+      name: 'Shield',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>'
+    },
+    'zap': {
+      name: 'Zap / Flash',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>'
+    },
+    'bell': {
+      name: 'Bell',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>'
+    },
+    'code': {
+      name: 'Code',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>'
+    },
+    'search': {
+      name: 'Search',
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'
+    }
+  };
+
+  // Base General Section Generator (_base parity)
+  function getBaseGeneralProps(el) {
+    const cls = safeClasses(el);
+    return [
+      {
+        key: 'id',
+        name: 'Element ID',
+        section: 'general',
+        type: 'text',
+        htmlAttr: 'id',
+        value: el.getAttribute('id') || ''
+      },
+      {
+        key: 'title',
+        name: 'Title Tooltip',
+        section: 'general',
+        type: 'text',
+        htmlAttr: 'title',
+        value: el.getAttribute('title') || ''
+      },
+      {
+        key: 'classes',
+        name: 'Applied Classes',
+        section: 'general',
+        type: 'tags',
+        value: cls,
+        onChange: function(node, val) {
+          node.className = Array.isArray(val) ? val.join(' ') : val;
+        }
+      }
+    ];
+  }
+
   const Registry = {
     components: [],
+    waveShapes: WAVE_SHAPES,
+    iconShapes: ICON_SHAPES,
 
     register: function(comp) {
       this.components.push(comp);
@@ -36,18 +151,25 @@
         id: isText ? 'element-text' : 'element-generic',
         name: isText ? 'Text Element' : (tag.toUpperCase() || 'Element'),
         category: 'Element',
+        getSections: function() {
+          return [
+            { id: 'default', header: isText ? 'Text Element' : 'Element' },
+            { id: 'general', header: 'General' }
+          ];
+        },
         getProperties: function(target) {
           const props = [];
           if (isText) {
             props.push({
               key: 'textContent',
               name: 'Text Content',
+              section: 'default',
               type: 'textarea',
               value: target.textContent || '',
               onChange: function(node, val) { node.textContent = val; }
             });
           }
-          return props;
+          return props.concat(getBaseGeneralProps(target));
         }
       };
     },
@@ -61,6 +183,8 @@
         if (value && value !== 'none') {
           value.split(/\s+/).forEach(function(c) { if (c) el.classList.add(c); });
         }
+      } else if (prop.htmlAttr === 'style') {
+        el.style[prop.key] = value;
       } else if (prop.htmlAttr === 'innerText') {
         el.innerText = value;
       } else if (prop.htmlAttr === 'innerHTML') {
@@ -76,10 +200,716 @@
   };
 
   // ==========================================
-  // CATEGORY 1: BUTTONS & ACTIONS
+  // 1. SECTION & HERO ARCHETYPE (section.js 1:1)
   // ==========================================
+  Registry.register({
+    id: 'section',
+    name: 'Section Shell',
+    category: 'Layout & Containers',
+    match: function(el) {
+      const tag = getTag(el);
+      const cls = safeClasses(el);
+      return tag === 'section' || cls.includes('hero') || (tag === 'header' && cls.includes('section'));
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Section Layout' },
+        { id: 'background', header: 'Background Media' },
+        { id: 'overlay', header: 'Color Overlay' },
+        { id: 'separators', header: 'Wave Separators' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const bgCont = el.querySelector(':scope > .background-container');
+      let currentBg = 'none';
+      let bgImgSrc = '';
+      let bgVidSrc = '';
+      let bgYtSrc = '';
+      let hasParallax = false;
 
-  // 1. Button
+      if (bgCont) {
+        hasParallax = bgCont.classList.contains('parallax');
+        const img = bgCont.querySelector('img');
+        const vid = bgCont.querySelector('video');
+        const ifr = bgCont.querySelector('iframe');
+        if (vid && !vid.classList.contains('hidden')) { currentBg = 'bg-video'; bgVidSrc = vid.getAttribute('src') || ''; }
+        else if (ifr && !ifr.classList.contains('hidden')) { currentBg = 'bg-yt'; bgYtSrc = ifr.getAttribute('src') || ''; }
+        else if (img && !img.classList.contains('hidden')) { currentBg = 'bg-image'; bgImgSrc = img.getAttribute('src') || ''; }
+      }
+
+      const overlayEl = el.querySelector(':scope > .section-overlay, :scope > .overlay');
+      const hasOverlay = !!overlayEl && !overlayEl.classList.contains('hidden');
+      const overlayColor = overlayEl ? (overlayEl.style.backgroundColor || '#000000') : '#000000';
+      const overlayOpacity = overlayEl ? (overlayEl.style.opacity || '0.6') : '0.6';
+
+      const topSepEl = el.querySelector(':scope > .separator.top');
+      const hasTopSep = !!topSepEl && !topSepEl.classList.contains('hidden');
+      const botSepEl = el.querySelector(':scope > .separator.bottom');
+      const hasBotSep = !!botSepEl && !botSepEl.classList.contains('hidden');
+
+      const props = [
+        // Default Section
+        {
+          key: 'label',
+          name: 'Section Label',
+          section: 'default',
+          type: 'text',
+          htmlAttr: 'aria-label',
+          value: el.getAttribute('aria-label') || el.id || ''
+        },
+        {
+          key: 'container-width',
+          name: 'Container Width',
+          section: 'default',
+          type: 'buttons',
+          value: cls.includes('w-full') ? 'full' : 'boxed',
+          options: [
+            { label: 'Boxed', value: 'boxed' },
+            { label: 'Full Width', value: 'full' }
+          ],
+          onChange: function(node, val) {
+            if (val === 'full') {
+              node.classList.add('w-full');
+              node.classList.remove('container');
+            } else {
+              node.classList.remove('w-full');
+              node.classList.add('container');
+            }
+          }
+        },
+        {
+          key: 'container-height',
+          name: 'Container Height',
+          section: 'default',
+          type: 'buttons',
+          value: cls.includes('min-h-screen') ? 'full' : 'auto',
+          options: [
+            { label: 'Auto', value: 'auto' },
+            { label: 'Screen Full', value: 'full' }
+          ],
+          onChange: function(node, val) {
+            if (val === 'full') node.classList.add('min-h-screen');
+            else node.classList.remove('min-h-screen');
+          }
+        },
+        {
+          key: 'paddingY',
+          name: 'Vertical Padding',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['py-8', 'py-12', 'py-16', 'py-20', 'py-24', 'py-32'],
+          value: ['py-8', 'py-12', 'py-16', 'py-20', 'py-24', 'py-32'].find(p => cls.includes(p)) || 'py-16',
+          options: [
+            { label: 'Small (32px)', value: 'py-8' },
+            { label: 'Medium (64px)', value: 'py-16' },
+            { label: 'Large (96px)', value: 'py-24' },
+            { label: 'Hero (128px)', value: 'py-32' }
+          ]
+        },
+
+        // Background Section (4-Mode Selector + Groups)
+        {
+          key: 'section-bg',
+          name: 'Background Mode',
+          section: 'background',
+          type: 'buttons',
+          value: currentBg,
+          refreshes: true,
+          options: [
+            { label: 'None', value: 'none' },
+            { label: 'Image', value: 'bg-image' },
+            { label: 'Video', value: 'bg-video' },
+            { label: 'YouTube', value: 'bg-yt' }
+          ],
+          onChange: function(node, val) {
+            let container = node.querySelector(':scope > .background-container');
+            if (!container) {
+              container = document.createElement('div');
+              container.className = 'background-container absolute inset-0 -z-10 overflow-hidden pointer-events-none';
+              node.style.position = 'relative';
+              node.insertBefore(container, node.firstChild);
+            }
+            container.querySelectorAll(':scope > *').forEach(e => e.classList.add('hidden'));
+
+            if (val === 'bg-image') {
+              let img = container.querySelector('img');
+              if (!img) {
+                img = document.createElement('img');
+                img.className = 'w-full h-full object-cover';
+                img.src = 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80';
+                container.appendChild(img);
+              }
+              img.classList.remove('hidden');
+            } else if (val === 'bg-video') {
+              let vid = container.querySelector('video');
+              if (!vid) {
+                vid = document.createElement('video');
+                vid.className = 'w-full h-full object-cover';
+                vid.autoplay = true; vid.loop = true; vid.muted = true; vid.playsInline = true;
+                vid.src = 'https://www.w3schools.com/html/mov_bbb.mp4';
+                container.appendChild(vid);
+              }
+              vid.classList.remove('hidden');
+            } else if (val === 'bg-yt') {
+              let ifr = container.querySelector('iframe');
+              if (!ifr) {
+                ifr = document.createElement('iframe');
+                ifr.className = 'w-full h-full pointer-events-none scale-125';
+                ifr.src = 'https://www.youtube.com/embed/C6fOoy7Se_4?autoplay=1&loop=1&playsinline=1&controls=0&mute=1';
+                container.appendChild(ifr);
+              }
+              ifr.classList.remove('hidden');
+            }
+          }
+        },
+        {
+          key: 'bg-image-src',
+          name: 'Image Source URL',
+          section: 'background',
+          group: 'bg-image',
+          type: 'image',
+          value: bgImgSrc || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80',
+          onChange: function(node, val) {
+            const img = node.querySelector(':scope > .background-container > img');
+            if (img) img.src = val;
+          }
+        },
+        {
+          key: 'bg-image-parallax',
+          name: 'Parallax Effect',
+          section: 'background',
+          group: 'bg-image',
+          type: 'toggle',
+          value: hasParallax,
+          onChange: function(node, val) {
+            const c = node.querySelector(':scope > .background-container');
+            if (c) {
+              if (val) c.classList.add('parallax', 'bg-fixed');
+              else c.classList.remove('parallax', 'bg-fixed');
+            }
+          }
+        },
+        {
+          key: 'bg-video-src',
+          name: 'Video Source URL',
+          section: 'background',
+          group: 'bg-video',
+          type: 'text',
+          value: bgVidSrc,
+          onChange: function(node, val) {
+            const vid = node.querySelector(':scope > .background-container > video');
+            if (vid) vid.src = val;
+          }
+        },
+        {
+          key: 'bg-yt-src',
+          name: 'YouTube Embed URL',
+          section: 'background',
+          group: 'bg-yt',
+          type: 'text',
+          value: bgYtSrc,
+          onChange: function(node, val) {
+            const ifr = node.querySelector(':scope > .background-container > iframe');
+            if (ifr) ifr.src = val;
+          }
+        },
+
+        // Overlay Section
+        {
+          key: 'overlay',
+          name: 'Enable Color Overlay',
+          section: 'overlay',
+          type: 'toggle',
+          value: hasOverlay,
+          refreshes: true,
+          onChange: function(node, val) {
+            let o = node.querySelector(':scope > .section-overlay, :scope > .overlay');
+            if (val) {
+              if (!o) {
+                o = document.createElement('div');
+                o.className = 'section-overlay overlay absolute inset-0 -z-5 pointer-events-none';
+                o.style.backgroundColor = 'rgba(0,0,0,0.6)';
+                o.style.opacity = '0.6';
+                node.style.position = 'relative';
+                node.insertBefore(o, node.firstChild);
+              } else {
+                o.classList.remove('hidden');
+              }
+            } else if (o) {
+              o.classList.add('hidden');
+            }
+          }
+        },
+        {
+          key: 'overlay-color',
+          name: 'Overlay Color',
+          section: 'overlay',
+          group: 'overlay',
+          type: 'color',
+          value: overlayColor,
+          onChange: function(node, val) {
+            const o = node.querySelector(':scope > .section-overlay, :scope > .overlay');
+            if (o) o.style.backgroundColor = val;
+          }
+        },
+        {
+          key: 'overlay-opacity',
+          name: 'Overlay Opacity',
+          section: 'overlay',
+          group: 'overlay',
+          type: 'range',
+          min: 0,
+          max: 1,
+          step: 0.1,
+          value: overlayOpacity,
+          onChange: function(node, val) {
+            const o = node.querySelector(':scope > .section-overlay, :scope > .overlay');
+            if (o) o.style.opacity = val;
+          }
+        },
+
+        // Wave Separators Section
+        {
+          key: 'top_separator',
+          name: 'Top Wave Separator',
+          section: 'separators',
+          type: 'toggle',
+          value: hasTopSep,
+          refreshes: true,
+          onChange: function(node, val) {
+            let s = node.querySelector(':scope > .separator.top');
+            if (val) {
+              if (!s) {
+                s = document.createElement('div');
+                s.className = 'separator top absolute top-0 left-0 right-0 w-full overflow-hidden leading-none -z-5 rotate-180';
+                s.innerHTML = WAVE_SHAPES['wave-smooth'].svg;
+                node.style.position = 'relative';
+                node.appendChild(s);
+              } else s.classList.remove('hidden');
+            } else if (s) s.classList.add('hidden');
+          }
+        },
+        {
+          key: 'top_separator_shape',
+          name: 'Top Wave Silhouette',
+          section: 'separators',
+          group: 'top_separator',
+          type: 'wave-gallery',
+          value: 'wave-smooth',
+          onChange: function(node, val) {
+            const s = node.querySelector(':scope > .separator.top');
+            if (s && WAVE_SHAPES[val]) s.innerHTML = WAVE_SHAPES[val].svg;
+          }
+        },
+        {
+          key: 'bottom_separator',
+          name: 'Bottom Wave Separator',
+          section: 'separators',
+          type: 'toggle',
+          value: hasBotSep,
+          refreshes: true,
+          onChange: function(node, val) {
+            let s = node.querySelector(':scope > .separator.bottom');
+            if (val) {
+              if (!s) {
+                s = document.createElement('div');
+                s.className = 'separator bottom absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none -z-5';
+                s.innerHTML = WAVE_SHAPES['wave-smooth'].svg;
+                node.style.position = 'relative';
+                node.appendChild(s);
+              } else s.classList.remove('hidden');
+            } else if (s) s.classList.add('hidden');
+          }
+        },
+        {
+          key: 'bottom_separator_shape',
+          name: 'Bottom Wave Silhouette',
+          section: 'separators',
+          group: 'bottom_separator',
+          type: 'wave-gallery',
+          value: 'wave-smooth',
+          onChange: function(node, val) {
+            const s = node.querySelector(':scope > .separator.bottom');
+            if (s && WAVE_SHAPES[val]) s.innerHTML = WAVE_SHAPES[val].svg;
+          }
+        }
+      ];
+
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 2. GRID ROW ARCHETYPE (components-bootstrap5.js 1:1)
+  // ==========================================
+  Registry.register({
+    id: 'gridrow',
+    name: 'Grid Row',
+    category: 'Layout & Containers',
+    match: function(el) {
+      const cls = safeClasses(el);
+      return cls.includes('grid') || cls.includes('row') || cls.some(c => c.startsWith('grid-cols-'));
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Grid & Flex Alignment' },
+        { id: 'columns', header: 'Child Columns' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    beforeInit: function(node) {
+      // Dynamic column scan
+      const cols = Array.from(node.querySelectorAll(':scope > [class*="col-"], :scope > .col, :scope > div'));
+      node.__grid_columns = cols.map((col, i) => {
+        const cCls = safeClasses(col);
+        return {
+          index: i,
+          name: 'Column ' + (i + 1),
+          el: col,
+          xs: (cCls.find(c => c.startsWith('col-span-')) || '').replace('col-span-', '') || '12',
+          md: (cCls.find(c => c.startsWith('md:col-span-')) || '').replace('md:col-span-', '') || '4'
+        };
+      });
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const cols = el.__grid_columns || [];
+
+      const props = [
+        {
+          key: 'direction',
+          name: 'Flex Direction',
+          section: 'default',
+          type: 'buttons',
+          value: cls.includes('flex-col-reverse') ? 'flex-col-reverse' : (cls.includes('flex-col') ? 'flex-col' : (cls.includes('flex-row-reverse') ? 'flex-row-reverse' : 'flex-row')),
+          options: [
+            { label: 'Row (→)', value: 'flex-row' },
+            { label: 'Col (↓)', value: 'flex-col' },
+            { label: 'Row Rev (←)', value: 'flex-row-reverse' },
+            { label: 'Col Rev (↑)', value: 'flex-col-reverse' }
+          ],
+          htmlAttr: 'class',
+          validValues: ['flex-row', 'flex-row-reverse', 'flex-col', 'flex-col-reverse']
+        },
+        {
+          key: 'vertical-align',
+          name: 'Vertical Align',
+          section: 'default',
+          type: 'buttons',
+          value: ['items-start', 'items-center', 'items-end', 'items-stretch'].find(a => cls.includes(a)) || 'items-center',
+          options: [
+            { label: 'Top', value: 'items-start' },
+            { label: 'Center', value: 'items-center' },
+            { label: 'Bottom', value: 'items-end' },
+            { label: 'Stretch', value: 'items-stretch' }
+          ],
+          htmlAttr: 'class',
+          validValues: ['items-start', 'items-center', 'items-end', 'items-stretch']
+        },
+        {
+          key: 'horizontal-align',
+          name: 'Horizontal Align',
+          section: 'default',
+          type: 'buttons',
+          value: ['justify-start', 'justify-center', 'justify-end', 'justify-between', 'justify-around'].find(j => cls.includes(j)) || 'justify-start',
+          options: [
+            { label: 'Start', value: 'justify-start' },
+            { label: 'Center', value: 'justify-center' },
+            { label: 'End', value: 'justify-end' },
+            { label: 'Between', value: 'justify-between' }
+          ],
+          htmlAttr: 'class',
+          validValues: ['justify-start', 'justify-center', 'justify-end', 'justify-between', 'justify-around']
+        },
+        {
+          key: 'wrap',
+          name: 'Flex Wrap',
+          section: 'default',
+          type: 'buttons',
+          value: cls.includes('flex-nowrap') ? 'flex-nowrap' : 'flex-wrap',
+          options: [
+            { label: 'Wrap', value: 'flex-wrap' },
+            { label: 'No Wrap', value: 'flex-nowrap' }
+          ],
+          htmlAttr: 'class',
+          validValues: ['flex-wrap', 'flex-nowrap']
+        },
+        {
+          key: 'columns-manager',
+          name: 'Column Layout & Breakpoints',
+          section: 'columns',
+          type: 'columns-manager',
+          value: cols,
+          onRemoveColumn: function(node, index) {
+            const cols = Array.from(node.querySelectorAll(':scope > [class*="col-"], :scope > .col, :scope > div'));
+            if (cols[index]) cols[index].remove();
+          },
+          onAddColumn: function(node) {
+            const newCol = document.createElement('div');
+            newCol.className = 'col-span-12 md:col-span-4 p-4 border border-dashed border-base-content/20 rounded-xl';
+            newCol.textContent = 'New Column';
+            node.appendChild(newCol);
+          },
+          onSpanChange: function(node, index, bp, span) {
+            const cols = Array.from(node.querySelectorAll(':scope > [class*="col-"], :scope > .col, :scope > div'));
+            const col = cols[index];
+            if (!col) return;
+            const prefix = bp === 'xs' ? 'col-span-' : `${bp}:col-span-`;
+            // Remove previous
+            col.className = col.className.split(/\s+/).filter(c => !c.startsWith(prefix)).join(' ');
+            if (span && span !== 'none') {
+              col.classList.add(`${prefix}${span}`);
+            }
+          }
+        }
+      ];
+
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 3. SVG IMAGE / ICON ARCHETYPE (components-elements.js 1:1)
+  // ==========================================
+  Registry.register({
+    id: 'svg-icon',
+    name: 'SVG Vector Icon',
+    category: 'Cards & Media',
+    match: function(el) {
+      const tag = getTag(el);
+      return tag === 'svg' || tag === 'iconify-icon' || safeClasses(el).includes('svg-image');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Icon Shape & Size' },
+        { id: 'colors', header: 'SVG Color Palettes' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const width = el.getAttribute('width') || '32';
+      const height = el.getAttribute('height') || '32';
+      const strokeWidth = el.getAttribute('stroke-width') || '2';
+      const fill = el.getAttribute('fill') || 'none';
+      const stroke = el.getAttribute('stroke') || 'currentColor';
+
+      const props = [
+        {
+          key: 'icon-shape',
+          name: 'Vector Shape Palette',
+          section: 'default',
+          type: 'svg-gallery',
+          value: 'star',
+          onChange: function(node, val) {
+            if (ICON_SHAPES[val]) {
+              const temp = document.createElement('div');
+              temp.innerHTML = ICON_SHAPES[val].svg;
+              const newSvg = temp.firstElementChild;
+              Array.from(node.attributes).forEach(attr => {
+                if (attr.name !== 'viewBox') newSvg.setAttribute(attr.name, attr.value);
+              });
+              node.replaceWith(newSvg);
+            }
+          }
+        },
+        {
+          key: 'width',
+          name: 'Icon Width (px)',
+          section: 'default',
+          type: 'range',
+          min: 12,
+          max: 256,
+          step: 2,
+          value: parseInt(width) || 32,
+          htmlAttr: 'width'
+        },
+        {
+          key: 'height',
+          name: 'Icon Height (px)',
+          section: 'default',
+          type: 'range',
+          min: 12,
+          max: 256,
+          step: 2,
+          value: parseInt(height) || 32,
+          htmlAttr: 'height'
+        },
+        {
+          key: 'stroke-width',
+          name: 'Stroke Width',
+          section: 'default',
+          type: 'range',
+          min: 1,
+          max: 8,
+          step: 1,
+          value: parseInt(strokeWidth) || 2,
+          htmlAttr: 'stroke-width'
+        },
+        {
+          key: 'rawCode',
+          name: 'Raw SVG Markup',
+          section: 'default',
+          type: 'textarea',
+          value: el.outerHTML,
+          onChange: function(node, val) {
+            const temp = document.createElement('div');
+            temp.innerHTML = val;
+            if (temp.firstElementChild) node.replaceWith(temp.firstElementChild);
+          }
+        },
+        // Color Section
+        {
+          key: 'stroke',
+          name: 'Stroke Color',
+          section: 'colors',
+          type: 'color',
+          htmlAttr: 'stroke',
+          value: stroke
+        },
+        {
+          key: 'fill',
+          name: 'Fill Color',
+          section: 'colors',
+          type: 'color',
+          htmlAttr: 'fill',
+          value: fill
+        }
+      ];
+
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 4. IMAGE ARCHETYPE (components-common.js 1:1)
+  // ==========================================
+  Registry.register({
+    id: 'img',
+    name: 'Image',
+    category: 'Cards & Media',
+    match: function(el) {
+      return getTag(el) === 'img';
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Image Source & Alignment' },
+        { id: 'link', header: 'Hyperlink Action' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const parentLink = el.closest('a');
+      const hasLink = !!parentLink;
+
+      const props = [
+        {
+          key: 'src',
+          name: 'Image Source URL',
+          section: 'default',
+          type: 'image',
+          htmlAttr: 'src',
+          value: el.getAttribute('src') || ''
+        },
+        {
+          key: 'alt',
+          name: 'Alt Text',
+          section: 'default',
+          type: 'text',
+          htmlAttr: 'alt',
+          value: el.getAttribute('alt') || ''
+        },
+        {
+          key: 'align',
+          name: 'Image Alignment',
+          section: 'default',
+          type: 'buttons',
+          htmlAttr: 'class',
+          validValues: ['mx-0', 'mx-auto', 'ml-auto', 'float-left', 'float-right'],
+          value: cls.includes('mx-auto') ? 'mx-auto' : (cls.includes('float-right') ? 'float-right' : 'mx-0'),
+          options: [
+            { label: 'Left', value: 'mx-0' },
+            { label: 'Center', value: 'mx-auto' },
+            { label: 'Right', value: 'float-right' }
+          ]
+        },
+        {
+          key: 'radius',
+          name: 'Corner Radius',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['rounded-none', 'rounded-md', 'rounded-xl', 'rounded-2xl', 'rounded-full'],
+          value: ['rounded-none', 'rounded-md', 'rounded-xl', 'rounded-2xl', 'rounded-full'].find(r => cls.includes(r)) || 'rounded-xl',
+          options: [
+            { label: 'None', value: 'rounded-none' },
+            { label: 'Medium', value: 'rounded-md' },
+            { label: 'Large (XL)', value: 'rounded-xl' },
+            { label: 'Pill / Circle', value: 'rounded-full' }
+          ]
+        },
+
+        // Link Section
+        {
+          key: 'hasLink',
+          name: 'Enable Hyperlink',
+          section: 'link',
+          type: 'toggle',
+          value: hasLink,
+          refreshes: true,
+          onChange: function(node, val) {
+            if (val && !node.closest('a')) {
+              const a = document.createElement('a');
+              a.href = '#';
+              node.replaceWith(a);
+              a.appendChild(node);
+            } else if (!val && node.closest('a')) {
+              const a = node.closest('a');
+              a.replaceWith(node);
+            }
+          }
+        },
+        {
+          key: 'linkHref',
+          name: 'Link Target URL',
+          section: 'link',
+          group: 'hasLink',
+          type: 'text',
+          value: parentLink ? (parentLink.getAttribute('href') || '') : '',
+          onChange: function(node, val) {
+            const a = node.closest('a');
+            if (a) a.setAttribute('href', val);
+          }
+        },
+        {
+          key: 'linkTarget',
+          name: 'Open In',
+          section: 'link',
+          group: 'hasLink',
+          type: 'buttons',
+          value: parentLink ? (parentLink.getAttribute('target') || '_self') : '_self',
+          options: [
+            { label: 'Same Window', value: '_self' },
+            { label: 'New Tab', value: '_blank' }
+          ],
+          onChange: function(node, val) {
+            const a = node.closest('a');
+            if (a) a.setAttribute('target', val);
+          }
+        }
+      ];
+
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 5. BUTTON ARCHETYPE (components-bootstrap5.js 1:1)
+  // ==========================================
   Registry.register({
     id: 'btn',
     name: 'Button',
@@ -87,7 +917,13 @@
     match: function(el) {
       const tag = getTag(el);
       const cls = safeClasses(el);
-      return (tag === 'button' || (tag === 'a' && cls.includes('btn')) || cls.includes('btn')) && !cls.includes('btn-group') && !cls.includes('btn-circle');
+      return (tag === 'button' || (tag === 'a' && cls.includes('btn')) || cls.includes('btn')) && !cls.includes('btn-group');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Button Style & Text' },
+        { id: 'general', header: 'General' }
+      ];
     },
     getProperties: function(el) {
       const cls = safeClasses(el);
@@ -95,14 +931,16 @@
       const props = [
         {
           key: 'text',
-          name: 'Text Content',
+          name: 'Button Label Text',
+          section: 'default',
           type: 'text',
           value: el.textContent.trim(),
           onChange: function(node, val) { node.textContent = val; }
         },
         {
           key: 'variant',
-          name: 'Button Variant',
+          name: 'Color Variant',
+          section: 'default',
           type: 'select',
           htmlAttr: 'class',
           validValues: ['btn-primary', 'btn-secondary', 'btn-accent', 'btn-neutral', 'btn-info', 'btn-success', 'btn-warning', 'btn-error', 'btn-ghost', 'btn-link'],
@@ -116,17 +954,17 @@
             { label: 'Success', value: 'btn-success' },
             { label: 'Warning', value: 'btn-warning' },
             { label: 'Error', value: 'btn-error' },
-            { label: 'Ghost', value: 'btn-ghost' },
-            { label: 'Link', value: 'btn-link' }
+            { label: 'Ghost', value: 'btn-ghost' }
           ]
         },
         {
           key: 'size',
           name: 'Size',
+          section: 'default',
           type: 'buttons',
           htmlAttr: 'class',
-          validValues: ['btn-xs', 'btn-sm', 'btn-md', 'btn-lg', 'btn-xl'],
-          value: ['btn-xs', 'btn-sm', 'btn-md', 'btn-lg', 'btn-xl'].find(s => cls.includes(s)) || 'btn-md',
+          validValues: ['btn-xs', 'btn-sm', 'btn-md', 'btn-lg'],
+          value: ['btn-xs', 'btn-sm', 'btn-md', 'btn-lg'].find(s => cls.includes(s)) || 'btn-md',
           options: [
             { label: 'XS', value: 'btn-xs' },
             { label: 'SM', value: 'btn-sm' },
@@ -136,150 +974,54 @@
         },
         {
           key: 'style',
-          name: 'Visual Style',
+          name: 'Visual Modifier',
+          section: 'default',
           type: 'select',
           htmlAttr: 'class',
           validValues: ['btn-outline', 'btn-soft', 'btn-dash'],
           value: ['btn-outline', 'btn-soft', 'btn-dash'].find(s => cls.includes(s)) || 'none',
           options: [
-            { label: 'Solid', value: 'none' },
-            { label: 'Outline', value: 'btn-outline' },
-            { label: 'Soft', value: 'btn-soft' },
-            { label: 'Dashed', value: 'btn-dash' }
+            { label: 'Solid Standard', value: 'none' },
+            { label: 'Outline Bordered', value: 'btn-outline' },
+            { label: 'Soft Tone', value: 'btn-soft' },
+            { label: 'Dashed Border', value: 'btn-dash' }
           ]
         },
         {
           key: 'shape',
-          name: 'Shape',
+          name: 'Shape & Width',
+          section: 'default',
           type: 'buttons',
           htmlAttr: 'class',
-          validValues: ['btn-square', 'btn-circle', 'btn-wide', 'btn-block'],
-          value: ['btn-square', 'btn-circle', 'btn-wide', 'btn-block'].find(s => cls.includes(s)) || 'none',
+          validValues: ['btn-wide', 'btn-block', 'btn-circle', 'btn-square'],
+          value: ['btn-wide', 'btn-block', 'btn-circle', 'btn-square'].find(s => cls.includes(s)) || 'none',
           options: [
             { label: 'Default', value: 'none' },
             { label: 'Wide', value: 'btn-wide' },
             { label: 'Block', value: 'btn-block' },
-            { label: 'Square', value: 'btn-square' }
+            { label: 'Circle', value: 'btn-circle' }
           ]
         }
       ];
+
       if (tag === 'a') {
         props.push({
           key: 'href',
           name: 'Link URL',
+          section: 'default',
           type: 'text',
           htmlAttr: 'href',
           value: el.getAttribute('href') || '#'
         });
       }
-      return props;
-    }
-  });
 
-  // 2. Button Group / Join
-  Registry.register({
-    id: 'btn-group',
-    name: 'Button Group',
-    category: 'Buttons & Actions',
-    match: function(el) {
-      const cls = safeClasses(el);
-      return cls.includes('join') || cls.includes('btn-group');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'orientation',
-          name: 'Orientation',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['join-horizontal', 'join-vertical'],
-          value: cls.includes('join-vertical') ? 'join-vertical' : 'join-horizontal',
-          options: [
-            { label: 'Horizontal', value: 'join-horizontal' },
-            { label: 'Vertical', value: 'join-vertical' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 3. Close Button / Dismiss
-  Registry.register({
-    id: 'btn-close',
-    name: 'Close Button',
-    category: 'Buttons & Actions',
-    match: function(el) {
-      const cls = safeClasses(el);
-      return (cls.includes('btn-circle') && cls.includes('btn-ghost')) || cls.includes('btn-close');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'size',
-          name: 'Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['btn-xs', 'btn-sm', 'btn-md'],
-          value: ['btn-xs', 'btn-sm', 'btn-md'].find(s => cls.includes(s)) || 'btn-xs',
-          options: [
-            { label: 'XS', value: 'btn-xs' },
-            { label: 'SM', value: 'btn-sm' },
-            { label: 'MD', value: 'btn-md' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 4. Floating Action Button (FAB)
-  Registry.register({
-    id: 'btn-fab',
-    name: 'Floating Action Button',
-    category: 'Buttons & Actions',
-    match: function(el) {
-      const cls = safeClasses(el);
-      return cls.includes('btn-circle') && (cls.includes('fixed') || cls.includes('absolute'));
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'variant',
-          name: 'Variant',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['btn-primary', 'btn-secondary', 'btn-accent', 'btn-neutral'],
-          value: ['btn-primary', 'btn-secondary', 'btn-accent', 'btn-neutral'].find(v => cls.includes(v)) || 'btn-primary',
-          options: [
-            { label: 'Primary', value: 'btn-primary' },
-            { label: 'Secondary', value: 'btn-secondary' },
-            { label: 'Accent', value: 'btn-accent' },
-            { label: 'Neutral', value: 'btn-neutral' }
-          ]
-        },
-        {
-          key: 'position',
-          name: 'Position',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['bottom-4 right-4', 'bottom-6 right-6', 'bottom-8 right-8', 'bottom-4 left-4'],
-          value: cls.includes('bottom-6') ? 'bottom-6 right-6' : 'bottom-4 right-4',
-          options: [
-            { label: 'Bottom Right', value: 'bottom-6 right-6' },
-            { label: 'Bottom Left', value: 'bottom-4 left-4' }
-          ]
-        }
-      ];
+      return props.concat(getBaseGeneralProps(el));
     }
   });
 
   // ==========================================
-  // CATEGORY 2: TYPOGRAPHY & STRUCTURE
+  // 6. HEADING ARCHETYPE (components-html.js 1:1)
   // ==========================================
-
-  // 5. Heading (H1-H6)
   Registry.register({
     id: 'heading',
     name: 'Heading',
@@ -288,20 +1030,28 @@
       const tag = getTag(el);
       return ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag);
     },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Heading Hierarchy' },
+        { id: 'general', header: 'General' }
+      ];
+    },
     getProperties: function(el) {
       const tag = getTag(el);
       const cls = safeClasses(el);
-      return [
+      const props = [
         {
           key: 'text',
           name: 'Heading Text',
+          section: 'default',
           type: 'textarea',
           value: el.textContent.trim(),
           onChange: function(node, val) { node.textContent = val; }
         },
         {
           key: 'level',
-          name: 'Level (Tag)',
+          name: 'Tag Level',
+          section: 'default',
           type: 'buttons',
           value: tag.toUpperCase(),
           options: [
@@ -324,6 +1074,7 @@
         {
           key: 'align',
           name: 'Alignment',
+          section: 'default',
           type: 'buttons',
           htmlAttr: 'class',
           validValues: ['text-left', 'text-center', 'text-right'],
@@ -337,1261 +1088,49 @@
         {
           key: 'color',
           name: 'Color Accent',
+          section: 'default',
           type: 'select',
           htmlAttr: 'class',
           validValues: ['text-primary', 'text-secondary', 'text-accent', 'text-base-content', 'text-neutral'],
           value: ['text-primary', 'text-secondary', 'text-accent', 'text-neutral'].find(c => cls.includes(c)) || 'text-base-content',
           options: [
-            { label: 'Default', value: 'text-base-content' },
-            { label: 'Primary', value: 'text-primary' },
-            { label: 'Secondary', value: 'text-secondary' },
-            { label: 'Accent', value: 'text-accent' },
-            { label: 'Neutral', value: 'text-neutral' }
+            { label: 'Default Content', value: 'text-base-content' },
+            { label: 'Primary Accent', value: 'text-primary' },
+            { label: 'Secondary Accent', value: 'text-secondary' },
+            { label: 'Accent Tone', value: 'text-accent' }
           ]
         }
       ];
-    }
-  });
 
-  // 6. Paragraph
-  Registry.register({
-    id: 'paragraph',
-    name: 'Paragraph',
-    category: 'Typography & Structure',
-    match: function(el) {
-      return getTag(el) === 'p';
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'text',
-          name: 'Paragraph Text',
-          type: 'textarea',
-          value: el.textContent.trim(),
-          onChange: function(node, val) { node.textContent = val; }
-        },
-        {
-          key: 'size',
-          name: 'Text Size',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['text-xs', 'text-sm', 'text-base', 'text-lg', 'text-xl'],
-          value: ['text-xs', 'text-sm', 'text-base', 'text-lg', 'text-xl'].find(s => cls.includes(s)) || 'text-base',
-          options: [
-            { label: 'Extra Small', value: 'text-xs' },
-            { label: 'Small', value: 'text-sm' },
-            { label: 'Base', value: 'text-base' },
-            { label: 'Large (Lead)', value: 'text-lg' },
-            { label: 'Extra Large', value: 'text-xl' }
-          ]
-        },
-        {
-          key: 'align',
-          name: 'Alignment',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['text-left', 'text-center', 'text-right', 'text-justify'],
-          value: ['text-left', 'text-center', 'text-right', 'text-justify'].find(a => cls.includes(a)) || 'text-left',
-          options: [
-            { label: 'Left', value: 'text-left' },
-            { label: 'Center', value: 'text-center' },
-            { label: 'Right', value: 'text-right' },
-            { label: 'Justify', value: 'text-justify' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 7. Blockquote
-  Registry.register({
-    id: 'blockquote',
-    name: 'Blockquote',
-    category: 'Typography & Structure',
-    match: function(el) {
-      return getTag(el) === 'blockquote';
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'quote',
-          name: 'Quote Text',
-          type: 'textarea',
-          value: el.textContent.trim(),
-          onChange: function(node, val) { node.textContent = val; }
-        },
-        {
-          key: 'border',
-          name: 'Border Accent',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['border-primary', 'border-secondary', 'border-accent', 'border-base-content/20'],
-          value: ['border-primary', 'border-secondary', 'border-accent'].find(b => cls.includes(b)) || 'border-primary',
-          options: [
-            { label: 'Primary', value: 'border-primary' },
-            { label: 'Secondary', value: 'border-secondary' },
-            { label: 'Accent', value: 'border-accent' },
-            { label: 'Muted', value: 'border-base-content/20' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 8. List (UL / OL)
-  Registry.register({
-    id: 'list',
-    name: 'List',
-    category: 'Typography & Structure',
-    match: function(el) {
-      const tag = getTag(el);
-      return tag === 'ul' || tag === 'ol';
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'style',
-          name: 'List Style',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['list-disc', 'list-decimal', 'list-none'],
-          value: ['list-disc', 'list-decimal', 'list-none'].find(s => cls.includes(s)) || 'list-disc',
-          options: [
-            { label: 'Bullets (Disc)', value: 'list-disc' },
-            { label: 'Numbers (Decimal)', value: 'list-decimal' },
-            { label: 'None (Plain)', value: 'list-none' }
-          ]
-        },
-        {
-          key: 'spacing',
-          name: 'Item Spacing',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['space-y-1', 'space-y-2', 'space-y-4'],
-          value: ['space-y-1', 'space-y-2', 'space-y-4'].find(s => cls.includes(s)) || 'space-y-2',
-          options: [
-            { label: 'Tight', value: 'space-y-1' },
-            { label: 'Normal', value: 'space-y-2' },
-            { label: 'Relaxed', value: 'space-y-4' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 9. List Item
-  Registry.register({
-    id: 'list-item',
-    name: 'List Item',
-    category: 'Typography & Structure',
-    match: function(el) {
-      return getTag(el) === 'li';
-    },
-    getProperties: function(el) {
-      return [
-        {
-          key: 'text',
-          name: 'Item Text',
-          type: 'text',
-          value: el.textContent.trim(),
-          onChange: function(node, val) { node.textContent = val; }
-        }
-      ];
-    }
-  });
-
-  // 10. List Group / Menu
-  Registry.register({
-    id: 'menu',
-    name: 'Menu / List Group',
-    category: 'Typography & Structure',
-    match: function(el) {
-      return safeClasses(el).includes('menu');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'size',
-          name: 'Menu Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['menu-xs', 'menu-sm', 'menu-md', 'menu-lg'],
-          value: ['menu-xs', 'menu-sm', 'menu-md', 'menu-lg'].find(s => cls.includes(s)) || 'menu-md',
-          options: [
-            { label: 'XS', value: 'menu-xs' },
-            { label: 'SM', value: 'menu-sm' },
-            { label: 'MD', value: 'menu-md' },
-            { label: 'LG', value: 'menu-lg' }
-          ]
-        },
-        {
-          key: 'rounded',
-          name: 'Box Rounded',
-          type: 'toggle',
-          value: cls.includes('rounded-box'),
-          onChange: function(node, val) {
-            if (val) node.classList.add('rounded-box');
-            else node.classList.remove('rounded-box');
-          }
-        }
-      ];
-    }
-  });
-
-  // 11. Code / Preformatted / Mockup Code
-  Registry.register({
-    id: 'code',
-    name: 'Code Mockup',
-    category: 'Typography & Structure',
-    match: function(el) {
-      const tag = getTag(el);
-      const cls = safeClasses(el);
-      return tag === 'pre' || tag === 'code' || cls.includes('mockup-code');
-    },
-    getProperties: function(el) {
-      return [
-        {
-          key: 'code',
-          name: 'Code Snippet',
-          type: 'textarea',
-          value: el.textContent.trim(),
-          onChange: function(node, val) { node.textContent = val; }
-        }
-      ];
-    }
-  });
-
-  // 12. Divider
-  Registry.register({
-    id: 'divider',
-    name: 'Divider',
-    category: 'Typography & Structure',
-    match: function(el) {
-      const tag = getTag(el);
-      const cls = safeClasses(el);
-      return tag === 'hr' || cls.includes('divider');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'text',
-          name: 'Divider Text',
-          type: 'text',
-          value: el.textContent.trim(),
-          onChange: function(node, val) { node.textContent = val; }
-        },
-        {
-          key: 'orientation',
-          name: 'Orientation',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['divider-horizontal'],
-          value: cls.includes('divider-horizontal') ? 'divider-horizontal' : 'none',
-          options: [
-            { label: 'Horizontal', value: 'none' },
-            { label: 'Vertical', value: 'divider-horizontal' }
-          ]
-        },
-        {
-          key: 'color',
-          name: 'Color Accent',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['divider-primary', 'divider-secondary', 'divider-accent', 'divider-neutral', 'divider-success', 'divider-error'],
-          value: ['divider-primary', 'divider-secondary', 'divider-accent', 'divider-neutral'].find(c => cls.includes(c)) || 'none',
-          options: [
-            { label: 'Default', value: 'none' },
-            { label: 'Primary', value: 'divider-primary' },
-            { label: 'Secondary', value: 'divider-secondary' },
-            { label: 'Accent', value: 'divider-accent' },
-            { label: 'Neutral', value: 'divider-neutral' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 13. Badge
-  Registry.register({
-    id: 'badge',
-    name: 'Badge',
-    category: 'Typography & Structure',
-    match: function(el) {
-      return safeClasses(el).includes('badge');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'text',
-          name: 'Badge Text',
-          type: 'text',
-          value: el.textContent.trim(),
-          onChange: function(node, val) { node.textContent = val; }
-        },
-        {
-          key: 'variant',
-          name: 'Color Variant',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['badge-primary', 'badge-secondary', 'badge-accent', 'badge-neutral', 'badge-info', 'badge-success', 'badge-warning', 'badge-error', 'badge-ghost'],
-          value: ['badge-primary', 'badge-secondary', 'badge-accent', 'badge-neutral', 'badge-info', 'badge-success', 'badge-warning', 'badge-error', 'badge-ghost'].find(v => cls.includes(v)) || 'badge-primary',
-          options: [
-            { label: 'Primary', value: 'badge-primary' },
-            { label: 'Secondary', value: 'badge-secondary' },
-            { label: 'Accent', value: 'badge-accent' },
-            { label: 'Neutral', value: 'badge-neutral' },
-            { label: 'Info', value: 'badge-info' },
-            { label: 'Success', value: 'badge-success' },
-            { label: 'Warning', value: 'badge-warning' },
-            { label: 'Error', value: 'badge-error' }
-          ]
-        },
-        {
-          key: 'size',
-          name: 'Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['badge-xs', 'badge-sm', 'badge-md', 'badge-lg'],
-          value: ['badge-xs', 'badge-sm', 'badge-md', 'badge-lg'].find(s => cls.includes(s)) || 'badge-md',
-          options: [
-            { label: 'XS', value: 'badge-xs' },
-            { label: 'SM', value: 'badge-sm' },
-            { label: 'MD', value: 'badge-md' },
-            { label: 'LG', value: 'badge-lg' }
-          ]
-        },
-        {
-          key: 'style',
-          name: 'Style Modifier',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['badge-outline', 'badge-soft', 'badge-dash'],
-          value: ['badge-outline', 'badge-soft', 'badge-dash'].find(s => cls.includes(s)) || 'none',
-          options: [
-            { label: 'Solid', value: 'none' },
-            { label: 'Outline', value: 'badge-outline' },
-            { label: 'Soft', value: 'badge-soft' },
-            { label: 'Dashed', value: 'badge-dash' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 14. Keyboard (Kbd)
-  Registry.register({
-    id: 'kbd',
-    name: 'Keyboard Key (Kbd)',
-    category: 'Typography & Structure',
-    match: function(el) {
-      const tag = getTag(el);
-      const cls = safeClasses(el);
-      return tag === 'kbd' || cls.includes('kbd');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'text',
-          name: 'Key Character',
-          type: 'text',
-          value: el.textContent.trim(),
-          onChange: function(node, val) { node.textContent = val; }
-        },
-        {
-          key: 'size',
-          name: 'Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['kbd-xs', 'kbd-sm', 'kbd-md', 'kbd-lg'],
-          value: ['kbd-xs', 'kbd-sm', 'kbd-md', 'kbd-lg'].find(s => cls.includes(s)) || 'kbd-sm',
-          options: [
-            { label: 'XS', value: 'kbd-xs' },
-            { label: 'SM', value: 'kbd-sm' },
-            { label: 'MD', value: 'kbd-md' },
-            { label: 'LG', value: 'kbd-lg' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 15. Form Label
-  Registry.register({
-    id: 'label',
-    name: 'Form Label',
-    category: 'Typography & Structure',
-    match: function(el) {
-      const tag = getTag(el);
-      const cls = safeClasses(el);
-      return tag === 'label' || cls.includes('label');
-    },
-    getProperties: function(el) {
-      return [
-        {
-          key: 'text',
-          name: 'Label Text',
-          type: 'text',
-          value: el.textContent.trim(),
-          onChange: function(node, val) { node.textContent = val; }
-        }
-      ];
+      return props.concat(getBaseGeneralProps(el));
     }
   });
 
   // ==========================================
-  // CATEGORY 3: LAYOUT & CONTAINERS
+  // 7. CARD ARCHETYPE
   // ==========================================
-
-  // 16. Section / Hero
-  Registry.register({
-    id: 'section',
-    name: 'Section Shell',
-    category: 'Layout & Containers',
-    match: function(el) {
-      const tag = getTag(el);
-      const cls = safeClasses(el);
-      return tag === 'section' || cls.includes('hero') || (tag === 'header' && cls.includes('section'));
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'paddingY',
-          name: 'Vertical Padding',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['py-8', 'py-12', 'py-16', 'py-20', 'py-24', 'py-32'],
-          value: ['py-8', 'py-12', 'py-16', 'py-20', 'py-24', 'py-32'].find(p => cls.includes(p)) || 'py-16',
-          options: [
-            { label: 'Small (32px)', value: 'py-8' },
-            { label: 'Medium (64px)', value: 'py-16' },
-            { label: 'Large (96px)', value: 'py-24' },
-            { label: 'Hero (128px)', value: 'py-32' }
-          ]
-        },
-        {
-          key: 'bgTone',
-          name: 'Background Tone',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral', 'bg-primary/5'],
-          value: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral', 'bg-primary/5'].find(b => cls.includes(b)) || 'bg-base-100',
-          options: [
-            { label: 'Base 100 (Default)', value: 'bg-base-100' },
-            { label: 'Base 200 (Subtle)', value: 'bg-base-200' },
-            { label: 'Base 300 (Inset)', value: 'bg-base-300' },
-            { label: 'Neutral (Dark Contrast)', value: 'bg-neutral' },
-            { label: 'Primary Glow (5%)', value: 'bg-primary/5' }
-          ]
-        },
-        {
-          key: 'maxWidth',
-          name: 'Max Width Constraint',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['max-w-5xl', 'max-w-6xl', 'max-w-7xl', 'max-w-full'],
-          value: ['max-w-5xl', 'max-w-6xl', 'max-w-7xl', 'max-w-full'].find(w => cls.includes(w)) || 'max-w-7xl',
-          options: [
-            { label: 'Standard (7xl / 1280px)', value: 'max-w-7xl' },
-            { label: 'Medium (6xl / 1152px)', value: 'max-w-6xl' },
-            { label: 'Compact (5xl / 1024px)', value: 'max-w-5xl' },
-            { label: 'Full Bleed', value: 'max-w-full' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 17. Container
-  Registry.register({
-    id: 'container',
-    name: 'Container Box',
-    category: 'Layout & Containers',
-    match: function(el) {
-      const cls = safeClasses(el);
-      return cls.includes('container') || cls.some(c => c.startsWith('max-w-'));
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'maxWidth',
-          name: 'Max Width',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['max-w-md', 'max-w-lg', 'max-w-xl', 'max-w-3xl', 'max-w-5xl', 'max-w-7xl', 'max-w-full'],
-          value: ['max-w-md', 'max-w-lg', 'max-w-xl', 'max-w-3xl', 'max-w-5xl', 'max-w-7xl', 'max-w-full'].find(w => cls.includes(w)) || 'max-w-7xl',
-          options: [
-            { label: 'Medium (3xl)', value: 'max-w-3xl' },
-            { label: 'Large (5xl)', value: 'max-w-5xl' },
-            { label: 'Wide (7xl)', value: 'max-w-7xl' },
-            { label: 'Full Bleed', value: 'max-w-full' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 18. Grid Row / Grid Container
-  Registry.register({
-    id: 'gridrow',
-    name: 'Grid Layout',
-    category: 'Layout & Containers',
-    match: function(el) {
-      const cls = safeClasses(el);
-      return cls.includes('grid') || cls.some(c => c.startsWith('grid-cols-'));
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'cols',
-          name: 'Desktop Columns',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['md:grid-cols-1', 'md:grid-cols-2', 'md:grid-cols-3', 'md:grid-cols-4'],
-          value: ['md:grid-cols-1', 'md:grid-cols-2', 'md:grid-cols-3', 'md:grid-cols-4'].find(c => cls.includes(c)) || 'md:grid-cols-3',
-          options: [
-            { label: '1 Col', value: 'md:grid-cols-1' },
-            { label: '2 Cols', value: 'md:grid-cols-2' },
-            { label: '3 Cols', value: 'md:grid-cols-3' },
-            { label: '4 Cols', value: 'md:grid-cols-4' }
-          ]
-        },
-        {
-          key: 'gap',
-          name: 'Grid Gap',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['gap-2', 'gap-4', 'gap-6', 'gap-8', 'gap-12'],
-          value: ['gap-2', 'gap-4', 'gap-6', 'gap-8', 'gap-12'].find(g => cls.includes(g)) || 'gap-6',
-          options: [
-            { label: 'Tight (8px)', value: 'gap-2' },
-            { label: 'Normal (16px)', value: 'gap-4' },
-            { label: 'Spacious (24px)', value: 'gap-6' },
-            { label: 'Wide (32px)', value: 'gap-8' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 19. Grid Column
-  Registry.register({
-    id: 'gridcolumn',
-    name: 'Grid Column',
-    category: 'Layout & Containers',
-    match: function(el) {
-      const cls = safeClasses(el);
-      return cls.some(c => c.startsWith('col-span-')) || cls.includes('col') || cls.includes('flex-1');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'span',
-          name: 'Column Span',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['col-span-1', 'col-span-2', 'col-span-3', 'col-span-4', 'col-span-6', 'col-span-12', 'col-span-full'],
-          value: ['col-span-1', 'col-span-2', 'col-span-3', 'col-span-4', 'col-span-6', 'col-span-12', 'col-span-full'].find(s => cls.includes(s)) || 'col-span-1',
-          options: [
-            { label: '1 of 12', value: 'col-span-1' },
-            { label: '2 of 12', value: 'col-span-2' },
-            { label: '3 of 12 (Quarter)', value: 'col-span-3' },
-            { label: '4 of 12 (Third)', value: 'col-span-4' },
-            { label: '6 of 12 (Half)', value: 'col-span-6' },
-            { label: 'Full Width', value: 'col-span-full' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 20. Flexbox Container
-  Registry.register({
-    id: 'flexbox',
-    name: 'Flexbox Container',
-    category: 'Layout & Containers',
-    match: function(el) {
-      const cls = safeClasses(el);
-      return cls.includes('flex') && !cls.includes('btn') && !cls.includes('join');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'direction',
-          name: 'Direction',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['flex-row', 'flex-col'],
-          value: cls.includes('flex-col') ? 'flex-col' : 'flex-row',
-          options: [
-            { label: 'Row', value: 'flex-row' },
-            { label: 'Column', value: 'flex-col' }
-          ]
-        },
-        {
-          key: 'align',
-          name: 'Align Items',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['items-start', 'items-center', 'items-end', 'items-stretch'],
-          value: ['items-start', 'items-center', 'items-end', 'items-stretch'].find(a => cls.includes(a)) || 'items-center',
-          options: [
-            { label: 'Start', value: 'items-start' },
-            { label: 'Center', value: 'items-center' },
-            { label: 'End', value: 'items-end' },
-            { label: 'Stretch', value: 'items-stretch' }
-          ]
-        },
-        {
-          key: 'justify',
-          name: 'Justify Content',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['justify-start', 'justify-center', 'justify-between', 'justify-end'],
-          value: ['justify-start', 'justify-center', 'justify-between', 'justify-end'].find(j => cls.includes(j)) || 'justify-start',
-          options: [
-            { label: 'Start', value: 'justify-start' },
-            { label: 'Center', value: 'justify-center' },
-            { label: 'Space Between', value: 'justify-between' },
-            { label: 'End', value: 'justify-end' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 21. Header / Banner
-  Registry.register({
-    id: 'header',
-    name: 'Header Shell',
-    category: 'Layout & Containers',
-    match: function(el) {
-      return getTag(el) === 'header';
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'sticky',
-          name: 'Sticky Header',
-          type: 'toggle',
-          value: cls.includes('sticky'),
-          onChange: function(node, val) {
-            if (val) node.classList.add('sticky', 'top-0', 'z-50');
-            else node.classList.remove('sticky', 'top-0', 'z-50');
-          }
-        },
-        {
-          key: 'shadow',
-          name: 'Shadow',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['shadow-none', 'shadow-xs', 'shadow-sm', 'shadow-md'],
-          value: ['shadow-none', 'shadow-xs', 'shadow-sm', 'shadow-md'].find(s => cls.includes(s)) || 'shadow-sm',
-          options: [
-            { label: 'None', value: 'shadow-none' },
-            { label: 'Subtle', value: 'shadow-xs' },
-            { label: 'Small', value: 'shadow-sm' },
-            { label: 'Medium', value: 'shadow-md' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 22. Footer
-  Registry.register({
-    id: 'footer',
-    name: 'Footer',
-    category: 'Layout & Containers',
-    match: function(el) {
-      const tag = getTag(el);
-      const cls = safeClasses(el);
-      return tag === 'footer' || cls.includes('footer');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'layout',
-          name: 'Layout Mode',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['footer-center'],
-          value: cls.includes('footer-center') ? 'footer-center' : 'none',
-          options: [
-            { label: 'Columns', value: 'none' },
-            { label: 'Centered', value: 'footer-center' }
-          ]
-        },
-        {
-          key: 'bgTone',
-          name: 'Background Tone',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['bg-base-200', 'bg-base-300', 'bg-neutral text-neutral-content'],
-          value: cls.includes('bg-neutral') ? 'bg-neutral text-neutral-content' : 'bg-base-200',
-          options: [
-            { label: 'Base 200', value: 'bg-base-200' },
-            { label: 'Base 300', value: 'bg-base-300' },
-            { label: 'Dark Neutral', value: 'bg-neutral text-neutral-content' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 23. Mockup Window
-  Registry.register({
-    id: 'mockup-window',
-    name: 'Window Mockup',
-    category: 'Layout & Containers',
-    match: function(el) {
-      return safeClasses(el).includes('mockup-window');
-    },
-    getProperties: function() {
-      return [
-        {
-          key: 'info',
-          name: 'Frame Info',
-          type: 'text',
-          value: 'DaisyUI Mockup Window Frame',
-          onChange: function() {}
-        }
-      ];
-    }
-  });
-
-  // 24. Mockup Browser
-  Registry.register({
-    id: 'mockup-browser',
-    name: 'Browser Mockup',
-    category: 'Layout & Containers',
-    match: function(el) {
-      return safeClasses(el).includes('mockup-browser');
-    },
-    getProperties: function(el) {
-      const toolbar = el.querySelector('.mockup-browser-toolbar');
-      return [
-        {
-          key: 'url',
-          name: 'URL Bar Text',
-          type: 'text',
-          value: toolbar ? toolbar.textContent.trim() : 'https://nexus-ux.dev',
-          onChange: function(node, val) {
-            const tb = node.querySelector('.mockup-browser-toolbar') || node.querySelector('.input');
-            if (tb) tb.textContent = val;
-          }
-        }
-      ];
-    }
-  });
-
-  // 25. Mockup Phone
-  Registry.register({
-    id: 'mockup-phone',
-    name: 'Phone Mockup',
-    category: 'Layout & Containers',
-    match: function(el) {
-      return safeClasses(el).includes('mockup-phone');
-    },
-    getProperties: function() {
-      return [
-        {
-          key: 'info',
-          name: 'Phone Frame',
-          type: 'text',
-          value: 'Mobile Device Container',
-          onChange: function() {}
-        }
-      ];
-    }
-  });
-
-  // ==========================================
-  // CATEGORY 4: FORM CONTROLS & INPUTS
-  // ==========================================
-
-  // 26. Form
-  Registry.register({
-    id: 'form',
-    name: 'Form Container',
-    category: 'Form Controls & Inputs',
-    match: function(el) {
-      return getTag(el) === 'form';
-    },
-    getProperties: function(el) {
-      return [
-        {
-          key: 'action',
-          name: 'Form Action URL',
-          type: 'text',
-          htmlAttr: 'action',
-          value: el.getAttribute('action') || ''
-        },
-        {
-          key: 'method',
-          name: 'Method',
-          type: 'buttons',
-          htmlAttr: 'method',
-          value: (el.getAttribute('method') || 'POST').toUpperCase(),
-          options: [
-            { label: 'POST', value: 'POST' },
-            { label: 'GET', value: 'GET' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 27. Text Input
-  Registry.register({
-    id: 'input',
-    name: 'Text Input',
-    category: 'Form Controls & Inputs',
-    match: function(el) {
-      const tag = getTag(el);
-      const type = el.getAttribute ? el.getAttribute('type') : '';
-      return tag === 'input' && (!type || ['text', 'email', 'password', 'url', 'search', 'tel'].includes(type));
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'placeholder',
-          name: 'Placeholder',
-          type: 'text',
-          htmlAttr: 'placeholder',
-          value: el.getAttribute('placeholder') || ''
-        },
-        {
-          key: 'type',
-          name: 'Input Type',
-          type: 'select',
-          htmlAttr: 'type',
-          value: el.getAttribute('type') || 'text',
-          options: [
-            { label: 'Text', value: 'text' },
-            { label: 'Email', value: 'email' },
-            { label: 'Password', value: 'password' },
-            { label: 'Search', value: 'search' },
-            { label: 'URL', value: 'url' },
-            { label: 'Tel', value: 'tel' }
-          ]
-        },
-        {
-          key: 'variant',
-          name: 'Color Accent',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['input-primary', 'input-secondary', 'input-accent', 'input-info', 'input-success', 'input-warning', 'input-error'],
-          value: ['input-primary', 'input-secondary', 'input-accent', 'input-info', 'input-success', 'input-warning', 'input-error'].find(v => cls.includes(v)) || 'none',
-          options: [
-            { label: 'Default', value: 'none' },
-            { label: 'Primary', value: 'input-primary' },
-            { label: 'Secondary', value: 'input-secondary' },
-            { label: 'Success', value: 'input-success' },
-            { label: 'Error', value: 'input-error' }
-          ]
-        },
-        {
-          key: 'size',
-          name: 'Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['input-xs', 'input-sm', 'input-md', 'input-lg'],
-          value: ['input-xs', 'input-sm', 'input-md', 'input-lg'].find(s => cls.includes(s)) || 'input-md',
-          options: [
-            { label: 'XS', value: 'input-xs' },
-            { label: 'SM', value: 'input-sm' },
-            { label: 'MD', value: 'input-md' },
-            { label: 'LG', value: 'input-lg' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 28. Textarea
-  Registry.register({
-    id: 'textarea',
-    name: 'Textarea',
-    category: 'Form Controls & Inputs',
-    match: function(el) {
-      return getTag(el) === 'textarea';
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'placeholder',
-          name: 'Placeholder',
-          type: 'text',
-          htmlAttr: 'placeholder',
-          value: el.getAttribute('placeholder') || ''
-        },
-        {
-          key: 'rows',
-          name: 'Row Count',
-          type: 'number',
-          htmlAttr: 'rows',
-          value: el.getAttribute('rows') || '3'
-        },
-        {
-          key: 'variant',
-          name: 'Color Accent',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['textarea-primary', 'textarea-secondary', 'textarea-accent', 'textarea-success', 'textarea-error'],
-          value: ['textarea-primary', 'textarea-secondary', 'textarea-accent', 'textarea-success', 'textarea-error'].find(v => cls.includes(v)) || 'none',
-          options: [
-            { label: 'Default', value: 'none' },
-            { label: 'Primary', value: 'textarea-primary' },
-            { label: 'Secondary', value: 'textarea-secondary' },
-            { label: 'Success', value: 'textarea-success' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 29. Select Dropdown
-  Registry.register({
-    id: 'select',
-    name: 'Select Dropdown',
-    category: 'Form Controls & Inputs',
-    match: function(el) {
-      return getTag(el) === 'select';
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'size',
-          name: 'Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['select-xs', 'select-sm', 'select-md', 'select-lg'],
-          value: ['select-xs', 'select-sm', 'select-md', 'select-lg'].find(s => cls.includes(s)) || 'select-md',
-          options: [
-            { label: 'XS', value: 'select-xs' },
-            { label: 'SM', value: 'select-sm' },
-            { label: 'MD', value: 'select-md' },
-            { label: 'LG', value: 'select-lg' }
-          ]
-        },
-        {
-          key: 'variant',
-          name: 'Color Accent',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['select-primary', 'select-secondary', 'select-accent'],
-          value: ['select-primary', 'select-secondary', 'select-accent'].find(v => cls.includes(v)) || 'none',
-          options: [
-            { label: 'Default', value: 'none' },
-            { label: 'Primary', value: 'select-primary' },
-            { label: 'Secondary', value: 'select-secondary' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 30. Checkbox
-  Registry.register({
-    id: 'checkbox',
-    name: 'Checkbox',
-    category: 'Form Controls & Inputs',
-    match: function(el) {
-      return getTag(el) === 'input' && el.getAttribute('type') === 'checkbox' && !safeClasses(el).includes('toggle');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'checked',
-          name: 'Checked State',
-          type: 'toggle',
-          value: el.checked,
-          onChange: function(node, val) {
-            node.checked = val;
-            if (val) node.setAttribute('checked', '');
-            else node.removeAttribute('checked');
-          }
-        },
-        {
-          key: 'variant',
-          name: 'Color Variant',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['checkbox-primary', 'checkbox-secondary', 'checkbox-accent', 'checkbox-success', 'checkbox-warning', 'checkbox-error'],
-          value: ['checkbox-primary', 'checkbox-secondary', 'checkbox-accent', 'checkbox-success', 'checkbox-warning', 'checkbox-error'].find(v => cls.includes(v)) || 'checkbox-primary',
-          options: [
-            { label: 'Primary', value: 'checkbox-primary' },
-            { label: 'Secondary', value: 'checkbox-secondary' },
-            { label: 'Accent', value: 'checkbox-accent' },
-            { label: 'Success', value: 'checkbox-success' }
-          ]
-        },
-        {
-          key: 'size',
-          name: 'Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['checkbox-xs', 'checkbox-sm', 'checkbox-md', 'checkbox-lg'],
-          value: ['checkbox-xs', 'checkbox-sm', 'checkbox-md', 'checkbox-lg'].find(s => cls.includes(s)) || 'checkbox-md',
-          options: [
-            { label: 'XS', value: 'checkbox-xs' },
-            { label: 'SM', value: 'checkbox-sm' },
-            { label: 'MD', value: 'checkbox-md' },
-            { label: 'LG', value: 'checkbox-lg' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 31. Radio Button
-  Registry.register({
-    id: 'radio',
-    name: 'Radio Button',
-    category: 'Form Controls & Inputs',
-    match: function(el) {
-      return getTag(el) === 'input' && el.getAttribute('type') === 'radio';
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'name',
-          name: 'Group Name',
-          type: 'text',
-          htmlAttr: 'name',
-          value: el.getAttribute('name') || 'radio-group'
-        },
-        {
-          key: 'variant',
-          name: 'Color Variant',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['radio-primary', 'radio-secondary', 'radio-accent', 'radio-success'],
-          value: ['radio-primary', 'radio-secondary', 'radio-accent', 'radio-success'].find(v => cls.includes(v)) || 'radio-primary',
-          options: [
-            { label: 'Primary', value: 'radio-primary' },
-            { label: 'Secondary', value: 'radio-secondary' },
-            { label: 'Accent', value: 'radio-accent' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 32. Toggle Switch
-  Registry.register({
-    id: 'toggle',
-    name: 'Toggle Switch',
-    category: 'Form Controls & Inputs',
-    match: function(el) {
-      return getTag(el) === 'input' && (el.getAttribute('type') === 'checkbox') && safeClasses(el).includes('toggle');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'checked',
-          name: 'Toggled On',
-          type: 'toggle',
-          value: el.checked,
-          onChange: function(node, val) {
-            node.checked = val;
-            if (val) node.setAttribute('checked', '');
-            else node.removeAttribute('checked');
-          }
-        },
-        {
-          key: 'variant',
-          name: 'Color Variant',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['toggle-primary', 'toggle-secondary', 'toggle-accent', 'toggle-success'],
-          value: ['toggle-primary', 'toggle-secondary', 'toggle-accent', 'toggle-success'].find(v => cls.includes(v)) || 'toggle-primary',
-          options: [
-            { label: 'Primary', value: 'toggle-primary' },
-            { label: 'Secondary', value: 'toggle-secondary' },
-            { label: 'Accent', value: 'toggle-accent' }
-          ]
-        },
-        {
-          key: 'size',
-          name: 'Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['toggle-xs', 'toggle-sm', 'toggle-md', 'toggle-lg'],
-          value: ['toggle-xs', 'toggle-sm', 'toggle-md', 'toggle-lg'].find(s => cls.includes(s)) || 'toggle-md',
-          options: [
-            { label: 'XS', value: 'toggle-xs' },
-            { label: 'SM', value: 'toggle-sm' },
-            { label: 'MD', value: 'toggle-md' },
-            { label: 'LG', value: 'toggle-lg' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 33. Range Slider
-  Registry.register({
-    id: 'range',
-    name: 'Range Slider',
-    category: 'Form Controls & Inputs',
-    match: function(el) {
-      return getTag(el) === 'input' && (el.getAttribute('type') === 'range' || safeClasses(el).includes('range'));
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'value',
-          name: 'Current Value',
-          type: 'range',
-          htmlAttr: 'value',
-          value: el.getAttribute('value') || '50'
-        },
-        {
-          key: 'min',
-          name: 'Min Value',
-          type: 'number',
-          htmlAttr: 'min',
-          value: el.getAttribute('min') || '0'
-        },
-        {
-          key: 'max',
-          name: 'Max Value',
-          type: 'number',
-          htmlAttr: 'max',
-          value: el.getAttribute('max') || '100'
-        },
-        {
-          key: 'variant',
-          name: 'Color Accent',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['range-primary', 'range-secondary', 'range-accent', 'range-success', 'range-warning', 'range-error'],
-          value: ['range-primary', 'range-secondary', 'range-accent', 'range-success', 'range-warning', 'range-error'].find(v => cls.includes(v)) || 'range-primary',
-          options: [
-            { label: 'Primary', value: 'range-primary' },
-            { label: 'Secondary', value: 'range-secondary' },
-            { label: 'Accent', value: 'range-accent' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 34. File Input
-  Registry.register({
-    id: 'file-input',
-    name: 'File Upload Input',
-    category: 'Form Controls & Inputs',
-    match: function(el) {
-      return getTag(el) === 'input' && (el.getAttribute('type') === 'file' || safeClasses(el).includes('file-input'));
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'size',
-          name: 'Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['file-input-xs', 'file-input-sm', 'file-input-md', 'file-input-lg'],
-          value: ['file-input-xs', 'file-input-sm', 'file-input-md', 'file-input-lg'].find(s => cls.includes(s)) || 'file-input-md',
-          options: [
-            { label: 'XS', value: 'file-input-xs' },
-            { label: 'SM', value: 'file-input-sm' },
-            { label: 'MD', value: 'file-input-md' },
-            { label: 'LG', value: 'file-input-lg' }
-          ]
-        },
-        {
-          key: 'variant',
-          name: 'Color Accent',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['file-input-primary', 'file-input-secondary', 'file-input-accent'],
-          value: ['file-input-primary', 'file-input-secondary', 'file-input-accent'].find(v => cls.includes(v)) || 'none',
-          options: [
-            { label: 'Default', value: 'none' },
-            { label: 'Primary', value: 'file-input-primary' },
-            { label: 'Secondary', value: 'file-input-secondary' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 35. Rating Stars
-  Registry.register({
-    id: 'rating',
-    name: 'Star Rating',
-    category: 'Form Controls & Inputs',
-    match: function(el) {
-      return safeClasses(el).includes('rating');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'size',
-          name: 'Star Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['rating-xs', 'rating-sm', 'rating-md', 'rating-lg'],
-          value: ['rating-xs', 'rating-sm', 'rating-md', 'rating-lg'].find(s => cls.includes(s)) || 'rating-md',
-          options: [
-            { label: 'XS', value: 'rating-xs' },
-            { label: 'SM', value: 'rating-sm' },
-            { label: 'MD', value: 'rating-md' },
-            { label: 'LG', value: 'rating-lg' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // ==========================================
-  // CATEGORY 5: CARDS & MEDIA
-  // ==========================================
-
-  // 36. Card
   Registry.register({
     id: 'card',
     name: 'Card Container',
     category: 'Cards & Media',
-    match: function(el) {
-      return safeClasses(el).includes('card');
+    match: function(el) { return safeClasses(el).includes('card'); },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Card Framing' },
+        { id: 'general', header: 'General' }
+      ];
     },
     getProperties: function(el) {
       const cls = safeClasses(el);
-      return [
+      const props = [
         {
           key: 'shadow',
-          name: 'Elevation / Shadow',
+          name: 'Elevation Shadow',
+          section: 'default',
           type: 'select',
           htmlAttr: 'class',
-          validValues: ['shadow-none', 'shadow-xs', 'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg', 'shadow-xl', 'shadow-2xl'],
-          value: ['shadow-none', 'shadow-xs', 'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg', 'shadow-xl', 'shadow-2xl'].find(s => cls.includes(s)) || 'shadow',
+          validValues: ['shadow-none', 'shadow-xs', 'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg', 'shadow-xl'],
+          value: ['shadow-none', 'shadow-xs', 'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg', 'shadow-xl'].find(s => cls.includes(s)) || 'shadow',
           options: [
             { label: 'None', value: 'shadow-none' },
             { label: 'Subtle', value: 'shadow-sm' },
@@ -1602,7 +1141,8 @@
         },
         {
           key: 'bordered',
-          name: 'Bordered Frame',
+          name: 'Border Frame',
+          section: 'default',
           type: 'toggle',
           value: cls.includes('card-border') || cls.includes('border'),
           onChange: function(node, val) {
@@ -1611,18 +1151,9 @@
           }
         },
         {
-          key: 'compact',
-          name: 'Compact Spacing',
-          type: 'toggle',
-          value: cls.includes('card-compact') || cls.includes('card-sm'),
-          onChange: function(node, val) {
-            if (val) node.classList.add('card-sm');
-            else node.classList.remove('card-sm');
-          }
-        },
-        {
           key: 'side',
-          name: 'Horizontal (Side Image)',
+          name: 'Horizontal Layout (Side Image)',
+          section: 'default',
           type: 'toggle',
           value: cls.includes('card-side'),
           onChange: function(node, val) {
@@ -1631,347 +1162,143 @@
           }
         }
       ];
+      return props.concat(getBaseGeneralProps(el));
     }
   });
 
-  // 37. Card Body
+  // ==========================================
+  // 8. BADGE ARCHETYPE
+  // ==========================================
   Registry.register({
-    id: 'card-body',
-    name: 'Card Body',
-    category: 'Cards & Media',
-    match: function(el) {
-      return safeClasses(el).includes('card-body');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
+    id: 'badge',
+    name: 'Badge',
+    category: 'Typography & Structure',
+    match: function(el) { return safeClasses(el).includes('badge'); },
+    getSections: function() {
       return [
-        {
-          key: 'align',
-          name: 'Text Alignment',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['text-left', 'text-center', 'text-right'],
-          value: ['text-left', 'text-center', 'text-right'].find(a => cls.includes(a)) || 'text-left',
-          options: [
-            { label: 'Left', value: 'text-left' },
-            { label: 'Center', value: 'text-center' },
-            { label: 'Right', value: 'text-right' }
-          ]
-        }
+        { id: 'default', header: 'Badge Styling' },
+        { id: 'general', header: 'General' }
       ];
-    }
-  });
-
-  // 38. Image
-  Registry.register({
-    id: 'img',
-    name: 'Image',
-    category: 'Cards & Media',
-    match: function(el) {
-      return getTag(el) === 'img';
     },
     getProperties: function(el) {
       const cls = safeClasses(el);
-      return [
-        {
-          key: 'src',
-          name: 'Image Source URL',
-          type: 'text',
-          htmlAttr: 'src',
-          value: el.getAttribute('src') || ''
-        },
-        {
-          key: 'alt',
-          name: 'Alt Text',
-          type: 'text',
-          htmlAttr: 'alt',
-          value: el.getAttribute('alt') || ''
-        },
-        {
-          key: 'radius',
-          name: 'Corner Radius',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['rounded-none', 'rounded-md', 'rounded-xl', 'rounded-2xl', 'rounded-3xl', 'rounded-full'],
-          value: ['rounded-none', 'rounded-md', 'rounded-xl', 'rounded-2xl', 'rounded-3xl', 'rounded-full'].find(r => cls.includes(r)) || 'rounded-xl',
-          options: [
-            { label: 'Square (None)', value: 'rounded-none' },
-            { label: 'Small', value: 'rounded-md' },
-            { label: 'Standard (Rounded XL)', value: 'rounded-xl' },
-            { label: 'Large (Rounded 3XL)', value: 'rounded-3xl' },
-            { label: 'Circle (Full)', value: 'rounded-full' }
-          ]
-        },
-        {
-          key: 'fit',
-          name: 'Object Fit',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['object-cover', 'object-contain', 'object-fill', 'object-none'],
-          value: ['object-cover', 'object-contain', 'object-fill', 'object-none'].find(f => cls.includes(f)) || 'object-cover',
-          options: [
-            { label: 'Cover', value: 'object-cover' },
-            { label: 'Contain', value: 'object-contain' },
-            { label: 'Fill', value: 'object-fill' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 39. Figure & Caption
-  Registry.register({
-    id: 'figure',
-    name: 'Figure Container',
-    category: 'Cards & Media',
-    match: function(el) {
-      return getTag(el) === 'figure';
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'padding',
-          name: 'Padding',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['p-0', 'p-2', 'p-4', 'p-6'],
-          value: ['p-0', 'p-2', 'p-4', 'p-6'].find(p => cls.includes(p)) || 'p-0',
-          options: [
-            { label: 'Flush (0)', value: 'p-0' },
-            { label: 'Compact (8px)', value: 'p-2' },
-            { label: 'Normal (16px)', value: 'p-4' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 40. SVG Icon
-  Registry.register({
-    id: 'svg-icon',
-    name: 'SVG Icon',
-    category: 'Cards & Media',
-    match: function(el) {
-      const tag = getTag(el);
-      return tag === 'svg' || tag === 'iconify-icon';
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      const isIconify = getTag(el) === 'iconify-icon';
       const props = [
         {
-          key: 'size',
-          name: 'Icon Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['text-sm', 'text-base', 'text-lg', 'text-xl', 'text-2xl', 'text-3xl', 'text-4xl'],
-          value: ['text-sm', 'text-base', 'text-lg', 'text-xl', 'text-2xl', 'text-3xl', 'text-4xl'].find(s => cls.includes(s)) || 'text-xl',
-          options: [
-            { label: 'SM', value: 'text-sm' },
-            { label: 'MD', value: 'text-lg' },
-            { label: 'LG', value: 'text-2xl' },
-            { label: 'XL', value: 'text-4xl' }
-          ]
+          key: 'text',
+          name: 'Badge Text',
+          section: 'default',
+          type: 'text',
+          value: el.textContent.trim(),
+          onChange: function(node, val) { node.textContent = val; }
         },
         {
-          key: 'color',
-          name: 'Color Accent',
+          key: 'variant',
+          name: 'Color Variant',
+          section: 'default',
           type: 'select',
           htmlAttr: 'class',
-          validValues: ['text-primary', 'text-secondary', 'text-accent', 'text-base-content', 'text-success', 'text-error'],
-          value: ['text-primary', 'text-secondary', 'text-accent', 'text-success', 'text-error'].find(c => cls.includes(c)) || 'text-primary',
+          validValues: ['badge-primary', 'badge-secondary', 'badge-accent', 'badge-neutral', 'badge-info', 'badge-success', 'badge-warning', 'badge-error', 'badge-ghost'],
+          value: ['badge-primary', 'badge-secondary', 'badge-accent', 'badge-neutral', 'badge-info', 'badge-success', 'badge-warning', 'badge-error', 'badge-ghost'].find(v => cls.includes(v)) || 'badge-primary',
           options: [
-            { label: 'Primary', value: 'text-primary' },
-            { label: 'Secondary', value: 'text-secondary' },
-            { label: 'Accent', value: 'text-accent' },
-            { label: 'Current Content', value: 'text-base-content' }
+            { label: 'Primary', value: 'badge-primary' },
+            { label: 'Secondary', value: 'badge-secondary' },
+            { label: 'Accent', value: 'badge-accent' },
+            { label: 'Neutral', value: 'badge-neutral' },
+            { label: 'Info', value: 'badge-info' },
+            { label: 'Success', value: 'badge-success' }
+          ]
+        },
+        {
+          key: 'size',
+          name: 'Size',
+          section: 'default',
+          type: 'buttons',
+          htmlAttr: 'class',
+          validValues: ['badge-xs', 'badge-sm', 'badge-md', 'badge-lg'],
+          value: ['badge-xs', 'badge-sm', 'badge-md', 'badge-lg'].find(s => cls.includes(s)) || 'badge-md',
+          options: [
+            { label: 'XS', value: 'badge-xs' },
+            { label: 'SM', value: 'badge-sm' },
+            { label: 'MD', value: 'badge-md' },
+            { label: 'LG', value: 'badge-lg' }
           ]
         }
       ];
-      if (isIconify) {
-        props.unshift({
-          key: 'icon',
-          name: 'Icon ID',
-          type: 'text',
-          htmlAttr: 'icon',
-          value: el.getAttribute('icon') || 'material-symbols-light:check'
-        });
-      }
-      return props;
+      return props.concat(getBaseGeneralProps(el));
     }
   });
 
-  // 41. Video Player
+  // ==========================================
+  // 9. STATS GRID ARCHETYPE
+  // ==========================================
   Registry.register({
-    id: 'video',
-    name: 'Video Player',
-    category: 'Cards & Media',
-    match: function(el) {
-      return getTag(el) === 'video';
-    },
-    getProperties: function(el) {
+    id: 'stats',
+    name: 'Stats Grid',
+    category: 'Feedback & Overlays',
+    match: function(el) { return safeClasses(el).includes('stats'); },
+    getSections: function() {
       return [
-        {
-          key: 'src',
-          name: 'Video Source URL',
-          type: 'text',
-          htmlAttr: 'src',
-          value: el.getAttribute('src') || ''
-        },
-        {
-          key: 'controls',
-          name: 'Show Controls',
-          type: 'toggle',
-          value: el.hasAttribute('controls'),
-          onChange: function(node, val) {
-            if (val) node.setAttribute('controls', '');
-            else node.removeAttribute('controls');
-          }
-        },
-        {
-          key: 'autoplay',
-          name: 'Autoplay',
-          type: 'toggle',
-          value: el.hasAttribute('autoplay'),
-          onChange: function(node, val) {
-            if (val) node.setAttribute('autoplay', '');
-            else node.removeAttribute('autoplay');
-          }
-        },
-        {
-          key: 'loop',
-          name: 'Loop Video',
-          type: 'toggle',
-          value: el.hasAttribute('loop'),
-          onChange: function(node, val) {
-            if (val) node.setAttribute('loop', '');
-            else node.removeAttribute('loop');
-          }
-        }
+        { id: 'default', header: 'Stats Alignment' },
+        { id: 'general', header: 'General' }
       ];
-    }
-  });
-
-  // 42. Audio Player
-  Registry.register({
-    id: 'audio',
-    name: 'Audio Player',
-    category: 'Cards & Media',
-    match: function(el) {
-      return getTag(el) === 'audio';
-    },
-    getProperties: function(el) {
-      return [
-        {
-          key: 'src',
-          name: 'Audio Source URL',
-          type: 'text',
-          htmlAttr: 'src',
-          value: el.getAttribute('src') || ''
-        },
-        {
-          key: 'controls',
-          name: 'Show Controls',
-          type: 'toggle',
-          value: el.hasAttribute('controls'),
-          onChange: function(node, val) {
-            if (val) node.setAttribute('controls', '');
-            else node.removeAttribute('controls');
-          }
-        }
-      ];
-    }
-  });
-
-  // 43. Embed / Iframe
-  Registry.register({
-    id: 'iframe',
-    name: 'Responsive Iframe',
-    category: 'Cards & Media',
-    match: function(el) {
-      return getTag(el) === 'iframe';
-    },
-    getProperties: function(el) {
-      return [
-        {
-          key: 'src',
-          name: 'Source URL',
-          type: 'text',
-          htmlAttr: 'src',
-          value: el.getAttribute('src') || ''
-        },
-        {
-          key: 'title',
-          name: 'Iframe Title',
-          type: 'text',
-          htmlAttr: 'title',
-          value: el.getAttribute('title') || 'Embedded Content'
-        }
-      ];
-    }
-  });
-
-  // 44. Avatar & Avatar Group
-  Registry.register({
-    id: 'avatar',
-    name: 'Avatar',
-    category: 'Cards & Media',
-    match: function(el) {
-      return safeClasses(el).includes('avatar') || safeClasses(el).includes('avatar-group');
     },
     getProperties: function(el) {
       const cls = safeClasses(el);
-      return [
+      const props = [
         {
-          key: 'size',
-          name: 'Avatar Size',
+          key: 'orientation',
+          name: 'Layout Orientation',
+          section: 'default',
           type: 'buttons',
           htmlAttr: 'class',
-          validValues: ['w-8 h-8', 'w-10 h-10', 'w-12 h-12', 'w-16 h-16'],
-          value: ['w-8 h-8', 'w-10 h-10', 'w-12 h-12', 'w-16 h-16'].find(s => cls.includes(s)) || 'w-10 h-10',
+          validValues: ['stats-horizontal', 'stats-vertical'],
+          value: cls.includes('stats-vertical') ? 'stats-vertical' : 'stats-horizontal',
           options: [
-            { label: 'SM', value: 'w-8 h-8' },
-            { label: 'MD', value: 'w-10 h-10' },
-            { label: 'LG', value: 'w-12 h-12' },
-            { label: 'XL', value: 'w-16 h-16' }
+            { label: 'Horizontal', value: 'stats-horizontal' },
+            { label: 'Vertical', value: 'stats-vertical' }
           ]
         },
         {
-          key: 'shape',
-          name: 'Mask Shape',
+          key: 'shadow',
+          name: 'Elevation Shadow',
+          section: 'default',
           type: 'select',
           htmlAttr: 'class',
-          validValues: ['rounded-full', 'mask mask-squircle', 'mask mask-hexagon'],
-          value: cls.includes('mask-squircle') ? 'mask mask-squircle' : 'rounded-full',
+          validValues: ['shadow-none', 'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg'],
+          value: ['shadow-none', 'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg'].find(s => cls.includes(s)) || 'shadow',
           options: [
-            { label: 'Circle', value: 'rounded-full' },
-            { label: 'Squircle', value: 'mask mask-squircle' },
-            { label: 'Hexagon', value: 'mask mask-hexagon' }
+            { label: 'None', value: 'shadow-none' },
+            { label: 'Subtle', value: 'shadow-sm' },
+            { label: 'Standard', value: 'shadow' },
+            { label: 'Elevated', value: 'shadow-md' }
           ]
         }
       ];
+      return props.concat(getBaseGeneralProps(el));
     }
   });
 
   // ==========================================
-  // CATEGORY 6: NAVIGATION & MENUS
+  // 10. NAVBAR ARCHETYPE
   // ==========================================
-
-  // 45. Navbar
   Registry.register({
     id: 'navbar',
     name: 'Navbar',
     category: 'Navigation & Menus',
-    match: function(el) {
-      return safeClasses(el).includes('navbar');
+    match: function(el) { return safeClasses(el).includes('navbar'); },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Navbar Settings' },
+        { id: 'general', header: 'General' }
+      ];
     },
     getProperties: function(el) {
       const cls = safeClasses(el);
-      return [
+      const props = [
         {
           key: 'bg',
           name: 'Background Tone',
+          section: 'default',
           type: 'select',
           htmlAttr: 'class',
           validValues: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral text-neutral-content', 'bg-transparent'],
@@ -1984,967 +1311,18 @@
           ]
         },
         {
-          key: 'shadow',
-          name: 'Shadow',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['shadow-none', 'shadow-xs', 'shadow-sm', 'shadow-md'],
-          value: ['shadow-none', 'shadow-xs', 'shadow-sm', 'shadow-md'].find(s => cls.includes(s)) || 'shadow-sm',
-          options: [
-            { label: 'None', value: 'shadow-none' },
-            { label: 'Subtle', value: 'shadow-xs' },
-            { label: 'Standard', value: 'shadow-sm' },
-            { label: 'Elevated', value: 'shadow-md' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 46. Nav Menu
-  Registry.register({
-    id: 'nav-menu',
-    name: 'Nav Menu',
-    category: 'Navigation & Menus',
-    match: function(el) {
-      const cls = safeClasses(el);
-      return cls.includes('menu-horizontal');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'size',
-          name: 'Menu Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['menu-xs', 'menu-sm', 'menu-md'],
-          value: ['menu-xs', 'menu-sm', 'menu-md'].find(s => cls.includes(s)) || 'menu-sm',
-          options: [
-            { label: 'XS', value: 'menu-xs' },
-            { label: 'SM', value: 'menu-sm' },
-            { label: 'MD', value: 'menu-md' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 47. Dropdown
-  Registry.register({
-    id: 'dropdown',
-    name: 'Dropdown',
-    category: 'Navigation & Menus',
-    match: function(el) {
-      return safeClasses(el).includes('dropdown');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'hover',
-          name: 'Open on Hover',
+          key: 'sticky',
+          name: 'Sticky Header',
+          section: 'default',
           type: 'toggle',
-          value: cls.includes('dropdown-hover'),
+          value: cls.includes('sticky'),
           onChange: function(node, val) {
-            if (val) node.classList.add('dropdown-hover');
-            else node.classList.remove('dropdown-hover');
-          }
-        },
-        {
-          key: 'position',
-          name: 'Menu Placement',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['dropdown-bottom', 'dropdown-top', 'dropdown-end', 'dropdown-left', 'dropdown-right'],
-          value: ['dropdown-bottom', 'dropdown-top', 'dropdown-end', 'dropdown-left', 'dropdown-right'].find(p => cls.includes(p)) || 'dropdown-bottom',
-          options: [
-            { label: 'Bottom (Default)', value: 'dropdown-bottom' },
-            { label: 'Bottom End', value: 'dropdown-bottom dropdown-end' },
-            { label: 'Top', value: 'dropdown-top' },
-            { label: 'Right', value: 'dropdown-right' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 48. Breadcrumbs
-  Registry.register({
-    id: 'breadcrumbs',
-    name: 'Breadcrumbs',
-    category: 'Navigation & Menus',
-    match: function(el) {
-      return safeClasses(el).includes('breadcrumbs');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'size',
-          name: 'Text Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['text-xs', 'text-sm', 'text-base'],
-          value: ['text-xs', 'text-sm', 'text-base'].find(s => cls.includes(s)) || 'text-xs',
-          options: [
-            { label: 'XS', value: 'text-xs' },
-            { label: 'SM', value: 'text-sm' },
-            { label: 'MD', value: 'text-base' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 49. Pagination
-  Registry.register({
-    id: 'pagination',
-    name: 'Pagination',
-    category: 'Navigation & Menus',
-    match: function(el) {
-      const cls = safeClasses(el);
-      return cls.includes('pagination') || (cls.includes('join') && el.querySelector('.join-item'));
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'size',
-          name: 'Button Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['pagination-xs', 'pagination-sm', 'pagination-md'],
-          value: 'pagination-sm',
-          options: [
-            { label: 'XS', value: 'pagination-xs' },
-            { label: 'SM', value: 'pagination-sm' },
-            { label: 'MD', value: 'pagination-md' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 50. Tabs
-  Registry.register({
-    id: 'tabs',
-    name: 'Tabs',
-    category: 'Navigation & Menus',
-    match: function(el) {
-      return safeClasses(el).includes('tabs');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'style',
-          name: 'Tab Style',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['tabs-bordered', 'tabs-lifted', 'tabs-box'],
-          value: ['tabs-bordered', 'tabs-lifted', 'tabs-box'].find(s => cls.includes(s)) || 'tabs-bordered',
-          options: [
-            { label: 'Bordered', value: 'tabs-bordered' },
-            { label: 'Lifted Cards', value: 'tabs-lifted' },
-            { label: 'Box Container', value: 'tabs-box' }
-          ]
-        },
-        {
-          key: 'size',
-          name: 'Tab Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['tabs-xs', 'tabs-sm', 'tabs-md', 'tabs-lg'],
-          value: ['tabs-xs', 'tabs-sm', 'tabs-md', 'tabs-lg'].find(s => cls.includes(s)) || 'tabs-md',
-          options: [
-            { label: 'XS', value: 'tabs-xs' },
-            { label: 'SM', value: 'tabs-sm' },
-            { label: 'MD', value: 'tabs-md' },
-            { label: 'LG', value: 'tabs-lg' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 51. Tab Item
-  Registry.register({
-    id: 'tab',
-    name: 'Tab Item',
-    category: 'Navigation & Menus',
-    match: function(el) {
-      return safeClasses(el).includes('tab');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'text',
-          name: 'Tab Title',
-          type: 'text',
-          value: el.textContent.trim(),
-          onChange: function(node, val) { node.textContent = val; }
-        },
-        {
-          key: 'active',
-          name: 'Active Tab',
-          type: 'toggle',
-          value: cls.includes('tab-active'),
-          onChange: function(node, val) {
-            if (val) node.classList.add('tab-active');
-            else node.classList.remove('tab-active');
+            if (val) node.classList.add('sticky', 'top-0', 'z-40');
+            else node.classList.remove('sticky', 'top-0', 'z-40');
           }
         }
       ];
-    }
-  });
-
-  // 52. Collapse / Accordion
-  Registry.register({
-    id: 'collapse',
-    name: 'Collapse / Accordion',
-    category: 'Navigation & Menus',
-    match: function(el) {
-      return safeClasses(el).includes('collapse');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'icon',
-          name: 'Toggle Icon',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['collapse-arrow', 'collapse-plus'],
-          value: cls.includes('collapse-plus') ? 'collapse-plus' : 'collapse-arrow',
-          options: [
-            { label: 'Arrow', value: 'collapse-arrow' },
-            { label: 'Plus / Minus', value: 'collapse-plus' }
-          ]
-        },
-        {
-          key: 'open',
-          name: 'Expanded by Default',
-          type: 'toggle',
-          value: cls.includes('collapse-open'),
-          onChange: function(node, val) {
-            if (val) node.classList.add('collapse-open');
-            else node.classList.remove('collapse-open');
-          }
-        }
-      ];
-    }
-  });
-
-  // 53. Steps Indicator
-  Registry.register({
-    id: 'steps',
-    name: 'Steps Progress',
-    category: 'Navigation & Menus',
-    match: function(el) {
-      return safeClasses(el).includes('steps');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'orientation',
-          name: 'Orientation',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['steps-horizontal', 'steps-vertical'],
-          value: cls.includes('steps-vertical') ? 'steps-vertical' : 'steps-horizontal',
-          options: [
-            { label: 'Horizontal', value: 'steps-horizontal' },
-            { label: 'Vertical', value: 'steps-vertical' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 54. Bottom Navigation
-  Registry.register({
-    id: 'btm-nav',
-    name: 'Bottom Navigation',
-    category: 'Navigation & Menus',
-    match: function(el) {
-      return safeClasses(el).includes('btm-nav');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'size',
-          name: 'Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['btm-nav-xs', 'btm-nav-sm', 'btm-nav-md'],
-          value: ['btm-nav-xs', 'btm-nav-sm', 'btm-nav-md'].find(s => cls.includes(s)) || 'btm-nav-md',
-          options: [
-            { label: 'XS', value: 'btm-nav-xs' },
-            { label: 'SM', value: 'btm-nav-sm' },
-            { label: 'MD', value: 'btm-nav-md' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // ==========================================
-  // CATEGORY 7: FEEDBACK, INDICATORS & OVERLAYS
-  // ==========================================
-
-  // 55. Alert Banner
-  Registry.register({
-    id: 'alert',
-    name: 'Alert Banner',
-    category: 'Feedback & Overlays',
-    match: function(el) {
-      return safeClasses(el).includes('alert');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'variant',
-          name: 'Alert Variant',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['alert-info', 'alert-success', 'alert-warning', 'alert-error'],
-          value: ['alert-info', 'alert-success', 'alert-warning', 'alert-error'].find(v => cls.includes(v)) || 'alert-info',
-          options: [
-            { label: 'Info (Blue)', value: 'alert-info' },
-            { label: 'Success (Green)', value: 'alert-success' },
-            { label: 'Warning (Yellow)', value: 'alert-warning' },
-            { label: 'Error (Red)', value: 'alert-error' }
-          ]
-        },
-        {
-          key: 'style',
-          name: 'Style Modifier',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['alert-soft', 'alert-dash', 'alert-outline'],
-          value: ['alert-soft', 'alert-dash', 'alert-outline'].find(s => cls.includes(s)) || 'none',
-          options: [
-            { label: 'Standard Solid', value: 'none' },
-            { label: 'Soft Tone', value: 'alert-soft' },
-            { label: 'Dashed Border', value: 'alert-dash' },
-            { label: 'Outline', value: 'alert-outline' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 56. Progress Bar
-  Registry.register({
-    id: 'progress',
-    name: 'Progress Bar',
-    category: 'Feedback & Overlays',
-    match: function(el) {
-      return getTag(el) === 'progress' || safeClasses(el).includes('progress');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'value',
-          name: 'Current Value (%)',
-          type: 'number',
-          htmlAttr: 'value',
-          value: el.getAttribute('value') || '50'
-        },
-        {
-          key: 'max',
-          name: 'Max Value',
-          type: 'number',
-          htmlAttr: 'max',
-          value: el.getAttribute('max') || '100'
-        },
-        {
-          key: 'variant',
-          name: 'Color Variant',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['progress-primary', 'progress-secondary', 'progress-accent', 'progress-success', 'progress-warning', 'progress-error'],
-          value: ['progress-primary', 'progress-secondary', 'progress-accent', 'progress-success', 'progress-warning', 'progress-error'].find(v => cls.includes(v)) || 'progress-primary',
-          options: [
-            { label: 'Primary', value: 'progress-primary' },
-            { label: 'Secondary', value: 'progress-secondary' },
-            { label: 'Accent', value: 'progress-accent' },
-            { label: 'Success', value: 'progress-success' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 57. Radial Progress
-  Registry.register({
-    id: 'radial-progress',
-    name: 'Radial Progress',
-    category: 'Feedback & Overlays',
-    match: function(el) {
-      return safeClasses(el).includes('radial-progress');
-    },
-    getProperties: function(el) {
-      return [
-        {
-          key: 'value',
-          name: 'Percentage (0-100)',
-          type: 'number',
-          value: el.style.getPropertyValue('--value') || '70',
-          onChange: function(node, val) {
-            node.style.setProperty('--value', val);
-            node.textContent = val + '%';
-          }
-        }
-      ];
-    }
-  });
-
-  // 58. Loading Indicator
-  Registry.register({
-    id: 'loading',
-    name: 'Loading Indicator',
-    category: 'Feedback & Overlays',
-    match: function(el) {
-      return safeClasses(el).includes('loading');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'type',
-          name: 'Spinner Style',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['loading-spinner', 'loading-dots', 'loading-ring', 'loading-ball', 'loading-bars', 'loading-infinity'],
-          value: ['loading-spinner', 'loading-dots', 'loading-ring', 'loading-ball', 'loading-bars', 'loading-infinity'].find(t => cls.includes(t)) || 'loading-spinner',
-          options: [
-            { label: 'Spinner', value: 'loading-spinner' },
-            { label: 'Dots', value: 'loading-dots' },
-            { label: 'Ring', value: 'loading-ring' },
-            { label: 'Bars', value: 'loading-bars' },
-            { label: 'Infinity', value: 'loading-infinity' }
-          ]
-        },
-        {
-          key: 'size',
-          name: 'Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['loading-xs', 'loading-sm', 'loading-md', 'loading-lg'],
-          value: ['loading-xs', 'loading-sm', 'loading-md', 'loading-lg'].find(s => cls.includes(s)) || 'loading-md',
-          options: [
-            { label: 'XS', value: 'loading-xs' },
-            { label: 'SM', value: 'loading-sm' },
-            { label: 'MD', value: 'loading-md' },
-            { label: 'LG', value: 'loading-lg' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 59. Tooltip
-  Registry.register({
-    id: 'tooltip',
-    name: 'Tooltip',
-    category: 'Feedback & Overlays',
-    match: function(el) {
-      return safeClasses(el).includes('tooltip');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'tip',
-          name: 'Tooltip Message',
-          type: 'text',
-          htmlAttr: 'data-tip',
-          value: el.getAttribute('data-tip') || 'Tooltip message'
-        },
-        {
-          key: 'position',
-          name: 'Direction',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['tooltip-top', 'tooltip-bottom', 'tooltip-left', 'tooltip-right'],
-          value: ['tooltip-top', 'tooltip-bottom', 'tooltip-left', 'tooltip-right'].find(p => cls.includes(p)) || 'tooltip-top',
-          options: [
-            { label: 'Top', value: 'tooltip-top' },
-            { label: 'Bottom', value: 'tooltip-bottom' },
-            { label: 'Left', value: 'tooltip-left' },
-            { label: 'Right', value: 'tooltip-right' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 60. Modal Dialog
-  Registry.register({
-    id: 'modal',
-    name: 'Modal Dialog',
-    category: 'Feedback & Overlays',
-    match: function(el) {
-      const tag = getTag(el);
-      const cls = safeClasses(el);
-      return tag === 'dialog' || cls.includes('modal');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'position',
-          name: 'Position',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['modal-middle', 'modal-bottom'],
-          value: cls.includes('modal-bottom') ? 'modal-bottom' : 'modal-middle',
-          options: [
-            { label: 'Centered', value: 'modal-middle' },
-            { label: 'Bottom Sheet', value: 'modal-bottom' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 61. Stats Grid
-  Registry.register({
-    id: 'stats',
-    name: 'Stats Grid',
-    category: 'Feedback & Overlays',
-    match: function(el) {
-      return safeClasses(el).includes('stats');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'orientation',
-          name: 'Orientation',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['stats-horizontal', 'stats-vertical'],
-          value: cls.includes('stats-vertical') ? 'stats-vertical' : 'stats-horizontal',
-          options: [
-            { label: 'Horizontal', value: 'stats-horizontal' },
-            { label: 'Vertical', value: 'stats-vertical' }
-          ]
-        },
-        {
-          key: 'shadow',
-          name: 'Shadow Depth',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['shadow-none', 'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg'],
-          value: ['shadow-sm', 'shadow', 'shadow-md', 'shadow-lg'].find(s => cls.includes(s)) || 'shadow',
-          options: [
-            { label: 'None', value: 'shadow-none' },
-            { label: 'Subtle', value: 'shadow-sm' },
-            { label: 'Standard', value: 'shadow' },
-            { label: 'Elevated', value: 'shadow-md' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 62. Stat Item
-  Registry.register({
-    id: 'stat',
-    name: 'Stat Counter Item',
-    category: 'Feedback & Overlays',
-    match: function(el) {
-      return safeClasses(el).includes('stat');
-    },
-    getProperties: function(el) {
-      const titleEl = el.querySelector('.stat-title');
-      const valEl = el.querySelector('.stat-value');
-      const descEl = el.querySelector('.stat-desc');
-      return [
-        {
-          key: 'title',
-          name: 'Stat Label',
-          type: 'text',
-          value: titleEl ? titleEl.textContent.trim() : 'Metric',
-          onChange: function(node, val) {
-            const t = node.querySelector('.stat-title');
-            if (t) t.textContent = val;
-          }
-        },
-        {
-          key: 'value',
-          name: 'Value',
-          type: 'text',
-          value: valEl ? valEl.textContent.trim() : '100%',
-          onChange: function(node, val) {
-            const v = node.querySelector('.stat-value');
-            if (v) v.textContent = val;
-          }
-        },
-        {
-          key: 'desc',
-          name: 'Description Note',
-          type: 'text',
-          value: descEl ? descEl.textContent.trim() : '',
-          onChange: function(node, val) {
-            const d = node.querySelector('.stat-desc');
-            if (d) d.textContent = val;
-          }
-        }
-      ];
-    }
-  });
-
-  // 63. Indicator Badge Dot
-  Registry.register({
-    id: 'indicator',
-    name: 'Indicator Badge',
-    category: 'Feedback & Overlays',
-    match: function(el) {
-      return safeClasses(el).includes('indicator');
-    },
-    getProperties: function() {
-      return [
-        {
-          key: 'info',
-          name: 'Indicator Frame',
-          type: 'text',
-          value: 'Badge Notification Wrapper',
-          onChange: function() {}
-        }
-      ];
-    }
-  });
-
-  // 64. Countdown Display
-  Registry.register({
-    id: 'countdown',
-    name: 'Countdown Display',
-    category: 'Feedback & Overlays',
-    match: function(el) {
-      return safeClasses(el).includes('countdown');
-    },
-    getProperties: function() {
-      return [
-        {
-          key: 'info',
-          name: 'Countdown Numbers',
-          type: 'text',
-          value: 'CSS Counter Display',
-          onChange: function() {}
-        }
-      ];
-    }
-  });
-
-  // 65. Diff View
-  Registry.register({
-    id: 'diff',
-    name: 'Diff Image Comparison',
-    category: 'Feedback & Overlays',
-    match: function(el) {
-      return safeClasses(el).includes('diff');
-    },
-    getProperties: function() {
-      return [
-        {
-          key: 'info',
-          name: 'Split View',
-          type: 'text',
-          value: 'DaisyUI Diff Comparison Container',
-          onChange: function() {}
-        }
-      ];
-    }
-  });
-
-  // 66. Timeline
-  Registry.register({
-    id: 'timeline',
-    name: 'Timeline',
-    category: 'Feedback & Overlays',
-    match: function(el) {
-      return safeClasses(el).includes('timeline');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'orientation',
-          name: 'Orientation',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['timeline-vertical', 'timeline-horizontal'],
-          value: cls.includes('timeline-vertical') ? 'timeline-vertical' : 'timeline-horizontal',
-          options: [
-            { label: 'Vertical', value: 'timeline-vertical' },
-            { label: 'Horizontal', value: 'timeline-horizontal' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // ==========================================
-  // CATEGORY 8: TABLES & DATA DISPLAY
-  // ==========================================
-
-  // 67. Table
-  Registry.register({
-    id: 'table',
-    name: 'Data Table',
-    category: 'Tables & Data Display',
-    match: function(el) {
-      return getTag(el) === 'table' || safeClasses(el).includes('table');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'zebra',
-          name: 'Zebra Striping',
-          type: 'toggle',
-          value: cls.includes('table-zebra'),
-          onChange: function(node, val) {
-            if (val) node.classList.add('table-zebra');
-            else node.classList.remove('table-zebra');
-          }
-        },
-        {
-          key: 'size',
-          name: 'Table Size',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['table-xs', 'table-sm', 'table-md', 'table-lg'],
-          value: ['table-xs', 'table-sm', 'table-md', 'table-lg'].find(s => cls.includes(s)) || 'table-md',
-          options: [
-            { label: 'XS', value: 'table-xs' },
-            { label: 'SM', value: 'table-sm' },
-            { label: 'MD', value: 'table-md' },
-            { label: 'LG', value: 'table-lg' }
-          ]
-        },
-        {
-          key: 'pinRows',
-          name: 'Pin Header Rows',
-          type: 'toggle',
-          value: cls.includes('table-pin-rows'),
-          onChange: function(node, val) {
-            if (val) node.classList.add('table-pin-rows');
-            else node.classList.remove('table-pin-rows');
-          }
-        }
-      ];
-    }
-  });
-
-  // 68. Table Row
-  Registry.register({
-    id: 'table-row',
-    name: 'Table Row',
-    category: 'Tables & Data Display',
-    match: function(el) {
-      return getTag(el) === 'tr';
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'hover',
-          name: 'Hover Highlight',
-          type: 'toggle',
-          value: cls.includes('hover'),
-          onChange: function(node, val) {
-            if (val) node.classList.add('hover');
-            else node.classList.remove('hover');
-          }
-        }
-      ];
-    }
-  });
-
-  // 69. Table Cell (TH / TD)
-  Registry.register({
-    id: 'table-cell',
-    name: 'Table Cell',
-    category: 'Tables & Data Display',
-    match: function(el) {
-      const tag = getTag(el);
-      return tag === 'th' || tag === 'td';
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'text',
-          name: 'Cell Content',
-          type: 'text',
-          value: el.textContent.trim(),
-          onChange: function(node, val) { node.textContent = val; }
-        },
-        {
-          key: 'align',
-          name: 'Text Alignment',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['text-left', 'text-center', 'text-right'],
-          value: ['text-left', 'text-center', 'text-right'].find(a => cls.includes(a)) || 'text-left',
-          options: [
-            { label: 'Left', value: 'text-left' },
-            { label: 'Center', value: 'text-center' },
-            { label: 'Right', value: 'text-right' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // ==========================================
-  // CATEGORY 9: INTERACTIVE WIDGETS & SECTIONS
-  // ==========================================
-
-  // 70. Carousel
-  Registry.register({
-    id: 'carousel',
-    name: 'Carousel Slider',
-    category: 'Interactive Widgets',
-    match: function(el) {
-      return safeClasses(el).includes('carousel');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'mode',
-          name: 'Snap Alignment',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['carousel-center', 'carousel-end'],
-          value: cls.includes('carousel-center') ? 'carousel-center' : 'none',
-          options: [
-            { label: 'Start', value: 'none' },
-            { label: 'Center', value: 'carousel-center' },
-            { label: 'End', value: 'carousel-end' }
-          ]
-        }
-      ];
-    }
-  });
-
-  // 71. Chat Bubble
-  Registry.register({
-    id: 'chat',
-    name: 'Chat Message',
-    category: 'Interactive Widgets',
-    match: function(el) {
-      return safeClasses(el).includes('chat') || safeClasses(el).includes('chat-bubble');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      const bubble = el.querySelector('.chat-bubble') || el;
-      return [
-        {
-          key: 'message',
-          name: 'Message Content',
-          type: 'textarea',
-          value: bubble.textContent.trim(),
-          onChange: function(node, val) {
-            const b = node.querySelector('.chat-bubble') || node;
-            b.textContent = val;
-          }
-        },
-        {
-          key: 'direction',
-          name: 'Direction',
-          type: 'buttons',
-          htmlAttr: 'class',
-          validValues: ['chat-start', 'chat-end'],
-          value: cls.includes('chat-end') ? 'chat-end' : 'chat-start',
-          options: [
-            { label: 'Incoming (Start)', value: 'chat-start' },
-            { label: 'Outgoing (End)', value: 'chat-end' }
-          ]
-        },
-        {
-          key: 'variant',
-          name: 'Bubble Variant',
-          type: 'select',
-          validValues: ['chat-bubble-primary', 'chat-bubble-secondary', 'chat-bubble-accent', 'chat-bubble-info', 'chat-bubble-success', 'chat-bubble-warning', 'chat-bubble-error'],
-          value: 'chat-bubble-primary',
-          options: [
-            { label: 'Primary', value: 'chat-bubble-primary' },
-            { label: 'Secondary', value: 'chat-bubble-secondary' },
-            { label: 'Accent', value: 'chat-bubble-accent' }
-          ],
-          onChange: function(node, val) {
-            const b = node.querySelector('.chat-bubble') || node;
-            ['chat-bubble-primary', 'chat-bubble-secondary', 'chat-bubble-accent', 'chat-bubble-info', 'chat-bubble-success', 'chat-bubble-warning', 'chat-bubble-error'].forEach(c => b.classList.remove(c));
-            if (val) b.classList.add(val);
-          }
-        }
-      ];
-    }
-  });
-
-  // 72. Hyperlink
-  Registry.register({
-    id: 'link',
-    name: 'Hyperlink',
-    category: 'Typography & Structure',
-    match: function(el) {
-      return getTag(el) === 'a' && !safeClasses(el).includes('btn') && !safeClasses(el).includes('tab');
-    },
-    getProperties: function(el) {
-      const cls = safeClasses(el);
-      return [
-        {
-          key: 'text',
-          name: 'Link Text',
-          type: 'text',
-          value: el.textContent.trim(),
-          onChange: function(node, val) { node.textContent = val; }
-        },
-        {
-          key: 'href',
-          name: 'Target URL',
-          type: 'text',
-          htmlAttr: 'href',
-          value: el.getAttribute('href') || '#'
-        },
-        {
-          key: 'target',
-          name: 'Open In',
-          type: 'buttons',
-          htmlAttr: 'target',
-          value: el.getAttribute('target') || '_self',
-          options: [
-            { label: 'Same Window', value: '_self' },
-            { label: 'New Tab', value: '_blank' }
-          ]
-        },
-        {
-          key: 'color',
-          name: 'Color Accent',
-          type: 'select',
-          htmlAttr: 'class',
-          validValues: ['link-primary', 'link-secondary', 'link-accent', 'link-neutral', 'link-hover'],
-          value: ['link-primary', 'link-secondary', 'link-accent', 'link-neutral'].find(c => cls.includes(c)) || 'link-primary',
-          options: [
-            { label: 'Primary', value: 'link-primary' },
-            { label: 'Secondary', value: 'link-secondary' },
-            { label: 'Accent', value: 'link-accent' },
-            { label: 'Neutral', value: 'link-neutral' }
-          ]
-        }
-      ];
+      return props.concat(getBaseGeneralProps(el));
     }
   });
 
