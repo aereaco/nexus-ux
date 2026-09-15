@@ -296,6 +296,20 @@
     },
 
     // VvvebJs Dynamic Component Mutation Helpers
+    setDynamicProp: function(propKey, value) {
+      const el = toRawNode(selectedEl);
+      if (!el || !window.NexusBuilderComponents) return;
+      const prop = (activeProperties || []).find(function(p) { return p.key === propKey; });
+      if (prop) {
+        window.NexusBuilderComponents.applyProperty(el, prop, value);
+        prop.value = value;
+        inspector.className = el.className;
+        inspector.classList = el.className ? el.className.split(/\s+/).filter(Boolean) : [];
+        updateSelectedBox();
+        syncCanvasHtmlToDraft();
+      }
+    },
+
     setCompClass: function(validClasses, newClass) {
       const el = toRawNode(selectedEl);
       if (!el) return;
