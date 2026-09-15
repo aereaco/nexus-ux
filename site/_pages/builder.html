@@ -93,10 +93,51 @@
       return cur;
     },
 
-    // Helper: Gets canvas shadowRoot
+    // Helper: Gets canvas iframe body
     getCanvasRoot: function() {
-      const host = toRawNode(document.getElementById('builder-canvas-host'));
-      return host ? host.shadowRoot : null;
+      var iframe = toRawNode(document.getElementById('builder-canvas-iframe'));
+      return iframe && iframe.contentDocument ? iframe.contentDocument.body : null;
+    },
+
+    // Load template content into canvas iframe (VvvebJs-style iframe architecture)
+    _loadCanvasDoc: function(iframeProxy, path) {
+      if (!path) return;
+      var iframe = toRawNode(iframeProxy);
+      if (!iframe) return;
+      var theme = canvasTheme;
+      var baseHref = location.protocol + '//' + location.host + '/';
+
+      selectedEl = null;
+      hasSelection = false;
+      selectedBox.visible = false;
+      hoverBox.visible = false;
+      breadcrumbs = [];
+
+      fetch(path)
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+          iframe.srcdoc = '<!DOCTYPE html>'
+            + '<html lang=\'en\' data-theme=\'' + theme + '\'>'
+            + '<head>'
+            + '<base href=\'' + baseHref + '\'>'
+            + '<meta charset=\'UTF-8\'>'
+            + '<link href=\'https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css\' rel=\'stylesheet\'>'
+            + '<script src=\'https://cdn.tailwindcss.com\'></' + 'script>'
+            + '<style>body{min-height:100vh;margin:0}[contenteditable]{outline:2px solid #0d6efd!important;cursor:text!important}</style>'
+            + '</head>'
+            + '<body class=\'bg-base-100 text-base-content\'>'
+            + html
+            + '<script src=\'/_pages/builder/_canvas-events.js\'></' + 'script>'
+            + '</body></html>';
+        });
+    },
+
+    deselectElement: function() {
+      selectedEl = null;
+      hasSelection = false;
+      selectedBox.visible = false;
+      hoverBox.visible = false;
+      breadcrumbs = [];
     },
 
     // Safe Attribute & Style Modifiers for Inspector
@@ -133,13 +174,11 @@
 
     toggleCanvasTheme: function() {
       canvasTheme = canvasTheme === 'dark' ? 'light' : 'dark';
-      const host = toRawNode(document.getElementById('builder-canvas-host'));
-      if (host) {
-        host.setAttribute('data-theme', canvasTheme);
-      }
-      const root = getCanvasRoot();
-      if (root) {
-        const body = root.querySelector('body') || root.firstElementChild;
+      var iframe = toRawNode(document.getElementById('builder-canvas-iframe'));
+      if (iframe && iframe.contentDocument) {
+        var htmlEl = iframe.contentDocument.documentElement;
+        if (htmlEl) htmlEl.setAttribute('data-theme', canvasTheme);
+        var body = iframe.contentDocument.body;
         if (body) {
           body.setAttribute('data-theme', canvasTheme);
           if (canvasTheme === 'dark') {
@@ -184,11 +223,13 @@
     },
 
     changeTag: function(newTag) {
-      const el = toRawNode(selectedEl);
+      var el = toRawNode(selectedEl);
       if (!el || !el.parentNode) return;
-      const replacement = document.createElement(newTag);
+      var iframe = toRawNode(document.getElementById('builder-canvas-iframe'));
+      var ownerDoc = (iframe && iframe.contentDocument) ? iframe.contentDocument : el.ownerDocument;
+      var replacement = ownerDoc.createElement(newTag);
       replacement.innerHTML = el.innerHTML;
-      for (const a of el.attributes) {
+      for (var a of el.attributes) {
         replacement.setAttribute(a.name, a.value);
       }
       el.parentNode.replaceChild(replacement, el);
@@ -217,7 +258,9 @@
       inspector.textContent = raw.textContent || '';
       
       try {
-        const compStyle = window.getComputedStyle(raw);
+        var iframe = toRawNode(document.getElementById('builder-canvas-iframe'));
+        var iframeWin = (iframe && iframe.contentWindow) ? iframe.contentWindow : null;
+        var compStyle = iframeWin ? iframeWin.getComputedStyle(raw) : null;
         inspector.fontSize = raw.style.fontSize || (compStyle ? compStyle.fontSize : '');
         inspector.fontWeight = raw.style.fontWeight || (compStyle ? compStyle.fontWeight : '');
         inspector.fontFamily = raw.style.fontFamily || (compStyle ? compStyle.fontFamily : '');
@@ -263,23 +306,22 @@
     },
 
     updateSelectedBox: function() {
-      const el = toRawNode(selectedEl);
+      var el = toRawNode(selectedEl);
       if (!el || previewMode) {
         selectedBox.visible = false;
         hasSelection = false;
         return;
       }
-      const host = toRawNode(document.getElementById('builder-canvas-host'));
-      if (!host) return;
+      var iframe = toRawNode(document.getElementById('builder-canvas-iframe'));
+      if (!iframe) return;
       try {
-        const hostRect = host.getBoundingClientRect();
-        const elRect = el.getBoundingClientRect();
+        var elRect = el.getBoundingClientRect();
 
-        selectedBox.top = (elRect.top - hostRect.top) + host.offsetTop;
-        selectedBox.left = (elRect.left - hostRect.left) + host.offsetLeft;
+        selectedBox.top = iframe.offsetTop + elRect.top;
+        selectedBox.left = iframe.offsetLeft + elRect.left;
         selectedBox.width = elRect.width;
         selectedBox.height = elRect.height;
-        const tag = el.tagName.toLowerCase();
+        var tag = el.tagName.toLowerCase();
         selectedBox.tag = tag;
         selectedBox.id = el.id || '';
         selectedBox.isText = ['h1','h2','h3','h4','h5','h6','p','span','a','button','label','li','blockquote','td','th'].includes(tag);
@@ -289,21 +331,20 @@
     },
 
     updateHoverBox: function(el) {
-      const raw = toRawNode(el);
+      var raw = toRawNode(el);
       if (!raw || raw.nodeType !== 1 || previewMode || (selectedEl && raw === toRawNode(selectedEl))) {
         hoverBox.visible = false;
         hoveredEl = null;
         return;
       }
       hoveredEl = raw;
-      const host = toRawNode(document.getElementById('builder-canvas-host'));
-      if (!host) return;
+      var iframe = toRawNode(document.getElementById('builder-canvas-iframe'));
+      if (!iframe) return;
       try {
-        const hostRect = host.getBoundingClientRect();
-        const elRect = raw.getBoundingClientRect();
+        var elRect = raw.getBoundingClientRect();
 
-        hoverBox.top = (elRect.top - hostRect.top) + host.offsetTop;
-        hoverBox.left = (elRect.left - hostRect.left) + host.offsetLeft;
+        hoverBox.top = iframe.offsetTop + elRect.top;
+        hoverBox.left = iframe.offsetLeft + elRect.left;
         hoverBox.width = elRect.width;
         hoverBox.height = elRect.height;
         hoverBox.tag = raw.tagName.toLowerCase();
@@ -390,22 +431,31 @@
     },
 
     insertSnippet: function(templateId) {
-      const root = getCanvasRoot();
+      var root = getCanvasRoot();
       if (!root) return;
 
-      let newEl = null;
-      const tpl = document.getElementById(templateId);
+      var newEl = null;
+      var tpl = toRawNode(document.getElementById(templateId));
       if (tpl && tpl.content) {
-        const clone = tpl.content.cloneNode(true);
+        var clone = tpl.content.cloneNode(true);
         newEl = clone.firstElementChild;
       } else if (typeof templateId === 'string' && templateId.startsWith('<')) {
-        const temp = document.createElement('div');
+        var iframeRef = toRawNode(document.getElementById('builder-canvas-iframe'));
+        var iframeDoc = (iframeRef && iframeRef.contentDocument) ? iframeRef.contentDocument : null;
+        if (!iframeDoc) return;
+        var temp = iframeDoc.createElement('div');
         temp.innerHTML = templateId.trim();
         newEl = temp.firstElementChild;
       }
       if (!newEl) return;
 
-      const activeEl = toRawNode(selectedEl);
+      // Adopt node into iframe document if from a different document
+      var adoptIframe = toRawNode(document.getElementById('builder-canvas-iframe'));
+      if (adoptIframe && adoptIframe.contentDocument && newEl.ownerDocument !== adoptIframe.contentDocument) {
+        newEl = adoptIframe.contentDocument.adoptNode(newEl);
+      }
+
+      var activeEl = toRawNode(selectedEl);
       if (activeEl && activeEl.parentElement) {
         if (addSectionMode === 'inside' || activeEl.children.length > 0 || ['div', 'section', 'main', 'article', 'aside', 'header', 'footer'].includes(activeEl.tagName.toLowerCase())) {
           activeEl.appendChild(newEl);
@@ -413,8 +463,8 @@
           activeEl.parentElement.insertBefore(newEl, activeEl.nextSibling);
         }
       } else {
-        const container = root.querySelector('div, main, section') || root;
-        container.appendChild(newEl);
+        var containerEl = root.querySelector('div, main, section') || root;
+        containerEl.appendChild(newEl);
       }
 
       addSectionBoxOpen = false;
@@ -435,13 +485,6 @@
 
     loadTemplate: function(path) {
       currentDoc = path;
-      selectedEl = null;
-      selectedBox.visible = false;
-      hoverBox.visible = false;
-      window.setTimeout(function() {
-        syncCanvasHtmlToDraft();
-        refreshPageSections();
-      }, 500);
     },
 
     updateStyle: function(prop, val) {
@@ -610,7 +653,16 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
-  }">
+  }"
+  data-on-canvasselect="selectElement($evt.detail.target)"
+  data-on-canvashover="!previewMode && updateHoverBox($evt.detail.target)"
+  data-on-canvasleave="hoverBox.visible = false"
+  data-on-canvasdblclick="selectElement($evt.detail.target); selectedBox.isText = true"
+  data-on-canvasinput="inspector.textContent = ($evt.detail.text || ''); updateSelectedBox()"
+  data-on-canvasblur="selectElement($evt.detail.target); syncCanvasHtmlToDraft()"
+  data-on-canvasscroll="updateSelectedBox()"
+  data-on-canvasloaded="refreshTree(); refreshPageSections(); syncCanvasHtmlToDraft()"
+  data-on-canvasdeselect="deselectElement()">
 
   <!-- 1. VvvebJs Far-Left Navigation Sidebar (.sidebar / small-nav) -->
   <aside class="flex flex-col shrink-0 border-r border-base-content/10 bg-base-200/90 backdrop-blur-md transition-all duration-200 z-30 select-none"
