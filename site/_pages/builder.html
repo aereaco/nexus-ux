@@ -562,8 +562,16 @@
       
       const rawClasses = inspector.classList;
 
+      if (window.NexusBuilderComponents) {
+        const matched = window.NexusBuilderComponents.matchNode(raw);
+        activeComponentName = matched.name;
+        activeComponentCategory = matched.category;
+        activeProperties = matched.getProperties(raw);
+        inspector.componentType = matched.id;
+      }
+
       // 1. Dynamic Component Archetype Detection
-      let compType = 'element';
+      let compType = inspector.componentType || 'element';
       if (['section', 'header', 'footer', 'main'].includes(tag) || rawClasses.includes('hero') || raw.getAttribute('data-section')) {
         compType = 'section';
       } else if (rawClasses.includes('row') || rawClasses.includes('grid-row') || raw.getAttribute('data-grid-row')) {
