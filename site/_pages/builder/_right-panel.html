@@ -1,30 +1,33 @@
 <!-- Authentic Nexus Visual Builder #right-panel (Webstudio x VvvebJs Fusion) -->
 <aside class="w-64 sm:w-72 lg:w-80 h-full flex flex-col bg-base-100 border-l border-base-content/10 overflow-hidden select-none text-xs" id="right-panel">
 
-  <!-- Inspector Navigation Tabs: Content | Style | Advanced -->
-  <div class="flex border-b border-base-content/15 bg-base-200/50 shrink-0">
-    <button class="flex-1 py-2 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5"
-      data-class="{ 'border-primary text-primary font-bold bg-base-100 shadow-xs': propertiesSubTab === 'content', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'content' }"
-      data-on-click="propertiesSubTab = 'content'">
-      <iconify-icon icon="material-symbols-light:edit-note" class="text-sm"></iconify-icon>
-      <span>Content</span>
-    </button>
-    <button class="flex-1 py-2 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5"
-      data-class="{ 'border-primary text-primary font-bold bg-base-100 shadow-xs': propertiesSubTab === 'style', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'style' }"
-      data-on-click="propertiesSubTab = 'style'">
-      <iconify-icon icon="material-symbols-light:palette-outline" class="text-sm"></iconify-icon>
-      <span>Style</span>
-    </button>
-    <button class="flex-1 py-2 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5"
-      data-class="{ 'border-primary text-primary font-bold bg-base-100 shadow-xs': propertiesSubTab === 'advanced', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'advanced' }"
-      data-on-click="propertiesSubTab = 'advanced'">
-      <iconify-icon icon="material-symbols-light:tune" class="text-sm"></iconify-icon>
-      <span>Advanced</span>
-    </button>
-  </div>
+  <!-- Top Section: Element Inspector Area -->
+  <div class="flex-1 min-h-0 flex flex-col overflow-hidden">
 
-  <!-- State: When No Element Is Selected -->
-  <div class="p-4" data-show="!hasSelection">
+    <!-- Inspector Navigation Tabs: Content | Style | Advanced -->
+    <div class="flex border-b border-base-content/15 bg-base-200/50 shrink-0">
+      <button class="flex-1 py-2 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5"
+        data-class="{ 'border-primary text-primary font-bold bg-base-100 shadow-xs': propertiesSubTab === 'content', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'content' }"
+        data-on-click="propertiesSubTab = 'content'">
+        <iconify-icon icon="material-symbols-light:edit-note" class="text-sm"></iconify-icon>
+        <span>Content</span>
+      </button>
+      <button class="flex-1 py-2 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5"
+        data-class="{ 'border-primary text-primary font-bold bg-base-100 shadow-xs': propertiesSubTab === 'style', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'style' }"
+        data-on-click="propertiesSubTab = 'style'">
+        <iconify-icon icon="material-symbols-light:palette-outline" class="text-sm"></iconify-icon>
+        <span>Style</span>
+      </button>
+      <button class="flex-1 py-2 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5"
+        data-class="{ 'border-primary text-primary font-bold bg-base-100 shadow-xs': propertiesSubTab === 'advanced', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'advanced' }"
+        data-on-click="propertiesSubTab = 'advanced'">
+        <iconify-icon icon="material-symbols-light:tune" class="text-sm"></iconify-icon>
+        <span>Advanced</span>
+      </button>
+    </div>
+
+    <!-- State: When No Element Is Selected -->
+    <div class="p-4 flex-1 overflow-y-auto" data-show="!hasSelection">
     <div class="alert bg-base-200/70 border border-base-content/10 rounded-xl p-3 flex flex-col items-center text-center gap-2">
       <iconify-icon icon="material-symbols-light:touch-app" class="text-2xl text-primary opacity-60"></iconify-icon>
       <div>
