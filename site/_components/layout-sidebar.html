@@ -8,7 +8,8 @@
     '--color-base-content': `color-mix(in oklab, black ${100 - (#sidebarTextLightness ?? 100)}%, white)`
   }"
   data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !collapsed, 'w-0 md:w-16': collapsed && !hovered && !sidebarOpen }"
-  data-on-mouseenter="if (collapsed && !sidebarOpen) hovered = true" data-on-mouseleave="hovered = false"
+  data-on-mouseenter="sidebarHovered = true; if (collapsed && !sidebarOpen) hovered = true"
+  data-on-mouseleave="sidebarHovered = false; if (!ctxMenu?.open || ctxMenu?.source !== 'sidebar') hovered = false"
   data-effect="
     const activeMode = ($theme.isSystem ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : $theme.mode);
     if (lastThemeMode !== activeMode) {
@@ -23,6 +24,7 @@
         sidebarTextLightness = Number(localStorage.getItem('sidebarTextLightness_dark') ?? localStorage.getItem('sidebarTextLightness') ?? 100);
       }
     }
+    if (!ctxMenu?.open && !sidebarHovered && collapsed && hovered) { hovered = false; }
     if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }
   ">
 
