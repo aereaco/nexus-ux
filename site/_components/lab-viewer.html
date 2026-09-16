@@ -447,14 +447,14 @@
                             <ul tabindex="0"
                                 class="dropdown-content z-[100] menu menu-xs p-2 shadow-2xl bg-base-100 rounded-box w-56 border border-base-content/10">
                                 <template data-for="bs in baseSnippets">
-                                    <li><a data-on-click="activeSnippet = bs; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()"
+                                    <li><a data-on-click="activeSnippet = bs; $el.blur()"
                                             data-class-active="activeSnippet === bs" class="font-bold"
                                             data-bind="bs"></a></li>
                                 </template>
                                 <div class="divider my-1 opacity-20" data-show="snippets.length > 0"></div>
                                 <template data-for="s in snippets">
                                     <li class="group flex flex-row items-center justify-between">
-                                        <a data-on-click="activeSnippet = s; if (document.activeElement instanceof HTMLElement) document.activeElement.blur()"
+                                        <a data-on-click="activeSnippet = s; $el.blur()"
                                             data-class-active="activeSnippet === s"
                                             class="flex-1 flex items-center justify-between">
                                             <span data-bind="s" class="truncate"></span>
