@@ -122,7 +122,8 @@
     </div>
 
     <!-- 3. Message Stream -->
-    <div id="chat-message-stream" class="flex-1 p-4 overflow-y-auto space-y-4">
+    <div id="chat-message-stream" class="flex-1 p-4 overflow-y-auto space-y-4"
+      data-effect="if (chatbarOpen && $el) { const msgs = (chatMessages || {})[activeSessionId]; if (msgs) { $nextTick(() => { $el.scrollTop = $el.scrollHeight; }); } }">
       <template data-for="msg in getActiveMessages()">
         <div class="flex flex-col gap-1 w-full"
           data-class="{ 'items-end': !msg.isAgent && msg.sender === 'Vernon', 'items-start': msg.isAgent || msg.sender !== 'Vernon' }">
