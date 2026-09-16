@@ -2064,6 +2064,8 @@
       ];
       return props.concat(getBaseGeneralProps(el));
     }
+  });
+
   // ==========================================
   // 20. CHECKBOX ARCHETYPE (DaisyUI)
   // ==========================================
@@ -3142,7 +3144,10 @@
     }
   });
 
-  // Expose to window
+  // Expose to window and dispatch readiness event
   window.NexusBuilderComponents = Registry;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('nexus:builder-components-ready', { detail: Registry }));
+  }
 
 })();
