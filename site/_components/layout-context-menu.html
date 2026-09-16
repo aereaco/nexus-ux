@@ -1,9 +1,8 @@
-<!-- Declaratively Teleported Context Menu -->
-<template data-teleport="'body'">
-  <ul data-show="ctxMenu.open"
-    class="menu w-56 rounded-box bg-base-100 shadow-2xl border border-base-content/10 p-2 m-0 fixed z-[9999]"
-    data-style="{ top: (ctxMenu?.y || 0) + 'px', left: (ctxMenu?.x || 0) + 'px' }"
-    data-on-click_outside="ctxMenu.open = false" data-on-keydown_escape_window="ctxMenu.open = false">
+<!-- Custom Context Menu -->
+<ul data-show="ctxMenu.open"
+  class="menu w-56 rounded-box bg-base-100 shadow-2xl border border-base-content/10 p-2 m-0 fixed z-[9999]"
+  data-style="{ top: (ctxMenu?.y || 0) + 'px', left: (ctxMenu?.x || 0) + 'px' }"
+  data-on-click_outside="ctxMenu.open = false" data-on-keydown_escape_window="ctxMenu.open = false">
 
     <!-- 1. Tab Context Menu Items -->
     <li data-show="ctxMenu.type === 'tab' && ctxMenu.target">
