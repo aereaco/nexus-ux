@@ -1,5 +1,5 @@
 <!-- Search Modal (triggered by the navbar search button or Ctrl+K) -->
-<div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search" data-class-modal-open="searchOpen"
+<div class="modal modal-top sm:modal-middle" role="dialog" aria-label="Search" data-class="{ 'modal-open': searchOpen }"
   data-on-keydown_escape_window="searchOpen = false; if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }">
   <div class="modal-box bg-base-100 shadow-2xl border border-base-300 p-0 overflow-hidden flex flex-col max-w-2xl">
     <!-- Search Input Row -->
@@ -31,6 +31,8 @@
             const items = flatResults || [];
             const active = items[searchActiveIndex] || items[0];
             if (active) {
+              searchOpen = false;
+              if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
               recentSearches = [q, ...(recentSearches || []).filter(function(s) { return s !== q; })].slice(0, 6);
               let targetTabId = '';
               if (router.pageTabs) {
@@ -60,8 +62,6 @@
                 };
               }
               router.navigate(active.path);
-              searchOpen = false;
-              if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
             }
           } else {
             const recents = recentSearches || [];
