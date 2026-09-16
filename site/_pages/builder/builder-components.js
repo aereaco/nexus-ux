@@ -2064,6 +2064,1082 @@
       ];
       return props.concat(getBaseGeneralProps(el));
     }
+  // ==========================================
+  // 20. CHECKBOX ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'checkbox',
+    name: 'Checkbox',
+    category: 'Data Inputs',
+    match: function(el) {
+      const tag = getTag(el);
+      const cls = safeClasses(el);
+      return tag === 'input' && el.type === 'checkbox' && (cls.includes('checkbox') || (!cls.includes('toggle') && !cls.includes('drawer-toggle')));
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Checkbox Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'checked',
+          name: 'Checked',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'checked',
+          value: el.checked || el.hasAttribute('checked')
+        },
+        {
+          key: 'variant',
+          name: 'Color Variant',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['checkbox-primary', 'checkbox-secondary', 'checkbox-accent', 'checkbox-success', 'checkbox-warning', 'checkbox-info', 'checkbox-error'],
+          value: ['checkbox-primary', 'checkbox-secondary', 'checkbox-accent', 'checkbox-success', 'checkbox-warning', 'checkbox-info', 'checkbox-error'].find(v => cls.includes(v)) || 'checkbox-primary',
+          options: [
+            { label: 'Primary', value: 'checkbox-primary' },
+            { label: 'Secondary', value: 'checkbox-secondary' },
+            { label: 'Accent', value: 'checkbox-accent' },
+            { label: 'Success', value: 'checkbox-success' },
+            { label: 'Warning', value: 'checkbox-warning' },
+            { label: 'Info', value: 'checkbox-info' },
+            { label: 'Error', value: 'checkbox-error' }
+          ]
+        },
+        {
+          key: 'size',
+          name: 'Size',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['checkbox-xs', 'checkbox-sm', 'checkbox-md', 'checkbox-lg', 'checkbox-xl'],
+          value: ['checkbox-xs', 'checkbox-sm', 'checkbox-md', 'checkbox-lg', 'checkbox-xl'].find(s => cls.includes(s)) || 'checkbox-md',
+          options: [
+            { label: 'Tiny (XS)', value: 'checkbox-xs' },
+            { label: 'Small (SM)', value: 'checkbox-sm' },
+            { label: 'Medium (MD)', value: 'checkbox-md' },
+            { label: 'Large (LG)', value: 'checkbox-lg' },
+            { label: 'Extra Large (XL)', value: 'checkbox-xl' }
+          ]
+        },
+        {
+          key: 'disabled',
+          name: 'Disabled',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'disabled',
+          value: el.disabled || el.hasAttribute('disabled')
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 21. TOGGLE ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'toggle',
+    name: 'Toggle Switch',
+    category: 'Data Inputs',
+    match: function(el) {
+      const tag = getTag(el);
+      const cls = safeClasses(el);
+      return tag === 'input' && el.type === 'checkbox' && cls.includes('toggle');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Toggle Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'checked',
+          name: 'Active / Checked',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'checked',
+          value: el.checked || el.hasAttribute('checked')
+        },
+        {
+          key: 'variant',
+          name: 'Color Variant',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['toggle-primary', 'toggle-secondary', 'toggle-accent', 'toggle-success', 'toggle-warning', 'toggle-info', 'toggle-error'],
+          value: ['toggle-primary', 'toggle-secondary', 'toggle-accent', 'toggle-success', 'toggle-warning', 'toggle-info', 'toggle-error'].find(v => cls.includes(v)) || 'toggle-primary',
+          options: [
+            { label: 'Primary', value: 'toggle-primary' },
+            { label: 'Secondary', value: 'toggle-secondary' },
+            { label: 'Accent', value: 'toggle-accent' },
+            { label: 'Success', value: 'toggle-success' },
+            { label: 'Warning', value: 'toggle-warning' },
+            { label: 'Info', value: 'toggle-info' },
+            { label: 'Error', value: 'toggle-error' }
+          ]
+        },
+        {
+          key: 'size',
+          name: 'Size',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['toggle-xs', 'toggle-sm', 'toggle-md', 'toggle-lg', 'toggle-xl'],
+          value: ['toggle-xs', 'toggle-sm', 'toggle-md', 'toggle-lg', 'toggle-xl'].find(s => cls.includes(s)) || 'toggle-md',
+          options: [
+            { label: 'Tiny (XS)', value: 'toggle-xs' },
+            { label: 'Small (SM)', value: 'toggle-sm' },
+            { label: 'Medium (MD)', value: 'toggle-md' },
+            { label: 'Large (LG)', value: 'toggle-lg' },
+            { label: 'Extra Large (XL)', value: 'toggle-xl' }
+          ]
+        },
+        {
+          key: 'disabled',
+          name: 'Disabled',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'disabled',
+          value: el.disabled || el.hasAttribute('disabled')
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 22. RADIO ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'radio',
+    name: 'Radio Button',
+    category: 'Data Inputs',
+    match: function(el) {
+      const tag = getTag(el);
+      const cls = safeClasses(el);
+      return tag === 'input' && el.type === 'radio' && !cls.includes('mask');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Radio Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'name',
+          name: 'Group Name',
+          section: 'default',
+          type: 'text',
+          htmlAttr: 'name',
+          value: el.getAttribute('name') || ''
+        },
+        {
+          key: 'value',
+          name: 'Radio Value',
+          section: 'default',
+          type: 'text',
+          htmlAttr: 'value',
+          value: el.getAttribute('value') || ''
+        },
+        {
+          key: 'checked',
+          name: 'Selected / Checked',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'checked',
+          value: el.checked || el.hasAttribute('checked')
+        },
+        {
+          key: 'variant',
+          name: 'Color Variant',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['radio-primary', 'radio-secondary', 'radio-accent', 'radio-success', 'radio-warning', 'radio-info', 'radio-error'],
+          value: ['radio-primary', 'radio-secondary', 'radio-accent', 'radio-success', 'radio-warning', 'radio-info', 'radio-error'].find(v => cls.includes(v)) || 'radio-primary',
+          options: [
+            { label: 'Primary', value: 'radio-primary' },
+            { label: 'Secondary', value: 'radio-secondary' },
+            { label: 'Accent', value: 'radio-accent' },
+            { label: 'Success', value: 'radio-success' },
+            { label: 'Warning', value: 'radio-warning' },
+            { label: 'Info', value: 'radio-info' },
+            { label: 'Error', value: 'radio-error' }
+          ]
+        },
+        {
+          key: 'size',
+          name: 'Size',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['radio-xs', 'radio-sm', 'radio-md', 'radio-lg', 'radio-xl'],
+          value: ['radio-xs', 'radio-sm', 'radio-md', 'radio-lg', 'radio-xl'].find(s => cls.includes(s)) || 'radio-md',
+          options: [
+            { label: 'Tiny (XS)', value: 'radio-xs' },
+            { label: 'Small (SM)', value: 'radio-sm' },
+            { label: 'Medium (MD)', value: 'radio-md' },
+            { label: 'Large (LG)', value: 'radio-lg' },
+            { label: 'Extra Large (XL)', value: 'radio-xl' }
+          ]
+        },
+        {
+          key: 'disabled',
+          name: 'Disabled',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'disabled',
+          value: el.disabled || el.hasAttribute('disabled')
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 23. RANGE ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'range',
+    name: 'Range Slider',
+    category: 'Data Inputs',
+    match: function(el) {
+      return getTag(el) === 'input' && el.type === 'range';
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Range Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'value',
+          name: 'Current Value',
+          section: 'default',
+          type: 'number',
+          htmlAttr: 'value',
+          value: el.value || el.getAttribute('value') || 50
+        },
+        {
+          key: 'min',
+          name: 'Minimum',
+          section: 'default',
+          type: 'number',
+          htmlAttr: 'min',
+          value: el.getAttribute('min') || 0
+        },
+        {
+          key: 'max',
+          name: 'Maximum',
+          section: 'default',
+          type: 'number',
+          htmlAttr: 'max',
+          value: el.getAttribute('max') || 100
+        },
+        {
+          key: 'step',
+          name: 'Step Interval',
+          section: 'default',
+          type: 'number',
+          htmlAttr: 'step',
+          value: el.getAttribute('step') || 1
+        },
+        {
+          key: 'variant',
+          name: 'Color Variant',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['range-primary', 'range-secondary', 'range-accent', 'range-success', 'range-warning', 'range-info', 'range-error'],
+          value: ['range-primary', 'range-secondary', 'range-accent', 'range-success', 'range-warning', 'range-info', 'range-error'].find(v => cls.includes(v)) || 'range-primary',
+          options: [
+            { label: 'Primary', value: 'range-primary' },
+            { label: 'Secondary', value: 'range-secondary' },
+            { label: 'Accent', value: 'range-accent' },
+            { label: 'Success', value: 'range-success' },
+            { label: 'Warning', value: 'range-warning' },
+            { label: 'Info', value: 'range-info' },
+            { label: 'Error', value: 'range-error' }
+          ]
+        },
+        {
+          key: 'size',
+          name: 'Size',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['range-xs', 'range-sm', 'range-md', 'range-lg', 'range-xl'],
+          value: ['range-xs', 'range-sm', 'range-md', 'range-lg', 'range-xl'].find(s => cls.includes(s)) || 'range-md',
+          options: [
+            { label: 'Tiny (XS)', value: 'range-xs' },
+            { label: 'Small (SM)', value: 'range-sm' },
+            { label: 'Medium (MD)', value: 'range-md' },
+            { label: 'Large (LG)', value: 'range-lg' },
+            { label: 'Extra Large (XL)', value: 'range-xl' }
+          ]
+        },
+        {
+          key: 'disabled',
+          name: 'Disabled',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'disabled',
+          value: el.disabled || el.hasAttribute('disabled')
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 24. FILE INPUT ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'file-input',
+    name: 'File Input',
+    category: 'Data Inputs',
+    match: function(el) {
+      return getTag(el) === 'input' && el.type === 'file';
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'File Input Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'accept',
+          name: 'Accepted Types (accept)',
+          section: 'default',
+          type: 'text',
+          htmlAttr: 'accept',
+          value: el.getAttribute('accept') || ''
+        },
+        {
+          key: 'multiple',
+          name: 'Allow Multiple Files',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'multiple',
+          value: el.hasAttribute('multiple')
+        },
+        {
+          key: 'bordered',
+          name: 'Bordered Style',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          validValues: ['file-input-bordered'],
+          value: cls.includes('file-input-bordered') ? 'file-input-bordered' : ''
+        },
+        {
+          key: 'ghost',
+          name: 'Ghost Style',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          validValues: ['file-input-ghost'],
+          value: cls.includes('file-input-ghost') ? 'file-input-ghost' : ''
+        },
+        {
+          key: 'variant',
+          name: 'Color Variant',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['file-input-primary', 'file-input-secondary', 'file-input-accent', 'file-input-info', 'file-input-success', 'file-input-warning', 'file-input-error'],
+          value: ['file-input-primary', 'file-input-secondary', 'file-input-accent', 'file-input-info', 'file-input-success', 'file-input-warning', 'file-input-error'].find(v => cls.includes(v)) || '',
+          options: [
+            { label: 'Default', value: '' },
+            { label: 'Primary', value: 'file-input-primary' },
+            { label: 'Secondary', value: 'file-input-secondary' },
+            { label: 'Accent', value: 'file-input-accent' },
+            { label: 'Info', value: 'file-input-info' },
+            { label: 'Success', value: 'file-input-success' },
+            { label: 'Warning', value: 'file-input-warning' },
+            { label: 'Error', value: 'file-input-error' }
+          ]
+        },
+        {
+          key: 'size',
+          name: 'Size',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['file-input-xs', 'file-input-sm', 'file-input-md', 'file-input-lg', 'file-input-xl'],
+          value: ['file-input-xs', 'file-input-sm', 'file-input-md', 'file-input-lg', 'file-input-xl'].find(s => cls.includes(s)) || 'file-input-md',
+          options: [
+            { label: 'Tiny (XS)', value: 'file-input-xs' },
+            { label: 'Small (SM)', value: 'file-input-sm' },
+            { label: 'Medium (MD)', value: 'file-input-md' },
+            { label: 'Large (LG)', value: 'file-input-lg' },
+            { label: 'Extra Large (XL)', value: 'file-input-xl' }
+          ]
+        },
+        {
+          key: 'disabled',
+          name: 'Disabled',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'disabled',
+          value: el.disabled || el.hasAttribute('disabled')
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 25. TEXT INPUT ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'input',
+    name: 'Text Input',
+    category: 'Data Inputs',
+    match: function(el) {
+      return getTag(el) === 'input' && !['checkbox', 'radio', 'range', 'file', 'button', 'submit', 'reset'].includes(el.type);
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Input Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'type',
+          name: 'Input Type',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'type',
+          value: el.type || 'text',
+          options: [
+            { label: 'Text', value: 'text' },
+            { label: 'Email', value: 'email' },
+            { label: 'Password', value: 'password' },
+            { label: 'Number', value: 'number' },
+            { label: 'Telephone', value: 'tel' },
+            { label: 'URL', value: 'url' },
+            { label: 'Search', value: 'search' },
+            { label: 'Date', value: 'date' },
+            { label: 'Time', value: 'time' }
+          ]
+        },
+        {
+          key: 'placeholder',
+          name: 'Placeholder',
+          section: 'default',
+          type: 'text',
+          htmlAttr: 'placeholder',
+          value: el.getAttribute('placeholder') || ''
+        },
+        {
+          key: 'value',
+          name: 'Input Value',
+          section: 'default',
+          type: 'text',
+          htmlAttr: 'value',
+          value: el.value || el.getAttribute('value') || ''
+        },
+        {
+          key: 'bordered',
+          name: 'Bordered Style',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          validValues: ['input-bordered'],
+          value: cls.includes('input-bordered') ? 'input-bordered' : ''
+        },
+        {
+          key: 'ghost',
+          name: 'Ghost Style',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          validValues: ['input-ghost'],
+          value: cls.includes('input-ghost') ? 'input-ghost' : ''
+        },
+        {
+          key: 'variant',
+          name: 'Color Variant',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['input-primary', 'input-secondary', 'input-accent', 'input-info', 'input-success', 'input-warning', 'input-error'],
+          value: ['input-primary', 'input-secondary', 'input-accent', 'input-info', 'input-success', 'input-warning', 'input-error'].find(v => cls.includes(v)) || '',
+          options: [
+            { label: 'Default', value: '' },
+            { label: 'Primary', value: 'input-primary' },
+            { label: 'Secondary', value: 'input-secondary' },
+            { label: 'Accent', value: 'input-accent' },
+            { label: 'Info', value: 'input-info' },
+            { label: 'Success', value: 'input-success' },
+            { label: 'Warning', value: 'input-warning' },
+            { label: 'Error', value: 'input-error' }
+          ]
+        },
+        {
+          key: 'size',
+          name: 'Size',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['input-xs', 'input-sm', 'input-md', 'input-lg', 'input-xl'],
+          value: ['input-xs', 'input-sm', 'input-md', 'input-lg', 'input-xl'].find(s => cls.includes(s)) || 'input-md',
+          options: [
+            { label: 'Tiny (XS)', value: 'input-xs' },
+            { label: 'Small (SM)', value: 'input-sm' },
+            { label: 'Medium (MD)', value: 'input-md' },
+            { label: 'Large (LG)', value: 'input-lg' },
+            { label: 'Extra Large (XL)', value: 'input-xl' }
+          ]
+        },
+        {
+          key: 'disabled',
+          name: 'Disabled',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'disabled',
+          value: el.disabled || el.hasAttribute('disabled')
+        },
+        {
+          key: 'readonly',
+          name: 'Read-only',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'readonly',
+          value: el.readOnly || el.hasAttribute('readonly')
+        },
+        {
+          key: 'required',
+          name: 'Required',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'required',
+          value: el.required || el.hasAttribute('required')
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 26. TEXTAREA ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'textarea',
+    name: 'Textarea',
+    category: 'Data Inputs',
+    match: function(el) {
+      return getTag(el) === 'textarea';
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Textarea Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'placeholder',
+          name: 'Placeholder',
+          section: 'default',
+          type: 'text',
+          htmlAttr: 'placeholder',
+          value: el.getAttribute('placeholder') || ''
+        },
+        {
+          key: 'rows',
+          name: 'Visible Rows',
+          section: 'default',
+          type: 'number',
+          htmlAttr: 'rows',
+          value: el.getAttribute('rows') || 3
+        },
+        {
+          key: 'value',
+          name: 'Content Value',
+          section: 'default',
+          type: 'textarea',
+          value: el.value || el.textContent || '',
+          onChange: function(node, val) {
+            node.value = val;
+            node.textContent = val;
+          }
+        },
+        {
+          key: 'bordered',
+          name: 'Bordered Style',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          validValues: ['textarea-bordered'],
+          value: cls.includes('textarea-bordered') ? 'textarea-bordered' : ''
+        },
+        {
+          key: 'ghost',
+          name: 'Ghost Style',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          validValues: ['textarea-ghost'],
+          value: cls.includes('textarea-ghost') ? 'textarea-ghost' : ''
+        },
+        {
+          key: 'variant',
+          name: 'Color Variant',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['textarea-primary', 'textarea-secondary', 'textarea-accent', 'textarea-info', 'textarea-success', 'textarea-warning', 'textarea-error'],
+          value: ['textarea-primary', 'textarea-secondary', 'textarea-accent', 'textarea-info', 'textarea-success', 'textarea-warning', 'textarea-error'].find(v => cls.includes(v)) || '',
+          options: [
+            { label: 'Default', value: '' },
+            { label: 'Primary', value: 'textarea-primary' },
+            { label: 'Secondary', value: 'textarea-secondary' },
+            { label: 'Accent', value: 'textarea-accent' },
+            { label: 'Info', value: 'textarea-info' },
+            { label: 'Success', value: 'textarea-success' },
+            { label: 'Warning', value: 'textarea-warning' },
+            { label: 'Error', value: 'textarea-error' }
+          ]
+        },
+        {
+          key: 'size',
+          name: 'Size',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['textarea-xs', 'textarea-sm', 'textarea-md', 'textarea-lg', 'textarea-xl'],
+          value: ['textarea-xs', 'textarea-sm', 'textarea-md', 'textarea-lg', 'textarea-xl'].find(s => cls.includes(s)) || 'textarea-md',
+          options: [
+            { label: 'Tiny (XS)', value: 'textarea-xs' },
+            { label: 'Small (SM)', value: 'textarea-sm' },
+            { label: 'Medium (MD)', value: 'textarea-md' },
+            { label: 'Large (LG)', value: 'textarea-lg' },
+            { label: 'Extra Large (XL)', value: 'textarea-xl' }
+          ]
+        },
+        {
+          key: 'disabled',
+          name: 'Disabled',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'disabled',
+          value: el.disabled || el.hasAttribute('disabled')
+        },
+        {
+          key: 'readonly',
+          name: 'Read-only',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'readonly',
+          value: el.readOnly || el.hasAttribute('readonly')
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 27. SELECT ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'select',
+    name: 'Select Dropdown',
+    category: 'Data Inputs',
+    match: function(el) {
+      return getTag(el) === 'select';
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Select Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'bordered',
+          name: 'Bordered Style',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          validValues: ['select-bordered'],
+          value: cls.includes('select-bordered') ? 'select-bordered' : ''
+        },
+        {
+          key: 'ghost',
+          name: 'Ghost Style',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          validValues: ['select-ghost'],
+          value: cls.includes('select-ghost') ? 'select-ghost' : ''
+        },
+        {
+          key: 'variant',
+          name: 'Color Variant',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['select-primary', 'select-secondary', 'select-accent', 'select-info', 'select-success', 'select-warning', 'select-error'],
+          value: ['select-primary', 'select-secondary', 'select-accent', 'select-info', 'select-success', 'select-warning', 'select-error'].find(v => cls.includes(v)) || '',
+          options: [
+            { label: 'Default', value: '' },
+            { label: 'Primary', value: 'select-primary' },
+            { label: 'Secondary', value: 'select-secondary' },
+            { label: 'Accent', value: 'select-accent' },
+            { label: 'Info', value: 'select-info' },
+            { label: 'Success', value: 'select-success' },
+            { label: 'Warning', value: 'select-warning' },
+            { label: 'Error', value: 'select-error' }
+          ]
+        },
+        {
+          key: 'size',
+          name: 'Size',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['select-xs', 'select-sm', 'select-md', 'select-lg', 'select-xl'],
+          value: ['select-xs', 'select-sm', 'select-md', 'select-lg', 'select-xl'].find(s => cls.includes(s)) || 'select-md',
+          options: [
+            { label: 'Tiny (XS)', value: 'select-xs' },
+            { label: 'Small (SM)', value: 'select-sm' },
+            { label: 'Medium (MD)', value: 'select-md' },
+            { label: 'Large (LG)', value: 'select-lg' },
+            { label: 'Extra Large (XL)', value: 'select-xl' }
+          ]
+        },
+        {
+          key: 'multiple',
+          name: 'Multiple Selection',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'multiple',
+          value: el.hasAttribute('multiple')
+        },
+        {
+          key: 'disabled',
+          name: 'Disabled',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'disabled',
+          value: el.disabled || el.hasAttribute('disabled')
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 28. RATING ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'rating',
+    name: 'Rating Stars',
+    category: 'Data Inputs',
+    match: function(el) {
+      return safeClasses(el).includes('rating');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Rating Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const firstMask = el.querySelector('.mask');
+      const currentShape = firstMask && firstMask.className.includes('mask-heart') ? 'mask-heart' : 'mask-star-2';
+      const props = [
+        {
+          key: 'shape',
+          name: 'Rating Shape',
+          section: 'default',
+          type: 'select',
+          value: currentShape,
+          options: [
+            { label: 'Star', value: 'mask-star-2' },
+            { label: 'Heart', value: 'mask-heart' }
+          ],
+          onChange: function(node, val) {
+            node.querySelectorAll('input.mask').forEach(function(inp) {
+              inp.classList.remove('mask-star-2', 'mask-heart');
+              inp.classList.add(val);
+            });
+          }
+        },
+        {
+          key: 'size',
+          name: 'Size',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['rating-xs', 'rating-sm', 'rating-md', 'rating-lg', 'rating-xl'],
+          value: ['rating-xs', 'rating-sm', 'rating-md', 'rating-lg', 'rating-xl'].find(s => cls.includes(s)) || 'rating-sm',
+          options: [
+            { label: 'Tiny (XS)', value: 'rating-xs' },
+            { label: 'Small (SM)', value: 'rating-sm' },
+            { label: 'Medium (MD)', value: 'rating-md' },
+            { label: 'Large (LG)', value: 'rating-lg' },
+            { label: 'Extra Large (XL)', value: 'rating-xl' }
+          ]
+        },
+        {
+          key: 'half',
+          name: 'Half Star Support',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          validValues: ['rating-half'],
+          value: cls.includes('rating-half') ? 'rating-half' : ''
+        },
+        {
+          key: 'starCount',
+          name: 'Stars Count (1-10)',
+          section: 'default',
+          type: 'number',
+          value: el.querySelectorAll('input[type="radio"]').length || 5,
+          onChange: function(node, val) {
+            const count = Math.max(1, Math.min(10, parseInt(val, 10) || 5));
+            const currentInputs = Array.from(node.querySelectorAll('input[type="radio"]'));
+            const radioName = (currentInputs[0] && currentInputs[0].name) || 'rating-' + Math.floor(Math.random()*1000);
+            const maskClass = (currentInputs[0] && currentInputs[0].className.includes('mask-heart')) ? 'mask-heart' : 'mask-star-2';
+            node.innerHTML = '';
+            for (let i = 1; i <= count; i++) {
+              const inp = document.createElement('input');
+              inp.type = 'radio';
+              inp.name = radioName;
+              inp.className = `mask ${maskClass} bg-warning`;
+              if (i === Math.ceil(count / 2)) inp.checked = true;
+              node.appendChild(inp);
+            }
+          }
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 29. INPUT GROUP ARCHETYPE (DaisyUI Join)
+  // ==========================================
+  Registry.register({
+    id: 'input-group',
+    name: 'Input Group (Join)',
+    category: 'Data Inputs',
+    match: function(el) {
+      const cls = safeClasses(el);
+      return cls.includes('join') && !!el.querySelector('input');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Input Group Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'direction',
+          name: 'Layout Direction',
+          section: 'default',
+          type: 'buttons',
+          htmlAttr: 'class',
+          validValues: ['join-horizontal', 'join-vertical'],
+          value: cls.includes('join-vertical') ? 'join-vertical' : 'join-horizontal',
+          options: [
+            { label: 'Horizontal', value: 'join-horizontal' },
+            { label: 'Vertical', value: 'join-vertical' }
+          ]
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 30. BUTTON GROUP ARCHETYPE (DaisyUI Join)
+  // ==========================================
+  Registry.register({
+    id: 'button-group',
+    name: 'Button Group (Join)',
+    category: 'Components',
+    match: function(el) {
+      const cls = safeClasses(el);
+      return cls.includes('join') && !el.querySelector('input') && !!el.querySelector('.btn');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Button Group Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'direction',
+          name: 'Layout Direction',
+          section: 'default',
+          type: 'buttons',
+          htmlAttr: 'class',
+          validValues: ['join-horizontal', 'join-vertical'],
+          value: cls.includes('join-vertical') ? 'join-vertical' : 'join-horizontal',
+          options: [
+            { label: 'Horizontal', value: 'join-horizontal' },
+            { label: 'Vertical', value: 'join-vertical' }
+          ]
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 31. BUTTON TOOLBAR ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'button-toolbar',
+    name: 'Button Toolbar',
+    category: 'Components',
+    match: function(el) {
+      const cls = safeClasses(el);
+      return cls.includes('btn-toolbar') || (cls.includes('flex') && el.querySelectorAll('.join').length > 1);
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Toolbar Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'gap',
+          name: 'Button Group Spacing',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['gap-1', 'gap-2', 'gap-3', 'gap-4', 'gap-6'],
+          value: ['gap-1', 'gap-2', 'gap-3', 'gap-4', 'gap-6'].find(g => cls.includes(g)) || 'gap-2',
+          options: [
+            { label: 'Tight (gap-1)', value: 'gap-1' },
+            { label: 'Normal (gap-2)', value: 'gap-2' },
+            { label: 'Medium (gap-3)', value: 'gap-3' },
+            { label: 'Wide (gap-4)', value: 'gap-4' },
+            { label: 'Large (gap-6)', value: 'gap-6' }
+          ]
+        },
+        {
+          key: 'justify',
+          name: 'Alignment',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['justify-start', 'justify-center', 'justify-end', 'justify-between'],
+          value: ['justify-start', 'justify-center', 'justify-end', 'justify-between'].find(j => cls.includes(j)) || 'justify-start',
+          options: [
+            { label: 'Start (Left)', value: 'justify-start' },
+            { label: 'Center', value: 'justify-center' },
+            { label: 'End (Right)', value: 'justify-end' },
+            { label: 'Space Between', value: 'justify-between' }
+          ]
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 32. FORM ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'form',
+    name: 'Form Container',
+    category: 'Data Inputs',
+    match: function(el) {
+      return getTag(el) === 'form';
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Form Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const props = [
+        {
+          key: 'action',
+          name: 'Action URL',
+          section: 'default',
+          type: 'text',
+          htmlAttr: 'action',
+          value: el.getAttribute('action') || ''
+        },
+        {
+          key: 'method',
+          name: 'HTTP Method',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'method',
+          value: (el.getAttribute('method') || 'GET').toUpperCase(),
+          options: [
+            { label: 'GET', value: 'GET' },
+            { label: 'POST', value: 'POST' },
+            { label: 'dialog', value: 'dialog' }
+          ]
+        },
+        {
+          key: 'autocomplete',
+          name: 'Autocomplete',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'autocomplete',
+          value: el.getAttribute('autocomplete') || 'on',
+          options: [
+            { label: 'On', value: 'on' },
+            { label: 'Off', value: 'off' }
+          ]
+        },
+        {
+          key: 'novalidate',
+          name: 'Disable HTML Validation (novalidate)',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'novalidate',
+          value: el.hasAttribute('novalidate')
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
   });
 
   // Expose to window
