@@ -1319,6 +1319,7 @@
   data-on-canvasscroll="updateSelectedBox()"
   data-on-canvasloaded="refreshTree(); refreshPageSections(); syncCanvasHtmlToDraft()"
   data-on-canvasdeselect="deselectElement()"
+  data-on-nexus:builder-components-ready_window="if (selectedEl) selectElement(selectedEl)"
   data-on-keydown_window="if (($evt.ctrlKey || $evt.metaKey) && $evt.key.toLowerCase() === 's') { $evt.preventDefault(); saveCanvasDraft(); }">
 
   <!-- Main Builder Workspace (.main / #vvveb-builder) -->
