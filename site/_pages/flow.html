@@ -869,9 +869,12 @@
         <!-- Delete Action -->
         <div class="pt-1 flex justify-end">
           <button class="btn btn-ghost btn-xs text-error gap-1 hover:bg-error/10" data-on-click="
-              edges = edges.filter(e => e.id !== activeEdge.id);
-              activeEdge = null;
-              document.getElementById('flow-modal-edge-editor').close();
+              try {
+                edges = edges.filter(e => e.id !== activeEdge.id);
+                activeEdge = null;
+              } finally {
+                document.getElementById('flow-modal-edge-editor')?.close();
+              }
             ">
             <iconify-icon icon="material-symbols-light:delete" class="text-sm"></iconify-icon>
             Delete Wire Connector
@@ -904,17 +907,20 @@
                 return;
               }
             }
-            const idx = edges.findIndex(e => e.id === activeEdge.id);
-            if (idx !== -1) {
-              edges[idx].label = activeEdge.label;
-              edges[idx].type = activeEdge.type;
-              edges[idx].markerEnd = activeEdge.markerEnd;
-              edges[idx].animated = activeEdge.animated;
-              edges[idx].source = activeEdge.source;
-              edges[idx].target = activeEdge.target;
-              edges = [...edges];
+            try {
+              const idx = edges.findIndex(e => e.id === activeEdge.id);
+              if (idx !== -1) {
+                edges[idx].label = activeEdge.label;
+                edges[idx].type = activeEdge.type;
+                edges[idx].markerEnd = activeEdge.markerEnd;
+                edges[idx].animated = activeEdge.animated;
+                edges[idx].source = activeEdge.source;
+                edges[idx].target = activeEdge.target;
+                edges = [...edges];
+              }
+            } finally {
+              document.getElementById('flow-modal-edge-editor')?.close();
             }
-            document.getElementById('flow-modal-edge-editor').close();
           ">
           <iconify-icon icon="material-symbols-light:check"></iconify-icon>
           Save Changes
