@@ -319,7 +319,10 @@
         <button class="btn btn-ghost btn-sm"
           data-on-click="showConfirmDelete = false; showConfirmClear = false; activeTodo = null">No, Keep it</button>
         <button class="btn btn-error btn-sm text-white px-6 shadow-md" data-on-click="
-            if (showConfirmDelete) {
+            const isDel = showConfirmDelete;
+            showConfirmDelete = false;
+            showConfirmClear = false;
+            if (isDel) {
               if (activeTodo) {
                 const idx = todos.findIndex(t => t.id === activeTodo.id);
                 if (idx !== -1) todos.splice(idx, 1);
@@ -328,9 +331,7 @@
             } else {
               todos.splice(0, todos.length, ...todos.filter(t => !t.completed));
             }
-            $saveTodos(todos);
-            showConfirmDelete = false;
-            showConfirmClear = false;
+            try { $saveTodos(todos); } catch (e) {}
           ">Yes, <span data-bind="showConfirmDelete ? 'Delete' : 'Clear'"></span></button>
       </div>
     </div>
