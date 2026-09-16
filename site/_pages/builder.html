@@ -668,7 +668,7 @@
         ];
         inspector.componentType = matched.id;
       } else {
-        if (!document.querySelector('script[src*="builder-components.js"]')) {
+        if (!Array.from(document.scripts).some(function(s) { return s.src && s.src.indexOf('builder-components.js') !== -1; })) {
           const s = document.createElement('script');
           s.src = '/_pages/builder/builder-components.js?v=6';
           document.head.appendChild(s);
