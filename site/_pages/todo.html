@@ -259,7 +259,7 @@
         <textarea data-show="isEditing"
           class="textarea textarea-bordered w-full text-base sm:text-lg font-medium flex-1 min-h-[100px] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all leading-relaxed"
           data-bind="editTempText" placeholder="Describe your task..."
-          data-effect="if (isEditing && $el) { $el.focus(); $el.select(); }" data-on-keydown_ctrl_enter="
+          data-on-keydown_ctrl_enter="
             if (editTempText.trim()) {
               activeTodo.text = editTempText.trim();
               isEditing = false;
@@ -282,7 +282,7 @@
         </button>
         <div class="flex items-center gap-2">
           <div data-show="!isEditing" class="flex gap-2">
-            <button class="btn btn-ghost gap-2 px-6" data-on-click="isEditing = true; editTempText = activeTodo.text">
+            <button class="btn btn-ghost gap-2 px-6" data-on-click="isEditing = true; editTempText = activeTodo.text; $nextTick().then(() => { const ta = $('textarea'); ta?.focus(); ta?.select(); })">
               <iconify-icon icon="material-symbols-light:edit-outline" class="text-xl"></iconify-icon>
               Edit
             </button>
