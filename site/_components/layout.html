@@ -355,11 +355,12 @@
       notify: (titleOrMsg, message = '', type = 'success', priority = 'normal', dur = 7000) => {
         const actualTitle = message ? titleOrMsg : (type.charAt(0).toUpperCase() + type.slice(1));
         const actualMsg = message || titleOrMsg;
-        const id = 'notif-' + window.Date.now() + '-' + Math.floor(Math.random() * 1000);
-        const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
-        g.notifications = [{ id, title: actualTitle, message: actualMsg, type, priority, time: 'Just now', read: false }, ...(g.notifications || [])];
-        g.toasts = [...(g.toasts || []), { id, title: actualTitle, message: actualMsg, type, duration: dur }];
-        setTimeout(() => { g.toasts = (g.toasts || []).filter(t => t.id !== id); }, dur);
+        const id = 'notif-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+        notifications = [{ id, title: actualTitle, message: actualMsg, type, priority, time: 'Just now', read: false }, ...(notifications || [])];
+        toasts = [...(toasts || []), { id, title: actualTitle, message: actualMsg, type, duration: dur }];
+        window.setTimeout(() => {
+          toasts = (toasts || []).filter(t => t.id !== id);
+        }, dur);
       },
       chatbarOpen: false,
       chatbarDocked: localStorage.chatbarDocked === 'true',
