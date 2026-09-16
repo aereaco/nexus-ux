@@ -667,6 +667,17 @@
           { id: 'general', header: 'General' }
         ];
         inspector.componentType = matched.id;
+      } else {
+        if (!document.querySelector('script[src*="builder-components.js"]')) {
+          const s = document.createElement('script');
+          s.src = '/_pages/builder/builder-components.js?v=5';
+          document.head.appendChild(s);
+        }
+        window.addEventListener('nexus:builder-components-ready', function onReady() {
+          if (selectedEl === raw) {
+            selectElement(raw);
+          }
+        }, { once: true });
       }
 
       // 1. Dynamic Component Archetype Detection
