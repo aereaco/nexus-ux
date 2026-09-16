@@ -483,9 +483,6 @@
         g.chatFabOpen = false;
         const sess = (g.chatSessions || []).find(s => s.id === id);
         if (sess && sess.unread > 0) sess.unread = 0;
-        window.Nexus?.coordinator?.runtimeContext?.$nextTick?.(() => {
-          document.getElementById('chat-composer-input')?.focus();
-        });
       },
       closeChatbar: () => {
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
@@ -565,11 +562,6 @@
         
         g.chatMessages = { ...g.chatMessages, [sId]: msgs };
         g.chatInputText = '';
-        
-        window.Nexus?.coordinator?.runtimeContext?.$nextTick?.(() => {
-          const el = document.getElementById('chat-message-stream');
-          if (el) el.scrollTop = el.scrollHeight;
-        });
 
         if (sId === 'session-copilot' || txt.toLowerCase().includes('@nexus') || txt.toLowerCase().includes('@copilot') || txt.toLowerCase().includes('@finance') || txt.toLowerCase().includes('@agent') || txt.toLowerCase().includes('po') || txt.toLowerCase().includes('status')) {
           setTimeout(() => {
@@ -586,10 +578,6 @@
                 : 'Variance report updated and synchronized with inventory ledger. Purchase order #2026-Q3-088 status: Verified.'
             });
             g.chatMessages = { ...g.chatMessages, [sId]: curMsgs };
-            window.Nexus?.coordinator?.runtimeContext?.$nextTick?.(() => {
-              const el = document.getElementById('chat-message-stream');
-              if (el) el.scrollTop = el.scrollHeight;
-            });
           }, 800);
         }
       },
