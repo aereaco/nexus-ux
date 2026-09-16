@@ -625,17 +625,9 @@
           { type: 'dim', text: 'Ready for SurrealQL queries. Type SELECT * FROM invoice; or help.' }
         ]
       },
-      terminalInputText: '',
-      toggleTerminalHud: () => {
+      terminalInputText      toggleTerminalHud: () => {
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
         g.terminalOpen = !g.terminalOpen;
-        if (g.terminalOpen) {
-          window.Nexus?.coordinator?.runtimeContext?.$nextTick?.(() => {
-            document.getElementById('terminal-cli-input')?.focus();
-            const stream = document.getElementById('terminal-message-stream');
-            if (stream) stream.scrollTop = stream.scrollHeight;
-          });
-        }
       },
       closeTerminalHud: () => {
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
@@ -700,7 +692,7 @@
           curBuf.push({ type: 'dim', text: '  chat             - Open the collaborative AI chatbar' });
           curBuf.push({ type: 'dim', text: '  dock             - Toggle HUD docking below footer' });
           curBuf.push({ type: 'dim', text: '  clear            - Clear current terminal buffer' });
-          curBuf.push({ type: 'dim', text: '  exit / close     - Dismiss Terminal HUD' });
+          curBuf.push({ type: 'exit', text: '  exit / close     - Dismiss Terminal HUD' });
         } else if (cmd === 'clear') {
           curBuf.length = 0;
           curBuf.push({ type: 'dim', text: 'Buffer cleared.' });
@@ -708,7 +700,7 @@
           curBuf.push({ type: 'system', text: '[SYSTEM DIAGNOSTICS]' });
           curBuf.push({ type: 'ok', text: '  Framework: Nexus-UX v2.4 (HTML Declarative Reactive Architecture)' });
           curBuf.push({ type: 'ok', text: '  Reactive Engine: Vue 3 Fine-Grained with SharedArrayBuffer SignalHeap' });
-          curBuf.push({ type: 'info', text: '  Active Theme: ' + (document.documentElement.getAttribute('data-theme') || 'dark') });
+          curBuf.push({ type: 'info', text: '  Active Theme: ' + (typeof $theme !== 'undefined' && $theme.current ? $theme.current : (document.documentElement.getAttribute('data-theme') || 'dark')) });
           curBuf.push({ type: 'info', text: '  Active Page Tabs: ' + (g.router?.pageTabs?.length || 1) });
           curBuf.push({ type: 'info', text: '  Active Chat Sessions: ' + (g.chatSessions?.length || 0) });
         } else if (cmd === 'topology') {
@@ -730,8 +722,12 @@
           curBuf.push({ type: 'ok', text: 'Terminal docking toggled: ' + (g.terminalDocked ? 'Docked below footer' : 'Floating over content') });
         } else if (cmd === 'theme') {
           if (arg) {
-            document.documentElement.setAttribute('data-theme', arg);
-            localStorage.setItem('theme', arg);
+            if (typeof $setTheme === 'function') {
+              $setTheme(arg);
+            } else {
+              document.documentElement.setAttribute('data-theme', arg);
+              localStorage.setItem('theme', arg);
+            }
             curBuf.push({ type: 'ok', text: 'Theme switched to: ' + arg });
           } else {
             curBuf.push({ type: 'warn', text: 'Usage: theme <name> (e.g. theme synthwave, theme luxury, theme dark)' });
@@ -745,13 +741,8 @@
         
         g.terminalBuffers = { ...(g.terminalBuffers || {}), [tab]: curBuf };
         g.terminalInputText = '';
-        
-        window.Nexus?.coordinator?.runtimeContext?.$nextTick?.(() => {
-          const stream = document.getElementById('terminal-message-stream');
-          if (stream) stream.scrollTop = stream.scrollHeight;
-        });
       }
-    }"
+    }"    }"
   data-class="{ 'md:grid-cols-[max-content_1fr]': !collapsed, 'md:grid-cols-[4rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-effect="if (!favHydrated && indexedDB?.favorites) { favHydrated = true; indexedDB.favorites.all().then(items => { if (items && items.length) { favorites = items; favoriteGroups = [...new Set(items.map(f => (f?.group || '').trim()).filter(Boolean))]; } }); }"
   data-on-resize_window="isMobile = window.matchMedia('(max-width: 767px)').matches"
