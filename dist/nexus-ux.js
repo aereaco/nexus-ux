@@ -11102,22 +11102,33 @@ ${match}</ul>
           before: ["signal", "switcher", "class", "style", "attr", "on", "text", "html"]
         },
         handle: (el, expression, runtime) => {
+          if (el.hasAttribute("data-bind-data-theme") || el.hasAttribute(":data-theme")) {
+            return;
+          }
+          const trimmed = (expression || "").trim();
+          const isRoot = el === document.documentElement || el.tagName === "HTML";
+          const hasObjectConfig = trimmed.startsWith("{");
+          if (!isRoot && !hasObjectConfig) {
+            return;
+          }
           let rawConfig = {};
-          if (expression && expression.trim()) {
+          if (trimmed) {
             try {
               rawConfig = runtime.evaluate(el, expression);
             } catch (_) {
-              if (expression.startsWith("{")) {
+              if (hasObjectConfig) {
                 try {
                   rawConfig = new Function("return (" + expression + ")")();
                 } catch (_2) {
                 }
               } else {
-                rawConfig = { default: expression.trim() };
+                rawConfig = { default: trimmed };
               }
             }
           }
           if (!rawConfig || typeof rawConfig !== "object") {
+            if (!isRoot)
+              return;
             rawConfig = { default: "auto" };
           }
           let initialModeState = 2;
@@ -11127,7 +11138,7 @@ ${match}</ul>
             initialModeState = 1;
           let savedLight = rawConfig.light?.theme || "light";
           let savedDark = rawConfig.dark?.theme || "dark";
-          if (typeof localStorage !== "undefined") {
+          if (isRoot && typeof localStorage !== "undefined") {
             try {
               const savedState = localStorage.getItem("ux_theme_state");
               if (savedState !== null)

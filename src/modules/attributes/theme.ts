@@ -30,20 +30,37 @@ const themeModule: AttributeModule = {
     before: ['signal', 'switcher', 'class', 'style', 'attr', 'on', 'text', 'html']
   },
   handle: (el: HTMLElement, expression: string, runtime: RuntimeContext): (() => void) | void => {
+    // 1. If data-theme is driven by data-bind (e.g. data-bind-data-theme="t"),
+    // do not attach a theme orchestrator that overwrites the binding.
+    if (el.hasAttribute('data-bind-data-theme') || el.hasAttribute(':data-theme')) {
+      return;
+    }
+
+    const trimmed = (expression || '').trim();
+    const isRoot = el === document.documentElement || el.tagName === 'HTML';
+    const hasObjectConfig = trimmed.startsWith('{');
+
+    // 2. Non-root elements with plain string values (e.g. data-theme="cupcake")
+    // are static DaisyUI theme scopes styled natively by CSS without JS orchestration.
+    if (!isRoot && !hasObjectConfig) {
+      return;
+    }
+
     let rawConfig: any = {};
-    if (expression && expression.trim()) {
+    if (trimmed) {
       try {
         rawConfig = runtime.evaluate(el, expression);
       } catch (_) {
-        if (expression.startsWith('{')) {
+        if (hasObjectConfig) {
            try { rawConfig = (new Function('return (' + expression + ')'))(); } catch (_) {}
         } else {
-           rawConfig = { default: expression.trim() };
+           rawConfig = { default: trimmed };
         }
       }
     }
 
     if (!rawConfig || typeof rawConfig !== 'object') {
+       if (!isRoot) return;
        rawConfig = { default: 'auto' };
     }
 
@@ -54,7 +71,8 @@ const themeModule: AttributeModule = {
     let savedLight = rawConfig.light?.theme || 'light';
     let savedDark = rawConfig.dark?.theme || 'dark';
 
-    if (typeof localStorage !== 'undefined') {
+    // Only the root application element persists and synchronizes with localStorage
+    if (isRoot && typeof localStorage !== 'undefined') {
         try {
             const savedState = localStorage.getItem('ux_theme_state');
             if (savedState !== null) initialModeState = Number(savedState);
