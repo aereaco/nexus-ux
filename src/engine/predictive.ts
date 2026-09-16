@@ -164,6 +164,22 @@ export class CorePredictiveEngine {
   };
   private fadeTimer: number | null = null;
   private velocity = { x: 0, y: 0, z: 0, t: 1 };
+  private quadtreeDebounce: number | null = null;
+
+  private scheduleQuadtreeRebuild() {
+    if (this.quadtreeDebounce !== null) return;
+    if (typeof window !== 'undefined' && typeof (window as any).requestIdleCallback === 'function') {
+      this.quadtreeDebounce = (window as any).requestIdleCallback(() => {
+        this.quadtreeDebounce = null;
+        this.rebuildQuadtree();
+      }, { timeout: 1000 });
+    } else if (typeof window !== 'undefined') {
+      this.quadtreeDebounce = window.setTimeout(() => {
+        this.quadtreeDebounce = null;
+        this.rebuildQuadtree();
+      }, 200) as unknown as number;
+    }
+  }
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -239,8 +255,9 @@ export class CorePredictiveEngine {
       setupDebugTracker();
     }
 
-    // Listen for DOM mutations to refresh Quadtree
-    document.addEventListener('nexus:dom-mutated', () => this.rebuildQuadtree(), { passive: true });
+    // Listen for DOM mutations to refresh Quadtree with idle debouncing (eliminates forced synchronous layout thrashing)
+    const onDomMutated = () => this.scheduleQuadtreeRebuild();
+    document.addEventListener('nexus:dom-mutated', onDomMutated, { passive: true });
 
     // 1. Mouse Trajectory Tracker ($V_{xyzt}$)
     const onMouseMove = (e: MouseEvent) => {
@@ -282,9 +299,15 @@ export class CorePredictiveEngine {
       }
     };
 
-    // 5. Gamepad Polling Loop
+    // 5. Gamepad Polling: Only poll when a physical gamepad is connected (W3C Gamepad API standard)
     let gamepadTimer: number | null = null;
+    let connectedGamepadsCount = 0;
+
     const pollGamepad = () => {
+      if (connectedGamepadsCount <= 0) {
+        gamepadTimer = null;
+        return;
+      }
       if (typeof navigator !== 'undefined' && navigator.getGamepads) {
         const gamepads = navigator.getGamepads();
         for (const gp of gamepads) {
@@ -299,20 +322,43 @@ export class CorePredictiveEngine {
       gamepadTimer = requestAnimationFrame(pollGamepad);
     };
 
+    const onGamepadConnected = () => {
+      connectedGamepadsCount++;
+      if (gamepadTimer === null) {
+        gamepadTimer = requestAnimationFrame(pollGamepad);
+      }
+    };
+
+    const onGamepadDisconnected = () => {
+      connectedGamepadsCount = Math.max(0, connectedGamepadsCount - 1);
+    };
+
+    window.addEventListener('gamepadconnected', onGamepadConnected, { passive: true });
+    window.addEventListener('gamepaddisconnected', onGamepadDisconnected, { passive: true });
+
     window.addEventListener('mousemove', onMouseMove, { passive: true });
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: true });
     window.addEventListener('pointermove', onPointerMove, { passive: true });
     window.addEventListener('focusin', onFocusIn, { passive: true });
-    gamepadTimer = requestAnimationFrame(pollGamepad);
 
     this.cleanupFns.push(() => {
+      document.removeEventListener('nexus:dom-mutated', onDomMutated);
+      window.removeEventListener('gamepadconnected', onGamepadConnected);
+      window.removeEventListener('gamepaddisconnected', onGamepadDisconnected);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('focusin', onFocusIn);
       if (gamepadTimer) cancelAnimationFrame(gamepadTimer);
+      if (this.quadtreeDebounce !== null) {
+        if (typeof (window as any).cancelIdleCallback === 'function') {
+          (window as any).cancelIdleCallback(this.quadtreeDebounce);
+        } else {
+          clearTimeout(this.quadtreeDebounce);
+        }
+      }
     });
   }
 
@@ -574,7 +620,7 @@ export class CorePredictiveEngine {
         }
       });
 
-      this.rebuildQuadtree();
+      this.scheduleQuadtreeRebuild();
     });
   }
 

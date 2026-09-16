@@ -220,6 +220,17 @@ function validateExpression(expression: string, el: Element | Text | Comment): U
 }
 
 
+// Module-level compiled expression cache (Alpine.js & Vue compiler parity)
+const compiledExpressionCache = new Map<string, Function>();
+
+export function getCompiledExpressionCacheSize(): number {
+  return compiledExpressionCache.size;
+}
+
+export function clearExpressionCache(): void {
+  compiledExpressionCache.clear();
+}
+
 export function evaluateLater(
   el: Element | Text | Comment,
   expression: string,
@@ -229,46 +240,40 @@ export function evaluateLater(
   const processedExpression = preProcessExpression(expression);
   const scope = getElementScope(el, runtime, initialExtras);
 
-  // Balanced logic for expressions vs statements
-  // Expression compilation: uses `new Function` + `with` for runtime expressiveness.
-  // IMPORTANT — CSP: this requires `unsafe-eval` in Content-Security-Policy.
-  // This is the same trade-off as Alpine.js. A CSP-compatible build would
-  // pre-compile expressions at build time (not implemented yet).
+  // Check compilation cache first for O(1) instantaneous reuse
+  let func = compiledExpressionCache.get(processedExpression);
 
-  const diagnostic = validateExpression(expression, el);
-  if (diagnostic) {
-    syntaxError(
-      diagnostic.element ? diagnostic.element.tagName.toLowerCase() : 'unknown',
-      expression,
-      `${diagnostic.message}\n💡 Suggestion: ${diagnostic.suggestion}`,
-      el instanceof HTMLElement ? el : undefined
-    );
-  }
-
-  let func;
-  /*
-  if (runtime.isDevMode) {
-    console.log("Raw Expr:", expression);
-    console.log("Processed:", processedExpression);
-  }
-  */
-  try {
-    // Try as an expression first
-    func = new Function('scope', `with (scope) { return (${processedExpression}) }`);
-  } catch (e) {
-    if (e instanceof SyntaxError) {
-      try {
-        // Fallback to statement block (e.g. if/for expressions used in data-effect)
-        func = new Function('scope', `with (scope) { ${processedExpression} }`);
-      } catch (e2) {
-        if (e2 instanceof SyntaxError) {
-          syntaxError('eval', expression, e2.message, el instanceof HTMLElement ? el : undefined);
-        }
-        throw e2;
-      }
-    } else {
-      throw e;
+  if (!func) {
+    const diagnostic = validateExpression(expression, el);
+    if (diagnostic) {
+      syntaxError(
+        diagnostic.element ? diagnostic.element.tagName.toLowerCase() : 'unknown',
+        expression,
+        `${diagnostic.message}\n💡 Suggestion: ${diagnostic.suggestion}`,
+        el instanceof HTMLElement ? el : undefined
+      );
     }
+
+    try {
+      // Try as an expression first
+      func = new Function('scope', `with (scope) { return (${processedExpression}) }`);
+    } catch (e) {
+      if (e instanceof SyntaxError) {
+        try {
+          // Fallback to statement block (e.g. if/for expressions used in data-effect)
+          func = new Function('scope', `with (scope) { ${processedExpression} }`);
+        } catch (e2) {
+          if (e2 instanceof SyntaxError) {
+            syntaxError('eval', expression, e2.message, el instanceof HTMLElement ? el : undefined);
+          }
+          throw e2;
+        }
+      } else {
+        throw e;
+      }
+    }
+
+    compiledExpressionCache.set(processedExpression, func);
   }
 
   return (receiver: (value: unknown) => void, callExtras: Record<string, unknown> = {}) => {

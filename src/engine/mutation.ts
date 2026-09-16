@@ -4,6 +4,7 @@ import { NexusEnhancedElement, ownership } from './reactivity.ts';
 import { reportError } from './debug.ts';
 import { CLEANUP_FUNCTIONS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY } from './consts.ts';
 import { stylesheet } from '../modules/attributes/stylesheet.ts';
+import { corePredictiveEngine } from './predictive.ts';
 
 // Module-level state for cross-batch move detection
 const movedNodes = new WeakSet<HTMLElement>();
@@ -52,10 +53,9 @@ const mutationObserverModule: ObserverModule = {
         }
 
         if (addedThisBatch.size > 0) {
-          import('./predictive.ts').then(mod => {
-            mod.corePredictiveEngine.onNodesAdded(addedThisBatch);
-          }).catch(() => {});
+          corePredictiveEngine.onNodesAdded(addedThisBatch);
         }
+
 
         // Purge stale moved node entries (>2 frames old ≈ 32ms)
         for (const [node, ts] of movedNodeTimers) {

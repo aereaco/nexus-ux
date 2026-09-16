@@ -518,34 +518,44 @@ ${suggestion}`);
         /**
          * Run a queue with stall detection. If execution exceeds the budget,
          * yield to the browser and resume processing.
+         * Uses an indexed pointer loop (Vue 3 / React Scheduler parity) to eliminate O(N^2) Array.shift() overhead.
          */
         async runQueueWithYielding(queue) {
           if (queue.length === 0)
             return;
           let startTime = performance.now();
           let iterations = 0;
-          while (queue.length > 0) {
-            if (++iterations > _Scheduler.MAX_QUEUE_ITERATIONS) {
-              console.error(
-                `[Nexus Scheduler] Loop guard: ${iterations} iterations exceeded. Remaining queue size: ${queue.length}. Draining queue to prevent infinite loop.`
-              );
-              queue.length = 0;
-              break;
+          let head = 0;
+          try {
+            while (head < queue.length) {
+              if (++iterations > _Scheduler.MAX_QUEUE_ITERATIONS) {
+                console.error(
+                  `[Nexus Scheduler] Loop guard: ${iterations} iterations exceeded. Remaining queue size: ${queue.length - head}. Draining queue to prevent infinite loop.`
+                );
+                queue.length = 0;
+                return;
+              }
+              const job = queue[head++];
+              try {
+                job();
+              } catch (e) {
+                console.error("[Nexus Scheduler] Job error:", e);
+              }
+              const shouldYield = head < queue.length && (performance.now() - startTime > this.stallBudget || typeof navigator !== "undefined" && navigator.scheduling?.isInputPending?.() === true);
+              if (shouldYield) {
+                queue.splice(0, head);
+                head = 0;
+                this.syncSharedState();
+                await yieldToBrowser();
+                startTime = performance.now();
+              }
             }
-            const job = queue.shift();
-            try {
-              job();
-            } catch (e) {
-              console.error("[Nexus Scheduler] Job error:", e);
+          } finally {
+            if (head > 0) {
+              queue.splice(0, head);
             }
-            const shouldYield = performance.now() - startTime > this.stallBudget || typeof navigator !== "undefined" && navigator.scheduling?.isInputPending?.() === true;
-            if (shouldYield) {
-              this.syncSharedState();
-              await yieldToBrowser();
-              startTime = performance.now();
-            }
+            this.syncSharedState();
           }
-          this.syncSharedState();
         }
         /**
          * Run a queue synchronously (used for Paint phase which must be atomic).
@@ -561,7 +571,7 @@ ${suggestion}`);
               console.error("[Nexus Scheduler] Job error:", e);
             }
           }
-          queue.splice(0, len);
+          queue.length = 0;
         }
         /**
          * Sync queue lengths to the shared state buffer for cross-context visibility.
@@ -12250,11 +12260,6 @@ ${match}</ul>
   });
 
   // src/engine/predictive.ts
-  var predictive_exports = {};
-  __export(predictive_exports, {
-    CorePredictiveEngine: () => CorePredictiveEngine,
-    corePredictiveEngine: () => corePredictiveEngine
-  });
   var Quadtree, CorePredictiveEngine, corePredictiveEngine;
   var init_predictive = __esm({
     "src/engine/predictive.ts"() {
@@ -12354,6 +12359,22 @@ ${match}</ul>
         debugTracker;
         fadeTimer = null;
         velocity = { x: 0, y: 0, z: 0, t: 1 };
+        quadtreeDebounce = null;
+        scheduleQuadtreeRebuild() {
+          if (this.quadtreeDebounce !== null)
+            return;
+          if (typeof window !== "undefined" && typeof window.requestIdleCallback === "function") {
+            this.quadtreeDebounce = window.requestIdleCallback(() => {
+              this.quadtreeDebounce = null;
+              this.rebuildQuadtree();
+            }, { timeout: 1e3 });
+          } else if (typeof window !== "undefined") {
+            this.quadtreeDebounce = window.setTimeout(() => {
+              this.quadtreeDebounce = null;
+              this.rebuildQuadtree();
+            }, 200);
+          }
+        }
         constructor() {
           if (typeof window !== "undefined") {
             this.viewportWidth = window.innerWidth;
@@ -12415,7 +12436,8 @@ ${match}</ul>
           } else {
             setupDebugTracker();
           }
-          document.addEventListener("nexus:dom-mutated", () => this.rebuildQuadtree(), { passive: true });
+          const onDomMutated = () => this.scheduleQuadtreeRebuild();
+          document.addEventListener("nexus:dom-mutated", onDomMutated, { passive: true });
           const onMouseMove = (e) => {
             setupDebugTracker();
             this.recordPoint(e.clientX, e.clientY, 0, performance.now());
@@ -12448,7 +12470,12 @@ ${match}</ul>
             }
           };
           let gamepadTimer = null;
+          let connectedGamepadsCount = 0;
           const pollGamepad = () => {
+            if (connectedGamepadsCount <= 0) {
+              gamepadTimer = null;
+              return;
+            }
             if (typeof navigator !== "undefined" && navigator.getGamepads) {
               const gamepads = navigator.getGamepads();
               for (const gp of gamepads) {
@@ -12462,13 +12489,26 @@ ${match}</ul>
             }
             gamepadTimer = requestAnimationFrame(pollGamepad);
           };
+          const onGamepadConnected = () => {
+            connectedGamepadsCount++;
+            if (gamepadTimer === null) {
+              gamepadTimer = requestAnimationFrame(pollGamepad);
+            }
+          };
+          const onGamepadDisconnected = () => {
+            connectedGamepadsCount = Math.max(0, connectedGamepadsCount - 1);
+          };
+          window.addEventListener("gamepadconnected", onGamepadConnected, { passive: true });
+          window.addEventListener("gamepaddisconnected", onGamepadDisconnected, { passive: true });
           window.addEventListener("mousemove", onMouseMove, { passive: true });
           window.addEventListener("touchstart", onTouchStart, { passive: true });
           window.addEventListener("touchmove", onTouchMove, { passive: true });
           window.addEventListener("pointermove", onPointerMove, { passive: true });
           window.addEventListener("focusin", onFocusIn, { passive: true });
-          gamepadTimer = requestAnimationFrame(pollGamepad);
           this.cleanupFns.push(() => {
+            document.removeEventListener("nexus:dom-mutated", onDomMutated);
+            window.removeEventListener("gamepadconnected", onGamepadConnected);
+            window.removeEventListener("gamepaddisconnected", onGamepadDisconnected);
             window.removeEventListener("mousemove", onMouseMove);
             window.removeEventListener("touchstart", onTouchStart);
             window.removeEventListener("touchmove", onTouchMove);
@@ -12476,6 +12516,13 @@ ${match}</ul>
             window.removeEventListener("focusin", onFocusIn);
             if (gamepadTimer)
               cancelAnimationFrame(gamepadTimer);
+            if (this.quadtreeDebounce !== null) {
+              if (typeof window.cancelIdleCallback === "function") {
+                window.cancelIdleCallback(this.quadtreeDebounce);
+              } else {
+                clearTimeout(this.quadtreeDebounce);
+              }
+            }
           });
         }
         recordPoint(x, y, z, t) {
@@ -12702,7 +12749,7 @@ ${match}</ul>
                 });
               }
             });
-            this.rebuildQuadtree();
+            this.scheduleQuadtreeRebuild();
           });
         }
         setPrewarmHook(fn) {
@@ -12734,8 +12781,8 @@ ${match}</ul>
   });
 
   // src/modules/sprites/predictive.ts
-  var predictive_exports2 = {};
-  __export(predictive_exports2, {
+  var predictive_exports = {};
+  __export(predictive_exports, {
     default: () => predictive_default,
     predictive: () => predictive,
     predictiveModule: () => predictiveModule
@@ -15594,6 +15641,7 @@ ${match}</ul>
       init_debug();
       init_consts();
       init_stylesheet();
+      init_predictive();
       movedNodes = /* @__PURE__ */ new WeakSet();
       movedNodeTimers = /* @__PURE__ */ new Map();
       mutationObserverModule = {
@@ -15623,10 +15671,7 @@ ${match}</ul>
                 }
               }
               if (addedThisBatch.size > 0) {
-                Promise.resolve().then(() => (init_predictive(), predictive_exports)).then((mod) => {
-                  mod.corePredictiveEngine.onNodesAdded(addedThisBatch);
-                }).catch(() => {
-                });
+                corePredictiveEngine.onNodesAdded(addedThisBatch);
               }
               for (const [node, ts] of movedNodeTimers) {
                 if (now - ts > 32) {
@@ -15834,7 +15879,7 @@ ${match}</ul>
         { name: "mask", module: mask_exports },
         { name: "mcp", module: mcp_exports2 },
         { name: "periodicSync", module: periodicSync_exports },
-        { name: "predictive", module: predictive_exports2 },
+        { name: "predictive", module: predictive_exports },
         { name: "push", module: push_exports },
         { name: "selector", module: selector_exports },
         { name: "sql", module: sql_exports },
@@ -17208,35 +17253,39 @@ ${bridge}`, {
     }
     return null;
   }
+  var compiledExpressionCache = /* @__PURE__ */ new Map();
   function evaluateLater(el, expression, runtime, initialExtras = {}) {
     const processedExpression = preProcessExpression(expression);
     const scope = getElementScope(el, runtime, initialExtras);
-    const diagnostic = validateExpression(expression, el);
-    if (diagnostic) {
-      syntaxError(
-        diagnostic.element ? diagnostic.element.tagName.toLowerCase() : "unknown",
-        expression,
-        `${diagnostic.message}
+    let func = compiledExpressionCache.get(processedExpression);
+    if (!func) {
+      const diagnostic = validateExpression(expression, el);
+      if (diagnostic) {
+        syntaxError(
+          diagnostic.element ? diagnostic.element.tagName.toLowerCase() : "unknown",
+          expression,
+          `${diagnostic.message}
 \u{1F4A1} Suggestion: ${diagnostic.suggestion}`,
-        el instanceof HTMLElement ? el : void 0
-      );
-    }
-    let func;
-    try {
-      func = new Function("scope", `with (scope) { return (${processedExpression}) }`);
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        try {
-          func = new Function("scope", `with (scope) { ${processedExpression} }`);
-        } catch (e2) {
-          if (e2 instanceof SyntaxError) {
-            syntaxError("eval", expression, e2.message, el instanceof HTMLElement ? el : void 0);
-          }
-          throw e2;
-        }
-      } else {
-        throw e;
+          el instanceof HTMLElement ? el : void 0
+        );
       }
+      try {
+        func = new Function("scope", `with (scope) { return (${processedExpression}) }`);
+      } catch (e) {
+        if (e instanceof SyntaxError) {
+          try {
+            func = new Function("scope", `with (scope) { ${processedExpression} }`);
+          } catch (e2) {
+            if (e2 instanceof SyntaxError) {
+              syntaxError("eval", expression, e2.message, el instanceof HTMLElement ? el : void 0);
+            }
+            throw e2;
+          }
+        } else {
+          throw e;
+        }
+      }
+      compiledExpressionCache.set(processedExpression, func);
     }
     return (receiver, callExtras = {}) => {
       if (currentEvalDepth > MAX_EVAL_DEPTH) {

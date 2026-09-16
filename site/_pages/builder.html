@@ -405,7 +405,11 @@
       const el = toRawNode(selectedEl);
       if (!el) return;
       if (Array.isArray(validClasses)) {
-        validClasses.forEach(function(c) { if (c) el.classList.remove(c); });
+        validClasses.forEach(function(c) {
+          if (c) {
+            c.split(/\s+/).forEach(function(token) { if (token) el.classList.remove(token); });
+          }
+        });
       }
       if (newClass && newClass !== 'none') {
         newClass.split(/\s+/).forEach(function(c) { if (c) el.classList.add(c); });

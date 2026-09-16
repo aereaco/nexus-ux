@@ -305,43 +305,54 @@ class Scheduler {
   /**
    * Run a queue with stall detection. If execution exceeds the budget,
    * yield to the browser and resume processing.
+   * Uses an indexed pointer loop (Vue 3 / React Scheduler parity) to eliminate O(N^2) Array.shift() overhead.
    */
   private async runQueueWithYielding(queue: Job[]): Promise<void> {
     if (queue.length === 0) return;
 
     let startTime = performance.now();
     let iterations = 0;
+    let head = 0;
     
-    while (queue.length > 0) {
-      if (++iterations > Scheduler.MAX_QUEUE_ITERATIONS) {
-        console.error(
-          `[Nexus Scheduler] Loop guard: ${iterations} iterations exceeded. ` +
-          `Remaining queue size: ${queue.length}. Draining queue to prevent infinite loop.`
+    try {
+      while (head < queue.length) {
+        if (++iterations > Scheduler.MAX_QUEUE_ITERATIONS) {
+          console.error(
+            `[Nexus Scheduler] Loop guard: ${iterations} iterations exceeded. ` +
+            `Remaining queue size: ${queue.length - head}. Draining queue to prevent infinite loop.`
+          );
+          queue.length = 0;
+          return;
+        }
+
+        const job = queue[head++];
+        try {
+          job();
+        } catch (e) {
+          console.error('[Nexus Scheduler] Job error:', e);
+        }
+
+        // Stall detection: yield if we've exceeded the budget or user input is pending
+        const shouldYield = (head < queue.length) && (
+          performance.now() - startTime > this.stallBudget ||
+          (typeof navigator !== 'undefined' && (navigator as any).scheduling?.isInputPending?.() === true)
         );
-        queue.length = 0;
-        break;
-      }
 
-      const job = queue.shift()!;
-      try {
-        job();
-      } catch (e) {
-        console.error('[Nexus Scheduler] Job error:', e);
+        if (shouldYield) {
+          queue.splice(0, head);
+          head = 0;
+          this.syncSharedState();
+          await yieldToBrowser();
+          // Continue processing remaining jobs with a fresh time slice
+          startTime = performance.now();
+        }
       }
-
-      // Stall detection: yield if we've exceeded the budget or user input is pending
-      const shouldYield = performance.now() - startTime > this.stallBudget ||
-        (typeof navigator !== 'undefined' && (navigator as any).scheduling?.isInputPending?.() === true);
-
-      if (shouldYield) {
-        this.syncSharedState();
-        await yieldToBrowser();
-        // Continue processing remaining jobs with a fresh time slice
-        startTime = performance.now();
+    } finally {
+      if (head > 0) {
+        queue.splice(0, head);
       }
+      this.syncSharedState();
     }
-
-    this.syncSharedState();
   }
 
   /**
@@ -358,7 +369,7 @@ class Scheduler {
         console.error('[Nexus Scheduler] Job error:', e);
       }
     }
-    queue.splice(0, len);
+    queue.length = 0;
   }
 
   /**

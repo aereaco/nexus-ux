@@ -179,7 +179,11 @@
       if (typeof prop.onChange === 'function') {
         prop.onChange(el, value);
       } else if (prop.htmlAttr === 'class' && prop.validValues) {
-        prop.validValues.forEach(function(v) { if (v) el.classList.remove(v); });
+        prop.validValues.forEach(function(v) {
+          if (v) {
+            v.split(/\s+/).forEach(function(token) { if (token) el.classList.remove(token); });
+          }
+        });
         if (value && value !== 'none') {
           value.split(/\s+/).forEach(function(c) { if (c) el.classList.add(c); });
         }
