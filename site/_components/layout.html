@@ -785,16 +785,18 @@
           onPointerDown: function(e) {
             if (e.button !== 0) return;
             dragging = true;
+            hovered = false;
             startY = e.clientY;
             startTop = bookmarkTop;
             e.currentTarget.setPointerCapture(e.pointerId);
           },
           onPointerMove: function(e) {
             if (!dragging) return;
-            const parent = $el.parentElement;
-            const parentRect = parent ? parent.getBoundingClientRect() : { height: window.innerHeight };
-            const maxTop = Math.max(8, parentRect.height - 48);
-            const newTop = Math.max(8, Math.min(maxTop, startTop + (e.clientY - startY)));
+            const bookmarkEl = e.currentTarget.closest('[data-show=\'floatingBookmarks\']');
+            const container = (bookmarkEl && bookmarkEl.offsetParent) || document.body;
+            const containerRect = container.getBoundingClientRect();
+            const maxTop = Math.max(8, containerRect.height - 48);
+            const newTop = Math.max(8, Math.min(maxTop, Math.round(startTop + (e.clientY - startY))));
             bookmarkTop = newTop;
             localStorage.setItem('bookmarkTop', String(newTop));
           },
@@ -803,10 +805,21 @@
               dragging = false;
               try { e.currentTarget.releasePointerCapture(e.pointerId); } catch(err) {}
             }
+          },
+          clampPosition: function() {
+            const bookmarkEl = $el.closest ? $el.closest('[data-show=\'floatingBookmarks\']') : null;
+            const container = (bookmarkEl && bookmarkEl.offsetParent) || document.body;
+            const maxTop = Math.max(8, container.clientHeight - 48);
+            if (bookmarkTop > maxTop) {
+              bookmarkTop = maxTop;
+              localStorage.setItem('bookmarkTop', String(maxTop));
+            }
           }
         }"
         data-style="{ top: bookmarkTop + 'px' }"
-        data-on-mouseenter_delay.150ms="hovered = true" data-on-mouseleave="hovered = false">
+        data-on-resize_window="clampPosition()"
+        data-effect="if (typeof sidebarOpen !== 'undefined' || typeof terminalOpen !== 'undefined') { clampPosition(); }"
+        data-on-mouseenter_delay.150ms="if (!dragging) hovered = true" data-on-mouseleave="hovered = false">
         <nav aria-label="Breadcrumb"
           class="flex items-center overflow-hidden rounded-ss-lg rounded-es-lg border border-base-content/10 bg-base-100 text-base-content transition-[max-width,width] duration-300 ease-in-out whitespace-nowrap shadow-sm"
           data-class="{ 'max-w-md w-auto shadow-2xl': hovered, 'max-w-14 w-14': !hovered }">
@@ -816,7 +829,8 @@
             title="Drag vertically to reposition"
             data-on-pointerdown="onPointerDown($evt)"
             data-on-pointermove="onPointerMove($evt)"
-            data-on-pointerup="onPointerUp($evt)">
+            data-on-pointerup="onPointerUp($evt)"
+            data-on-pointercancel="onPointerUp($evt)">
             <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base opacity-70"></iconify-icon>
             <iconify-icon icon="material-symbols-light:bookmark-outline" class="text-xl"></iconify-icon>
             <!-- Breadcrumbs: Fades & Expands on hover -->
