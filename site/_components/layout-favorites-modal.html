@@ -97,10 +97,7 @@
           favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
           try { if (indexedDB?.favorites) indexedDB.favorites.delete(pendingDeleteId); } catch (e) {}
           pendingDeleteId = null;
-          const tId = 'toast-' + Math.floor(Math.random() * 1000000);
-          notifications = [{ id: 'notif-' + Math.floor(Math.random() * 1000000), title: 'Favorite Removed', message: 'Bookmark removed', type: 'info', priority: 'normal', time: 'Just now', read: false }, ...(notifications || [])];
-          toasts = [...(toasts || []), { id: tId, message: 'Favorite removed', type: 'info' }];
-          setTimeout(() => { toasts = (toasts || []).filter(t => t.id !== tId); }, 7000);
+          notify('Favorite Removed', 'Bookmark removed', 'info');
         }">
         Remove
       </button>
