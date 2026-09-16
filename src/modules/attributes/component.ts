@@ -85,6 +85,24 @@ function teardownComponentSubtree(root: Element | ShadowRoot): void {
 }
 
 /**
+ * Replaces static/inert <script> elements injected via innerHTML with newly
+ * created script DOM nodes to ensure component scripts execute cleanly.
+ */
+function executeComponentScripts(container: Element | ShadowRoot): void {
+  try {
+    const scripts = Array.from(container.querySelectorAll('script'));
+    for (const oldScript of scripts) {
+      const newScript = document.createElement('script');
+      Array.from(oldScript.attributes).forEach((attr) => newScript.setAttribute(attr.name, attr.value));
+      newScript.textContent = oldScript.textContent;
+      oldScript.parentNode?.replaceChild(newScript, oldScript);
+    }
+  } catch (err) {
+    console.warn('[Nexus Component] Failed to execute component scripts:', err);
+  }
+}
+
+/**
  * Extracts resource metadata (<title>, <meta name="..." content="...">)
  * from fetched component HTML text and publishes it to the global router signal.
  */
@@ -446,6 +464,7 @@ const componentModule: AttributeModule = {
                   runtime.processElement(child as unknown as HTMLElement);
                 }
               });
+              executeComponentScripts(shadow);
             } else {
               if (isPathChange) {
                 el.innerHTML = html;
@@ -458,6 +477,7 @@ const componentModule: AttributeModule = {
                   runtime.processElement(child as unknown as HTMLElement);
                 }
               });
+              executeComponentScripts(el);
               el.setAttribute('data-nx-cmp-done', 'true');
             }
 
