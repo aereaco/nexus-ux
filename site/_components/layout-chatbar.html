@@ -201,6 +201,7 @@
         <input id="chat-composer-input" type="text"
           class="input input-bordered input-sm flex-1 focus:input-primary text-sm"
           placeholder="Message team or @agent… (Enter to send)" data-bind-value="chatInputText"
+          data-effect="if (chatbarOpen && $el) { $nextTick(() => $el.focus()); }"
           data-on-keydown_enter="sendChatMessage()" />
         <button type="button" class="btn btn-primary btn-sm btn-circle shrink-0" aria-label="Send message"
           data-on-click="sendChatMessage()">
