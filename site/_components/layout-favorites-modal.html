@@ -57,10 +57,7 @@
             favorites = [...favorites];
             favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
             try { if (indexedDB?.favorites) indexedDB.favorites.put(item); } catch (e) {}
-            const tId = 'toast-' + Math.floor(Math.random() * 1000000);
-            notifications = [{ id: 'notif-' + Math.floor(Math.random() * 1000000), title: 'Favorite Updated', message: item.title + ' updated', type: 'success', priority: 'normal', time: 'Just now', read: false }, ...(notifications || [])];
-            toasts = [...(toasts || []), { id: tId, message: 'Favorite updated successfully', type: 'success' }];
-            setTimeout(() => { toasts = (toasts || []).filter(t => t.id !== tId); }, 7000);
+            notify('Favorite Updated', item.title + ' updated', 'success');
           }
         } else {
           const newFav = {
@@ -73,10 +70,7 @@
           favorites = [...(favorites || []), newFav];
           favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
           try { if (indexedDB?.favorites) indexedDB.favorites.put(newFav); } catch (e) {}
-          const tId = 'toast-' + Math.floor(Math.random() * 1000000);
-          notifications = [{ id: 'notif-' + Math.floor(Math.random() * 1000000), title: 'Favorite Added', message: newFav.title + ' saved to bookmarks', type: 'success', priority: 'normal', time: 'Just now', read: false }, ...(notifications || [])];
-          toasts = [...(toasts || []), { id: tId, message: 'Favorite added to bookmarks', type: 'success' }];
-          setTimeout(() => { toasts = (toasts || []).filter(t => t.id !== tId); }, 7000);
+          notify('Favorite Added', newFav.title + ' saved to bookmarks', 'success');
         }">
         <span data-bind="favForm.id ? 'Update Favorite' : 'Save Favorite'"></span>
       </button>
