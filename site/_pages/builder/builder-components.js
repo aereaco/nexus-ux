@@ -189,6 +189,32 @@
         el.innerText = value;
       } else if (prop.htmlAttr === 'innerHTML') {
         el.innerHTML = value;
+      } else if (prop.htmlAttr === 'value') {
+        el.value = value;
+        if (value === null || value === '' || value === false) {
+          el.removeAttribute('value');
+        } else {
+          el.setAttribute('value', value);
+        }
+      } else if (prop.htmlAttr === 'checked') {
+        el.checked = !!value;
+        if (value) {
+          el.setAttribute('checked', '');
+        } else {
+          el.removeAttribute('checked');
+        }
+      } else if (prop.htmlAttr === 'disabled') {
+        el.disabled = !!value;
+        if (value) el.setAttribute('disabled', ''); else el.removeAttribute('disabled');
+      } else if (prop.htmlAttr === 'readonly') {
+        el.readOnly = !!value;
+        if (value) el.setAttribute('readonly', ''); else el.removeAttribute('readonly');
+      } else if (prop.htmlAttr === 'required') {
+        el.required = !!value;
+        if (value) el.setAttribute('required', ''); else el.removeAttribute('required');
+      } else if (prop.htmlAttr === 'multiple') {
+        el.multiple = !!value;
+        if (value) el.setAttribute('multiple', ''); else el.removeAttribute('multiple');
       } else if (prop.htmlAttr) {
         if (value === null || value === '' || value === false) {
           el.removeAttribute(prop.htmlAttr);
