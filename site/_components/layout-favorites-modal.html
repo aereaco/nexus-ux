@@ -1,5 +1,5 @@
 <!-- Add / Edit Favorite Modal -->
-<div class="modal modal-bottom sm:modal-middle" data-class-modal-open="favModalOpen"
+<div class="modal modal-bottom sm:modal-middle" data-class="{ 'modal-open': favModalOpen }"
   data-on-keydown_escape_window="favModalOpen = false">
   <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
     <h3 class="font-bold text-lg flex items-center gap-2">
@@ -47,7 +47,7 @@
     </div>
     <div class="modal-action">
       <button type="button" class="btn btn-ghost" data-on-click="favModalOpen = false">Cancel</button>
-      <button type="button" class="btn btn-primary" data-on-click="if (favForm.id) {
+      <button type="button" class="btn btn-primary" data-on-click="favModalOpen = false; if (favForm.id) {
           const item = (favorites || []).find(f => (f.id || f) === favForm.id);
           if (item) {
             item.title = (favForm.title || '').trim() || 'Bookmark';
@@ -56,7 +56,7 @@
             item.group = (favForm.group || '').trim();
             favorites = [...favorites];
             favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
-            if (indexedDB?.favorites) indexedDB.favorites.put(item);
+            try { if (indexedDB?.favorites) indexedDB.favorites.put(item); } catch (e) {}
             const tId = 'toast-' + Math.floor(Math.random() * 1000000);
             notifications = [{ id: 'notif-' + Math.floor(Math.random() * 1000000), title: 'Favorite Updated', message: item.title + ' updated', type: 'success', priority: 'normal', time: 'Just now', read: false }, ...(notifications || [])];
             toasts = [...(toasts || []), { id: tId, message: 'Favorite updated successfully', type: 'success' }];
@@ -72,13 +72,12 @@
           };
           favorites = [...(favorites || []), newFav];
           favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
-          if (indexedDB?.favorites) indexedDB.favorites.put(newFav);
+          try { if (indexedDB?.favorites) indexedDB.favorites.put(newFav); } catch (e) {}
           const tId = 'toast-' + Math.floor(Math.random() * 1000000);
           notifications = [{ id: 'notif-' + Math.floor(Math.random() * 1000000), title: 'Favorite Added', message: newFav.title + ' saved to bookmarks', type: 'success', priority: 'normal', time: 'Just now', read: false }, ...(notifications || [])];
           toasts = [...(toasts || []), { id: tId, message: 'Favorite added to bookmarks', type: 'success' }];
           setTimeout(() => { toasts = (toasts || []).filter(t => t.id !== tId); }, 7000);
-        };
-        favModalOpen = false">
+        }">
         <span data-bind="favForm.id ? 'Update Favorite' : 'Save Favorite'"></span>
       </button>
     </div>
@@ -87,7 +86,7 @@
 </div>
 
 <!-- Delete Favorite Confirmation Modal -->
-<div class="modal modal-bottom sm:modal-middle" data-class-modal-open="favDeleteModalOpen"
+<div class="modal modal-bottom sm:modal-middle" data-class="{ 'modal-open': favDeleteModalOpen }"
   data-on-keydown_escape_window="favDeleteModalOpen = false">
   <div class="modal-box bg-base-100 border border-base-content/10 shadow-2xl">
     <h3 class="font-bold text-lg text-error flex items-center gap-2">
@@ -99,17 +98,16 @@
     <div class="modal-action">
       <button type="button" class="btn btn-ghost"
         data-on-click="pendingDeleteId = null; favDeleteModalOpen = false">Cancel</button>
-      <button type="button" class="btn btn-error" data-on-click="if (pendingDeleteId) {
+      <button type="button" class="btn btn-error" data-on-click="favDeleteModalOpen = false; if (pendingDeleteId) {
           favorites = (favorites || []).filter(f => (f.id || f.href || f) !== pendingDeleteId);
           favoriteGroups = [...new Set(favorites.map(f => (f?.group || '').trim()).filter(Boolean))];
-          if (indexedDB?.favorites) indexedDB.favorites.delete(pendingDeleteId);
+          try { if (indexedDB?.favorites) indexedDB.favorites.delete(pendingDeleteId); } catch (e) {}
           pendingDeleteId = null;
           const tId = 'toast-' + Math.floor(Math.random() * 1000000);
           notifications = [{ id: 'notif-' + Math.floor(Math.random() * 1000000), title: 'Favorite Removed', message: 'Bookmark removed', type: 'info', priority: 'normal', time: 'Just now', read: false }, ...(notifications || [])];
           toasts = [...(toasts || []), { id: tId, message: 'Favorite removed', type: 'info' }];
           setTimeout(() => { toasts = (toasts || []).filter(t => t.id !== tId); }, 7000);
-        };
-        favDeleteModalOpen = false">
+        }">
         Remove
       </button>
     </div>
