@@ -697,6 +697,36 @@
                 </div>
                 <span class="text-[10px] text-base-content/50 truncate">fieldset-legend</span>
               </div>
+
+              <!-- Input Group (Join) -->
+              <div class="p-2 rounded-lg border border-base-content/10 bg-base-100 hover:border-warning/50 hover:bg-base-200/50 cursor-pointer transition-all flex flex-col gap-1"
+                data-on-click="insertSnippet('<div class=\'join w-full\'><input class=\'input input-bordered input-sm join-item w-full\' placeholder=\'Search keywords...\' /><button class=\'btn btn-primary btn-sm join-item\'>Search</button></div>')">
+                <div class="flex items-center gap-1.5 font-bold text-xs">
+                  <iconify-icon icon="material-symbols-light:join-inner" class="text-warning text-sm"></iconify-icon>
+                  <span>Input Group</span>
+                </div>
+                <span class="text-[10px] text-base-content/50 truncate">join input+btn</span>
+              </div>
+
+              <!-- Button Group (Join) -->
+              <div class="p-2 rounded-lg border border-base-content/10 bg-base-100 hover:border-warning/50 hover:bg-base-200/50 cursor-pointer transition-all flex flex-col gap-1"
+                data-on-click="insertSnippet('<div class=\'join\'><button class=\'btn btn-sm join-item btn-primary\'>Daily</button><button class=\'btn btn-sm join-item\'>Weekly</button><button class=\'btn btn-sm join-item\'>Monthly</button></div>')">
+                <div class="flex items-center gap-1.5 font-bold text-xs">
+                  <iconify-icon icon="material-symbols-light:view-carousel" class="text-warning text-sm"></iconify-icon>
+                  <span>Button Group</span>
+                </div>
+                <span class="text-[10px] text-base-content/50 truncate">join-item btn</span>
+              </div>
+
+              <!-- Complete Form -->
+              <div class="col-span-2 p-2 rounded-lg border border-base-content/10 bg-base-100 hover:border-warning/50 hover:bg-base-200/50 cursor-pointer transition-all flex flex-col gap-1"
+                data-on-click="insertSnippet('<form class=\'flex flex-col gap-3 p-4 bg-base-100 rounded-xl border border-base-content/10 max-w-md w-full\'><div class=\'text-sm font-bold\'>Contact Us</div><input type=\'text\' placeholder=\'Your Name\' class=\'input input-bordered input-sm w-full\' /><input type=\'email\' placeholder=\'Your Email\' class=\'input input-bordered input-sm w-full\' /><textarea class=\'textarea textarea-bordered textarea-sm w-full\' rows=\'2\' placeholder=\'Message\'></textarea><button type=\'button\' class=\'btn btn-primary btn-sm\'>Submit Message</button></form>')">
+                <div class="flex items-center gap-1.5 font-bold text-xs">
+                  <iconify-icon icon="material-symbols-light:contact-mail" class="text-warning text-sm"></iconify-icon>
+                  <span>Contact Form Container</span>
+                </div>
+                <span class="text-[10px] text-base-content/50 truncate">form with inputs and submit</span>
+              </div>
             </div>
           </div>
 
