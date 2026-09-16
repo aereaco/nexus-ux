@@ -723,23 +723,26 @@
                 return;
               }
             }
-            if (editMode === 'add') {
-              nodes = [...nodes, { ...activeNode }];
-            } else {
-              const idx = nodes.findIndex(n => n.id === activeNode.id);
-              if (idx !== -1) {
-                nodes[idx].label = activeNode.label;
-                nodes[idx].type = activeNode.type;
-                nodes[idx].isGroup = activeNode.isGroup;
-                nodes[idx].parentId = activeNode.parentId;
-                nodes[idx].width = activeNode.width;
-                nodes[idx].height = activeNode.height;
-                nodes[idx].position.x = Number(activeNode.position.x) || 0;
-                nodes[idx].position.y = Number(activeNode.position.y) || 0;
-                nodes[idx].handles = activeNode.handles ? [...activeNode.handles] : [];
+            try {
+              if (editMode === 'add') {
+                nodes = [...nodes, { ...activeNode }];
+              } else {
+                const idx = nodes.findIndex(n => n.id === activeNode.id);
+                if (idx !== -1) {
+                  nodes[idx].label = activeNode.label;
+                  nodes[idx].type = activeNode.type;
+                  nodes[idx].isGroup = activeNode.isGroup;
+                  nodes[idx].parentId = activeNode.parentId;
+                  nodes[idx].width = activeNode.width;
+                  nodes[idx].height = activeNode.height;
+                  nodes[idx].position.x = Number(activeNode.position.x) || 0;
+                  nodes[idx].position.y = Number(activeNode.position.y) || 0;
+                  nodes[idx].handles = activeNode.handles ? [...activeNode.handles] : [];
+                }
               }
+            } finally {
+              document.getElementById('flow-modal-node-editor')?.close();
             }
-            document.getElementById('flow-modal-node-editor').close();
           ">
           <iconify-icon icon="material-symbols-light:check"></iconify-icon>
           Save Changes
