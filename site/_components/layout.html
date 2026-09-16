@@ -819,19 +819,25 @@
         data-style="{ top: bookmarkTop + 'px' }"
         data-on-resize_window="clampPosition()"
         data-effect="if (typeof sidebarOpen !== 'undefined' || typeof terminalOpen !== 'undefined') { clampPosition(); }"
-        data-on-mouseenter_delay.150ms="if (!dragging) hovered = true" data-on-mouseleave="hovered = false">
+        data-on-mouseleave="hovered = false">
         <nav aria-label="Breadcrumb"
           class="flex items-center overflow-hidden rounded-ss-lg rounded-es-lg border border-base-content/10 bg-base-100 text-base-content transition-[max-width,width] duration-300 ease-in-out whitespace-nowrap shadow-sm"
           data-class="{ 'max-w-md w-auto shadow-2xl': hovered, 'max-w-14 w-14': !hovered }">
 
-          <!-- Anchored Drag Handle / Icon (Always present, vertically draggable, never destroyed) -->
-          <div class="flex items-center h-10 px-2.5 gap-1 shrink-0 bg-secondary text-secondary-content cursor-ns-resize touch-none select-none"
+          <!-- Anchored Drag Handle / Icon (Vertical drag only, no hover expansion) -->
+          <div class="flex items-center justify-center h-10 ps-2.5 pe-0.5 shrink-0 bg-secondary text-secondary-content cursor-ns-resize touch-none select-none"
             title="Drag vertically to reposition"
             data-on-pointerdown="onPointerDown($evt)"
             data-on-pointermove="onPointerMove($evt)"
             data-on-pointerup="onPointerUp($evt)"
-            data-on-pointercancel="onPointerUp($evt)">
-            <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base opacity-70"></iconify-icon>
+            data-on-pointercancel="onPointerUp($evt)"
+            data-on-mouseenter="hovered = false">
+            <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base opacity-70 pointer-events-none"></iconify-icon>
+          </div>
+
+          <!-- Surface Area: Bookmark Icon & Breadcrumbs (Hover to expand, no dragging, standard cursor) -->
+          <div class="flex items-center h-10 ps-0.5 pe-2.5 gap-1 shrink-0 bg-secondary text-secondary-content cursor-default select-none"
+            data-on-mouseenter_delay.150ms="if (!dragging) hovered = true">
             <iconify-icon icon="material-symbols-light:bookmark-outline" class="text-xl"></iconify-icon>
             <!-- Breadcrumbs: Fades & Expands on hover -->
             <div
