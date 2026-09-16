@@ -1,5 +1,7 @@
 <!-- Authentic Nexus Visual Builder #right-panel (Webstudio x VvvebJs Fusion) -->
-<aside class="w-64 sm:w-72 lg:w-80 h-full flex flex-col bg-base-100 border-l border-base-content/10 overflow-hidden select-none text-xs" id="right-panel">
+<aside class="w-64 sm:w-72 lg:w-80 h-full flex flex-col bg-base-100 border-l border-base-content/10 overflow-hidden select-none text-xs"
+  style="contain: layout style;"
+  id="right-panel">
 
   <!-- Top Section: Element Inspector Area -->
   <div class="flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -14,7 +16,7 @@
       </button>
       <button class="flex-1 py-2 text-center text-xs font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5"
         data-class="{ 'border-primary text-primary font-bold bg-base-100 shadow-xs': propertiesSubTab === 'style', 'border-transparent text-base-content/70 hover:text-base-content': propertiesSubTab !== 'style' }"
-        data-on-click="propertiesSubTab = 'style'">
+        data-on-click="propertiesSubTab = 'style'; syncInspectorStyles()">
         <iconify-icon icon="material-symbols-light:palette-outline" class="text-sm"></iconify-icon>
         <span>Style</span>
       </button>

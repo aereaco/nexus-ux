@@ -2,6 +2,7 @@
   data-on-click="sidebarOpen = false; activeSidebarTab = 1"></div>
 <aside
   class="dashboard-sidebar z-50 flex flex-col md:sticky md:top-0 md:h-dvh h-dvh backdrop-blur-md transition-[width] duration-300 overflow-hidden"
+  style="contain: layout; will-change: width;"
   data-style="{
     backgroundColor: `color-mix(in srgb, color-mix(in oklab, var(--color-base-100) ${100 - (#sidebarDarkness ?? 30)}%, black) ${#sidebarOpacity ?? 90}%, transparent)`,
     color: `color-mix(in oklab, black ${100 - (#sidebarTextLightness ?? 100)}%, white)`,

@@ -852,21 +852,10 @@
         p.mockupPhoneBg = ['bg-base-100', 'bg-base-200', 'bg-neutral'].find(b => rawClasses.includes(b)) || 'bg-base-100';
       }
       
-      try {
-        var compStyle = window.getComputedStyle(raw);
-        inspector.fontSize = raw.style.fontSize || (compStyle ? compStyle.fontSize : '');
-        inspector.fontWeight = raw.style.fontWeight || (compStyle ? compStyle.fontWeight : '');
-        inspector.fontFamily = raw.style.fontFamily || (compStyle ? compStyle.fontFamily : '');
-        inspector.textAlign = raw.style.textAlign || (compStyle ? compStyle.textAlign : '');
-        inspector.color = raw.style.color || (compStyle ? compStyle.color : '');
-        inspector.backgroundColor = raw.style.backgroundColor || (compStyle ? compStyle.backgroundColor : '');
-        inspector.display = raw.style.display || (compStyle ? compStyle.display : '');
-        inspector.gap = raw.style.gap || (compStyle ? compStyle.gap : '');
-        inspector.padding = raw.style.padding || (compStyle ? compStyle.padding : '');
-        inspector.marginBottom = raw.style.marginBottom || (compStyle ? compStyle.marginBottom : '');
-        inspector.borderRadius = raw.style.borderRadius || (compStyle ? compStyle.borderRadius : '');
-        inspector.opacity = raw.style.opacity || (compStyle ? compStyle.opacity : '1');
-      } catch (_) {}
+      // Defer computed style extraction until Style tab is active (VvvebJs performance parity)
+      if (propertiesSubTab === 'style') {
+        syncInspectorStyles();
+      }
 
       try {
         inspector.href = raw.getAttribute('href') || '';
@@ -891,11 +880,36 @@
       }
       breadcrumbs = crumbs;
 
+      // Hide hover box on active selection
+      const hlBox = window.document.getElementById('highlight-box');
+      if (hlBox) hlBox.style.display = 'none';
+      hoveredEl = null;
+
       updateSelectedBox();
       syncCanvasHtmlToDraft();
       if (!domTree || domTree.length === 0) {
         refreshTree();
       }
+    },
+
+    syncInspectorStyles: function() {
+      const raw = toRawNode(selectedEl);
+      if (!raw || raw.nodeType !== 1) return;
+      try {
+        var compStyle = window.getComputedStyle(raw);
+        inspector.fontSize = raw.style.fontSize || (compStyle ? compStyle.fontSize : '');
+        inspector.fontWeight = raw.style.fontWeight || (compStyle ? compStyle.fontWeight : '');
+        inspector.fontFamily = raw.style.fontFamily || (compStyle ? compStyle.fontFamily : '');
+        inspector.textAlign = raw.style.textAlign || (compStyle ? compStyle.textAlign : '');
+        inspector.color = raw.style.color || (compStyle ? compStyle.color : '');
+        inspector.backgroundColor = raw.style.backgroundColor || (compStyle ? compStyle.backgroundColor : '');
+        inspector.display = raw.style.display || (compStyle ? compStyle.display : '');
+        inspector.gap = raw.style.gap || (compStyle ? compStyle.gap : '');
+        inspector.padding = raw.style.padding || (compStyle ? compStyle.padding : '');
+        inspector.marginBottom = raw.style.marginBottom || (compStyle ? compStyle.marginBottom : '');
+        inspector.borderRadius = raw.style.borderRadius || (compStyle ? compStyle.borderRadius : '');
+        inspector.opacity = raw.style.opacity || (compStyle ? compStyle.opacity : '1');
+      } catch (_) {}
     },
 
     updateSelectedBox: function() {
@@ -926,24 +940,26 @@
 
     updateHoverBox: function(el) {
       var raw = toRawNode(el);
+      var hlBox = window.document.getElementById('highlight-box');
       if (!raw || raw.nodeType !== 1 || previewMode || (selectedEl && raw === toRawNode(selectedEl))) {
-        hoverBox.visible = false;
+        if (hlBox) hlBox.style.display = 'none';
         hoveredEl = null;
         return;
       }
       hoveredEl = raw;
       var host = toRawNode(window.document.getElementById('builder-canvas-host'));
-      if (!host) return;
+      if (!host || !hlBox) return;
       try {
         var elRect = raw.getBoundingClientRect();
         var hostRect = host.getBoundingClientRect();
 
-        hoverBox.top = (elRect.top - hostRect.top) + host.offsetTop;
-        hoverBox.left = (elRect.left - hostRect.left) + host.offsetLeft;
-        hoverBox.width = elRect.width;
-        hoverBox.height = elRect.height;
-        hoverBox.tag = raw.tagName.toLowerCase();
-        hoverBox.visible = true;
+        hlBox.style.display = 'block';
+        hlBox.style.top = ((elRect.top - hostRect.top) + host.offsetTop) + 'px';
+        hlBox.style.left = ((elRect.left - hostRect.left) + host.offsetLeft) + 'px';
+        hlBox.style.width = elRect.width + 'px';
+        hlBox.style.height = elRect.height + 'px';
+        var tagSpan = hlBox.querySelector('[data-highlight-tag]');
+        if (tagSpan) tagSpan.textContent = raw.tagName.toLowerCase();
       } catch (_) {}
     },
 

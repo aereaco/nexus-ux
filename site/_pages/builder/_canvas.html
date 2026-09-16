@@ -1,5 +1,6 @@
 <!-- Webstudio-Grade Canvas Workspace with Drift-Free Selection Overlays -->
 <main class="flex-1 w-full h-full min-w-0 bg-[#0e1013] flex flex-col overflow-auto relative select-none"
+  style="contain: layout style;"
   data-class="{ 'items-center p-6': viewport !== 'desktop', 'p-0': viewport === 'desktop' }"
   id="canvas">
 
@@ -99,7 +100,7 @@
 
           // Webstudio Capture-Phase Passive Scroll Tracking (Eliminates Drift)
           const onScroll = () => {
-            hoverBox.visible = false;
+            hideHoverBox();
             if (selectedEl) {
               if (scrollRaf) window.cancelAnimationFrame(scrollRaf);
               scrollRaf = window.requestAnimationFrame(syncBoxPosition);
@@ -121,6 +122,56 @@
             return target;
           };
 
+          // High-Performance Hover Highlight Engine (VvvebJs Parity: Direct rAF DOM positioning)
+          let hoverRaf = null;
+          let currentHovered = null;
+          const highlightBox = window.document.getElementById('highlight-box');
+          const highlightTag = highlightBox ? highlightBox.querySelector('[data-highlight-tag]') : null;
+
+          const hideHoverBox = () => {
+            currentHovered = null;
+            hoveredEl = null;
+            if (hoverRaf) {
+              window.cancelAnimationFrame(hoverRaf);
+              hoverRaf = null;
+            }
+            if (highlightBox) highlightBox.style.display = 'none';
+          };
+
+          const updateHoverBoxDirect = (target) => {
+            if (target === currentHovered) return;
+            currentHovered = target;
+            hoveredEl = target;
+            if (hoverRaf) window.cancelAnimationFrame(hoverRaf);
+            hoverRaf = window.requestAnimationFrame(() => {
+              if (!target || !target.isConnected || previewMode) {
+                if (highlightBox) highlightBox.style.display = 'none';
+                return;
+              }
+              const curSel = typeof toRawNode === 'function' ? toRawNode(selectedEl) : (selectedEl && selectedEl.__v_raw ? selectedEl.__v_raw : selectedEl);
+              if (target === curSel) {
+                if (highlightBox) highlightBox.style.display = 'none';
+                return;
+              }
+              const hostNode = toRawNode(window.document.getElementById('builder-canvas-host'));
+              if (!hostNode || !highlightBox) return;
+              try {
+                const elRect = target.getBoundingClientRect();
+                const hostRect = hostNode.getBoundingClientRect();
+                const top = (elRect.top - hostRect.top) + hostNode.offsetTop;
+                const left = (elRect.left - hostRect.left) + hostNode.offsetLeft;
+                highlightBox.style.display = 'block';
+                highlightBox.style.top = top + 'px';
+                highlightBox.style.left = left + 'px';
+                highlightBox.style.width = elRect.width + 'px';
+                highlightBox.style.height = elRect.height + 'px';
+                if (highlightTag) {
+                  highlightTag.textContent = target.tagName.toLowerCase();
+                }
+              } catch (_) {}
+            });
+          };
+
           // Handle selection click inside shadow root
           root.addEventListener('click', function(e) {
             if (previewMode) return;
@@ -128,23 +179,25 @@
             if (target) {
               e.preventDefault();
               e.stopPropagation();
+              hideHoverBox();
               selectElement(target);
               syncBoxPosition();
             }
           }, true);
 
-          // Handle hover highlight inside shadow root
+          // Handle hover highlight inside shadow root with zero-reactive overhead
           root.addEventListener('pointermove', function(e) {
             if (previewMode) return;
             const target = resolveTarget(e);
-            const curSel = typeof toRawNode === 'function' ? toRawNode(selectedEl) : (selectedEl && selectedEl.__v_raw ? selectedEl.__v_raw : selectedEl);
-            if (target && target !== curSel) {
-              updateHoverBox(target);
+            if (target) {
+              updateHoverBoxDirect(target);
+            } else {
+              hideHoverBox();
             }
           }, true);
 
           root.addEventListener('pointerleave', function() {
-            hoverBox.visible = false;
+            hideHoverBox();
           });
 
           // Handle double click for inline text editing
@@ -152,6 +205,7 @@
             if (previewMode) return;
             const target = resolveTarget(e);
             if (target) {
+              hideHoverBox();
               selectElement(target);
               target.contentEditable = 'true';
               target.focus();
@@ -176,24 +230,18 @@
 
     <!-- ================= 1. WEBSTUDIO HOVER HIGHLIGHT BOX (#highlight-box) ================= -->
     <div id="highlight-box"
-      class="absolute pointer-events-none border border-dashed border-[#00b0ff] z-30 transition-all duration-75"
-      data-show="!previewMode && hoverBox.visible && (!selectedEl || hoveredEl !== selectedEl)"
-      data-style="{
-        top: hoverBox.top + 'px',
-        left: hoverBox.left + 'px',
-        width: hoverBox.width + 'px',
-        height: hoverBox.height + 'px'
-      }">
+      class="absolute pointer-events-none border border-dashed border-[#00b0ff] z-30"
+      style="display: none;">
       
       <!-- Highlight Name Pill -->
       <div class="absolute -top-5 start-0 bg-[#00b0ff] text-white text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded-t shadow-sm flex items-center gap-1">
-        <span data-bind="hoverBox.tag.toUpperCase()"></span>
+        <span data-highlight-tag></span>
       </div>
 
       <!-- Quick (+) Add Element Button -->
       <div class="absolute -bottom-3.5 end-2 pointer-events-auto">
         <button class="btn btn-circle btn-xs h-6 w-6 min-h-0 bg-[#00b0ff] text-white border-0 shadow-md hover:scale-110 transition-transform"
-          data-on-click="selectElement(hoveredEl); addSectionBoxOpen = true"
+          data-on-click="if (hoveredEl) { selectElement(hoveredEl); addSectionBoxOpen = true; }"
           title="Add Section / Component">
           <iconify-icon icon="material-symbols-light:add" class="text-xs"></iconify-icon>
         </button>

@@ -1,5 +1,7 @@
 <!-- Nexus Visual Builder Consolidated #left-panel (3 Resizable Accordions with Embedded Tabs) -->
-<aside class="w-64 sm:w-72 lg:w-80 h-full flex flex-col bg-base-100 border-r border-base-content/10 overflow-hidden select-none text-xs" id="left-panel">
+<aside class="w-64 sm:w-72 lg:w-80 h-full flex flex-col bg-base-100 border-r border-base-content/10 overflow-hidden select-none text-xs"
+  style="contain: layout style;"
+  id="left-panel">
 
   <!-- ================= ACCORDION 1: FILES ================= -->
   <div class="flex flex-col shrink-0 border-b border-base-content/10"
@@ -256,7 +258,7 @@
         <div class="flex-1 overflow-y-auto p-2 space-y-3">
 
           <!-- 1. ACTIONS -->
-          <div data-show="componentCategory === 'all' || componentCategory === 'actions'">
+          <div data-show="componentCategory === 'all' || componentCategory === 'actions'" style="content-visibility: auto; contain-intrinsic-size: 0 250px;">
             <div class="text-[10px] font-extrabold uppercase tracking-wider text-base-content/50 mb-1.5 flex items-center gap-1">
               <iconify-icon icon="material-symbols-light:touch-app" class="text-xs"></iconify-icon>
               <span>Actions</span>
@@ -325,7 +327,7 @@
           </div>
 
           <!-- 2. DATA DISPLAY -->
-          <div data-show="componentCategory === 'all' || componentCategory === 'display'">
+          <div data-show="componentCategory === 'all' || componentCategory === 'display'" style="content-visibility: auto; contain-intrinsic-size: 0 250px;">
             <div class="text-[10px] font-extrabold uppercase tracking-wider text-base-content/50 mb-1.5 flex items-center gap-1">
               <iconify-icon icon="material-symbols-light:dashboard" class="text-xs"></iconify-icon>
               <span>Data Display</span>
@@ -454,7 +456,7 @@
           </div>
 
           <!-- 3. NAVIGATION -->
-          <div data-show="componentCategory === 'all' || componentCategory === 'navigation'">
+          <div data-show="componentCategory === 'all' || componentCategory === 'navigation'" style="content-visibility: auto; contain-intrinsic-size: 0 250px;">
             <div class="text-[10px] font-extrabold uppercase tracking-wider text-base-content/50 mb-1.5 flex items-center gap-1">
               <iconify-icon icon="material-symbols-light:navigation" class="text-xs"></iconify-icon>
               <span>Navigation</span>
@@ -523,7 +525,7 @@
           </div>
 
           <!-- 4. FEEDBACK -->
-          <div data-show="componentCategory === 'all' || componentCategory === 'feedback'">
+          <div data-show="componentCategory === 'all' || componentCategory === 'feedback'" style="content-visibility: auto; contain-intrinsic-size: 0 250px;">
             <div class="text-[10px] font-extrabold uppercase tracking-wider text-base-content/50 mb-1.5 flex items-center gap-1">
               <iconify-icon icon="material-symbols-light:feedback" class="text-xs"></iconify-icon>
               <span>Feedback</span>
@@ -592,7 +594,7 @@
           </div>
 
           <!-- 5. DATA INPUTS -->
-          <div data-show="componentCategory === 'all' || componentCategory === 'inputs'">
+          <div data-show="componentCategory === 'all' || componentCategory === 'inputs'" style="content-visibility: auto; contain-intrinsic-size: 0 250px;">
             <div class="text-[10px] font-extrabold uppercase tracking-wider text-base-content/50 mb-1.5 flex items-center gap-1">
               <iconify-icon icon="material-symbols-light:edit" class="text-xs"></iconify-icon>
               <span>Data Inputs</span>
@@ -731,7 +733,7 @@
           </div>
 
           <!-- 6. LAYOUT -->
-          <div data-show="componentCategory === 'all' || componentCategory === 'layout'">
+          <div data-show="componentCategory === 'all' || componentCategory === 'layout'" style="content-visibility: auto; contain-intrinsic-size: 0 250px;">
             <div class="text-[10px] font-extrabold uppercase tracking-wider text-base-content/50 mb-1.5 flex items-center gap-1">
               <iconify-icon icon="material-symbols-light:view-quilt" class="text-xs"></iconify-icon>
               <span>Layout</span>
@@ -853,7 +855,7 @@
       </div>
 
       <!-- ================= 3.2 BLOCKS TAB ================= -->
-      <div class="flex-1 overflow-y-auto p-2 space-y-2" data-show="accordionTabs.components === 'blocks'">
+      <div class="flex-1 overflow-y-auto p-2 space-y-2" data-show="accordionTabs.components === 'blocks'" style="content-visibility: auto; contain-intrinsic-size: 0 300px;">
         <!-- Feature 3-Col Block -->
         <div class="p-2.5 rounded-xl border border-base-content/10 bg-base-200/50 hover:border-primary/50 cursor-pointer transition-all"
           data-on-click="insertSnippet('<section class=\'py-12 px-6 bg-base-100\'><div class=\'text-center mb-8\'><h2 class=\'text-2xl font-bold\'>Platform Capabilities</h2><p class=\'text-xs opacity-60 mt-1\'>Zero-copy reactive infrastructure</p></div><div class=\'grid grid-cols-1 md:grid-cols-3 gap-6\'><div class=\'card bg-base-200 p-6 rounded-2xl\'><iconify-icon icon=\'material-symbols-light:bolt\' class=\'text-3xl text-primary mb-2\'></iconify-icon><h3 class=\'font-bold text-sm\'>Shared Memory</h3><p class=\'text-xs opacity-70 mt-1\'>SharedArrayBuffer heap execution.</p></div><div class=\'card bg-base-200 p-6 rounded-2xl\'><iconify-icon icon=\'material-symbols-light:code\' class=\'text-3xl text-secondary mb-2\'></iconify-icon><h3 class=\'font-bold text-sm\'>Pure HTML Directives</h3><p class=\'text-xs opacity-70 mt-1\'>Zero script tag templates.</p></div><div class=\'card bg-base-200 p-6 rounded-2xl\'><iconify-icon icon=\'material-symbols-light:speed\' class=\'text-3xl text-accent mb-2\'></iconify-icon><h3 class=\'font-bold text-sm\'>Web Native</h3><p class=\'text-xs opacity-70 mt-1\'>Direct Web API proxy bindings.</p></div></div></section>')">
@@ -877,7 +879,7 @@
       </div>
 
       <!-- ================= 3.3 SECTIONS TAB ================= -->
-      <div class="flex-1 overflow-y-auto p-2 space-y-2" data-show="accordionTabs.components === 'sections'">
+      <div class="flex-1 overflow-y-auto p-2 space-y-2" data-show="accordionTabs.components === 'sections'" style="content-visibility: auto; contain-intrinsic-size: 0 300px;">
         <div class="p-2.5 rounded-xl border border-base-content/10 bg-base-200/50 hover:border-primary/50 cursor-pointer transition-all"
           data-on-click="insertSnippet('<section class=\'py-20 px-6 bg-gradient-to-b from-base-200 to-base-100 text-center\'><h1 class=\'text-4xl font-extrabold mb-4\'>Build Stunning Web Experiences</h1><p class=\'max-w-lg mx-auto text-xs opacity-70 mb-6\'>The modern declarative-first reactive framework.</p><div class=\'flex items-center justify-center gap-3\'><button class=\'btn btn-primary\'>Start Building</button><button class=\'btn btn-ghost\'>Documentation</button></div></section>')">
           <div class="font-bold text-xs text-base-content mb-1">Hero Section</div>
