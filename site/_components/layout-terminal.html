@@ -86,7 +86,7 @@
   <!-- 2. Terminal Output Stream Area -->
   <div class="flex-1 min-h-0 overflow-y-auto p-3 space-y-1 select-text scrollbar-thin scrollbar-thumb-neutral-700"
     id="terminal-message-stream"
-    data-effect="if (terminalOpen) { $nextTick(() => { const el = document.getElementById('terminal-message-stream'); if (el) el.scrollTop = el.scrollHeight; }); }">
+    data-effect="if (terminalOpen && $el) { const buf = (terminalBuffers || {})[terminalActiveTab]; if (buf) { $nextTick(() => { $el.scrollTop = $el.scrollHeight; }); } }">
     <template data-for="line in ((terminalBuffers || {})[terminalActiveTab] || [])">
       <div class="leading-relaxed flex items-start gap-2">
         <span data-show="line.time" class="text-neutral-500 shrink-0 text-[10px]" data-bind="line.time"></span>
