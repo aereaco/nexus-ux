@@ -114,7 +114,7 @@
                 const { EditorView, EditorState, Compartment, basicSetup, javascript, html, oneDark } = window.CM;
 
                 // 1. Module Source Editor
-                const sourceEl = document.getElementById('source-editor');
+                const sourceEl = $('#source-editor');
                 if (sourceEl && !$el._sourceEditor && forkSource) {
                     const readOnly = new Compartment();
                     sourceEl.replaceChildren();
@@ -145,7 +145,7 @@
                 }
 
                 // 2. Lab Snippet Editor (Live Editable)
-                const snippetEl = document.getElementById('snippet-editor');
+                const snippetEl = $('#snippet-editor');
                 if (snippetEl && (doc?.Snippet || doc?.Examples) && !$el._snippetEditor) {
                     snippetEl.replaceChildren();
                     $el._snippetEditor = new EditorView({
