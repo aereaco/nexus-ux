@@ -795,6 +795,34 @@
         p.tablePinRows = rawClasses.includes('table-pin-rows');
         p.tablePinCols = rawClasses.includes('table-pin-cols');
         p.tableSize = ['table-xs', 'table-sm', 'table-md', 'table-lg'].find(function(s) { return rawClasses.includes(s); }) || 'table-md';
+      } else if (compType === 'header') {
+        p.headerSticky = rawClasses.includes('sticky');
+        p.headerBg = ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral text-neutral-content', 'bg-transparent'].find(b => rawClasses.some(c => b.split(' ').every(cls => rawClasses.includes(cls)))) || 'bg-base-100';
+        p.headerShadow = ['shadow-none', 'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg', 'shadow-xl', 'shadow-2xl'].find(s => rawClasses.includes(s)) || 'shadow';
+      } else if (compType === 'footer') {
+        p.footerCentered = rawClasses.includes('footer-center');
+        p.footerBg = ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral text-neutral-content', 'bg-transparent'].find(b => rawClasses.some(c => b.split(' ').every(cls => rawClasses.includes(cls)))) || 'bg-base-200';
+      } else if (compType === 'hero') {
+        p.heroMinHeight = ['min-h-[200px]', 'min-h-[400px]', 'min-h-[500px]', 'min-h-screen', 'min-h-0'].find(h => rawClasses.includes(h)) || 'min-h-[500px]';
+        p.heroContentAlign = ['hero-start', 'hero-center', 'hero-end'].find(a => rawClasses.includes(a)) || 'hero-center';
+        const heroBg = raw.querySelector('.hero-bg');
+        if (heroBg) {
+          p.heroBgMode = heroBg.querySelector('video') ? 'bg-video' : (heroBg.querySelector('img') ? 'bg-image' : 'none');
+        } else {
+          p.heroBgMode = 'none';
+        }
+        p.heroOverlay = !!raw.querySelector('.hero-overlay');
+      } else if (compType === 'drawer') {
+        p.drawerOpen = rawClasses.includes('drawer-open');
+        p.drawerSide = rawClasses.includes('drawer-end') ? 'drawer-end' : 'drawer-start';
+      } else if (compType === 'mockup-window') {
+        p.mockupWindowBg = ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral'].find(b => rawClasses.includes(b)) || 'bg-base-100';
+        p.mockupWindowTitleBar = !!raw.querySelector('.mockup-button');
+      } else if (compType === 'mockup-browser') {
+        p.mockupBrowserBg = ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral'].find(b => rawClasses.includes(b)) || 'bg-base-100';
+      } else if (compType === 'mockup-phone') {
+        p.mockupPhoneOrientation = rawClasses.includes('mockup-phone-horizontal') ? 'landscape' : 'portrait';
+        p.mockupPhoneBg = ['bg-base-100', 'bg-base-200', 'bg-neutral'].find(b => rawClasses.includes(b)) || 'bg-base-100';
       }
       
       try {
