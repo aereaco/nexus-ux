@@ -625,7 +625,8 @@
           { type: 'dim', text: 'Ready for SurrealQL queries. Type SELECT * FROM invoice; or help.' }
         ]
       },
-      terminalInputText      toggleTerminalHud: () => {
+      terminalInputText: '',
+      toggleTerminalHud: () => {
         const g = window.Nexus?.coordinator?.runtimeContext?.globalSignals?.() || {};
         g.terminalOpen = !g.terminalOpen;
       },
