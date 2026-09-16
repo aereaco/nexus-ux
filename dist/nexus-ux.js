@@ -16494,17 +16494,13 @@ ${bridge}`, {
     return true;
   }
   function parseHTML(html) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
     if (html.includes("<html") || html.includes("<body") || html.includes("<head")) {
-      return doc.documentElement;
+      const parser = new DOMParser();
+      return parser.parseFromString(html, "text/html").documentElement;
     }
-    const fragment = document.createDocumentFragment();
-    const body = doc.body;
-    while (body.firstChild) {
-      fragment.appendChild(body.firstChild);
-    }
-    return fragment;
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    return template.content;
   }
   function getHeadElementKey(node) {
     if (node.nodeType === Node.ELEMENT_NODE) {
