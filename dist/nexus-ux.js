@@ -2748,6 +2748,19 @@ ${scripts}
         root.removeChild(root.firstChild);
     }
   }
+  function executeComponentScripts(container) {
+    try {
+      const scripts = Array.from(container.querySelectorAll("script"));
+      for (const oldScript of scripts) {
+        const newScript = document.createElement("script");
+        Array.from(oldScript.attributes).forEach((attr) => newScript.setAttribute(attr.name, attr.value));
+        newScript.textContent = oldScript.textContent;
+        oldScript.parentNode?.replaceChild(newScript, oldScript);
+      }
+    } catch (err) {
+      console.warn("[Nexus Component] Failed to execute component scripts:", err);
+    }
+  }
   function extractResourceMetadata(htmlText, path, runtime) {
     const meta = {};
     if (!htmlText || typeof htmlText !== "string")
@@ -3098,6 +3111,7 @@ ${scripts}
                         runtime.processElement(child);
                       }
                     });
+                    executeComponentScripts(shadow);
                   } else {
                     if (isPathChange) {
                       el.innerHTML = html;
@@ -3110,6 +3124,7 @@ ${scripts}
                         runtime.processElement(child);
                       }
                     });
+                    executeComponentScripts(el);
                     el.setAttribute("data-nx-cmp-done", "true");
                   }
                   const focusable = (config.shadowrootmode ? el.shadowRoot : el)?.querySelector("[autofocus], [data-autofocus]");
