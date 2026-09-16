@@ -11229,7 +11229,7 @@ ${match}</ul>
             },
             $switchTheme: () => {
               modeState.value = (modeState.value + 1) % 3;
-              if (typeof localStorage !== "undefined") {
+              if (isRoot && typeof localStorage !== "undefined") {
                 try {
                   localStorage.setItem("ux_theme_state", String(modeState.value));
                 } catch (_) {
@@ -11240,7 +11240,7 @@ ${match}</ul>
               const isDark = modeState.value === 1 || modeState.value === 2 && systemDark.value;
               if (isDark) {
                 darkSelected.value = t;
-                if (typeof localStorage !== "undefined") {
+                if (isRoot && typeof localStorage !== "undefined") {
                   try {
                     localStorage.setItem("ux_theme_dark", t);
                   } catch (_) {
@@ -11248,7 +11248,7 @@ ${match}</ul>
                 }
               } else {
                 lightSelected.value = t;
-                if (typeof localStorage !== "undefined") {
+                if (isRoot && typeof localStorage !== "undefined") {
                   try {
                     localStorage.setItem("ux_theme_light", t);
                   } catch (_) {
