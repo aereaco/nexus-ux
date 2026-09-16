@@ -190,14 +190,14 @@
                 <!-- Root Leaf Item (No Children) -->
                 <li data-show="!item.children || item.children.length === 0" class="cursor-pointer"
                   data-bind-data-drag-item="cat.itemsDraggable && item.href !== '/' ? '' : null"
-                  data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+                  data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item, source: 'sidebar' }">
                   <a data-bind-href="item.href" draggable="false" class="whitespace-nowrap"
                     data-bind-data-tab-title="item.tabTitle || item.title"
                     data-bind-data-tab-icon="item.tabIcon || item.icon || item.meta?.icon"
                     data-bind-aria-current="(router.activePageTab?.route || router.path) === item.href ? 'page' : null"
                     data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href }"
                     data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                    data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+                    data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item, source: 'sidebar' }">
                     <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:article-outline'" class="shrink-0 text-2xl" aria-hidden="true"></iconify-icon>
                     <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                       data-bind="item.title"></span>
@@ -208,7 +208,7 @@
                 <li data-show="item.children && item.children.length > 0 && !item.meta?.isSubmenu && item.href"
                   class="cursor-pointer" data-bind-data-drag-item="cat.itemsDraggable && item.href !== '/' ? '' : null"
                   data-signal="{ open: false }"
-                  data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+                  data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item, source: 'sidebar' }">
                   <div class="flex rounded-lg transition-colors" data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (collapsed && !hovered && !sidebarOpen) && item.href && ((router.activePageTab?.route || router.path) === item.href || (item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href))), 'text-primary font-medium bg-base-200/40': (!collapsed || hovered || sidebarOpen) && item.href !== '/' && (router.activePageTab?.route || router.path || '').startsWith(item.href) && (router.activePageTab?.route || router.path) !== item.href }">
                     <a data-bind-href="item.href" draggable="false" class="grow flex whitespace-nowrap"
                       data-bind-data-tab-title="item.tabTitle || item.title"
@@ -216,7 +216,7 @@
                       data-bind-aria-current="(router.activePageTab?.route || router.path) === item.href ? 'page' : null"
                       data-class="{ 'menu-active active bg-primary text-primary-content font-semibold shadow-sm': (router.activePageTab?.route || router.path) === item.href }"
                       data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
-                      data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item }">
+                      data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item, source: 'sidebar' }">
                       <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:folder-outline'" class="shrink-0 pe-2 text-2xl" aria-hidden="true"></iconify-icon>
                       <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
                         data-bind="item.title"></span>
