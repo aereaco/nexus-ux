@@ -79,7 +79,7 @@
         data-effect="if (searchOpen && $el) { $nextTick().then(function() { $el.focus(); $el.select(); }); }" />
       <button type="button" class="btn btn-ghost btn-xs btn-circle opacity-60 hover:opacity-100 me-1"
         aria-label="Clear search" data-show="searchQuery"
-        data-on-click="searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; $nextTick().then(function() { const el = document.getElementById('search-modal-input'); if (el) el.focus(); });">
+        data-on-click="searchQuery = ''; searchDebouncedQuery = ''; searchTokens = []; searchResults = []; flatResults = []; searchActiveIndex = 0; $nextTick().then(() => $('#search-modal-input')?.focus());">
         <iconify-icon icon="material-symbols-light:backspace-outline" class="text-base"></iconify-icon>
       </button>
       <kbd class="kbd kbd-sm opacity-60 max-sm:hidden">Esc</kbd>
