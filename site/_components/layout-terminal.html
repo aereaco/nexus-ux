@@ -129,7 +129,9 @@
     <input id="terminal-cli-input" type="text"
       class="input input-ghost input-xs flex-1 text-neutral-100 font-mono focus:outline-none border-0 focus:border-0 px-1 placeholder:text-neutral-600"
       placeholder="Type 'help' for commands (status, routes, theme, clear, topology)..."
-      data-bind-value="terminalInputText" data-on-keydown_enter_prevent="runTerminalCommand()" />
+      data-bind-value="terminalInputText"
+      data-effect="if (terminalOpen && $el) { $nextTick(() => $el.focus()); }"
+      data-on-keydown_enter_prevent="runTerminalCommand()" />
     <button type="button" class="btn btn-primary btn-xs font-mono h-6 min-h-0 px-2.5 rounded text-[11px]"
       aria-label="Execute Command" data-on-click="runTerminalCommand()">
       Run ↵
