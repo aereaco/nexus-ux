@@ -1329,6 +1329,717 @@
     }
   });
 
+  // ==========================================
+  // 11. CONTAINER ARCHETYPE (DaisyUI/Tailwind)
+  // ==========================================
+  Registry.register({
+    id: 'container',
+    name: 'Container',
+    category: 'Layout & Containers',
+    match: function(el) {
+      const cls = safeClasses(el);
+      const tag = getTag(el);
+      return tag === 'div' && cls.some(c => c.startsWith('container') || c === 'w-full');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Container Settings' },
+        { id: 'spacing', header: 'Spacing' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const maxWidthCls = cls.find(c => c.startsWith('container')) || '';
+      const padXCls = cls.find(c => c.startsWith('px-')) || '';
+      const padYCls = cls.find(c => c.startsWith('py-')) || '';
+
+      const props = [
+        {
+          key: 'maxWidth',
+          name: 'Max Width',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['container', 'container-sm', 'container-md', 'container-lg', 'container-xl', 'container-2xl', 'w-full'],
+          value: maxWidthCls || 'container',
+          options: [
+            { label: 'Default (768px)', value: 'container' },
+            { label: 'Small (640px)', value: 'container-sm' },
+            { label: 'Medium (768px)', value: 'container-md' },
+            { label: 'Large (1024px)', value: 'container-lg' },
+            { label: 'XL (1280px)', value: 'container-xl' },
+            { label: '2XL (1536px)', value: 'container-2xl' },
+            { label: 'Full Width', value: 'w-full' }
+          ],
+          onChange: function(node, val) {
+            const validCls = ['container', 'container-sm', 'container-md', 'container-lg', 'container-xl', 'container-2xl'];
+            validCls.forEach(function(c) { node.classList.remove(c); });
+            node.classList.remove('w-full');
+            if (val && val !== 'none') node.classList.add(val);
+          }
+        },
+        {
+          key: 'paddingX',
+          name: 'Horizontal Padding',
+          section: 'spacing',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['px-0', 'px-1', 'px-2', 'px-3', 'px-4', 'px-6', 'px-8'],
+          value: padXCls || 'px-4',
+          options: [
+            { label: 'None', value: 'px-0' },
+            { label: '0.25rem', value: 'px-1' },
+            { label: '0.5rem', value: 'px-2' },
+            { label: '0.75rem', value: 'px-3' },
+            { label: '1rem (default)', value: 'px-4' },
+            { label: '1.5rem', value: 'px-6' },
+            { label: '2rem', value: 'px-8' }
+          ],
+          onChange: function(node, val) {
+            ['px-0', 'px-1', 'px-2', 'px-3', 'px-4', 'px-6', 'px-8'].forEach(function(c) { node.classList.remove(c); });
+            if (val) node.classList.add(val);
+          }
+        },
+        {
+          key: 'paddingY',
+          name: 'Vertical Padding',
+          section: 'spacing',
+          type: 'text',
+          htmlAttr: 'class',
+          value: padYCls || '',
+          onChange: function(node, val) {
+            const oldCls = cls.find(c => c.startsWith('py-')) || '';
+            if (oldCls) node.classList.remove(oldCls);
+            if (val && val.trim()) node.classList.add(val.trim());
+          }
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 12. HEADER ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'header',
+    name: 'Header / Banner',
+    category: 'Layout & Containers',
+    match: function(el) {
+      return getTag(el) === 'header' && el.closest('.drawer') === null;
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Header Settings' },
+        { id: 'shadow', header: 'Shadow & Depth' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'sticky',
+          name: 'Sticky Header',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          value: cls.includes('sticky'),
+          onChange: function(node, val) {
+            if (val) node.classList.add('sticky', 'top-0', 'z-40', 'bg-base-100', 'shadow');
+            else node.classList.remove('sticky', 'top-0', 'z-40', 'shadow');
+          }
+        },
+        {
+          key: 'bg',
+          name: 'Background',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral text-neutral-content', 'bg-transparent'],
+          value: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral text-neutral-content', 'bg-transparent'].find(b => cls.includes(b)) || 'bg-base-100',
+          options: [
+            { label: 'Base 100', value: 'bg-base-100' },
+            { label: 'Base 200', value: 'bg-base-200' },
+            { label: 'Base 300', value: 'bg-base-300' },
+            { label: 'Dark Neutral', value: 'bg-neutral text-neutral-content' },
+            { label: 'Transparent', value: 'bg-transparent' }
+          ]
+        },
+        {
+          key: 'shadowDepth',
+          name: 'Shadow Depth',
+          section: 'shadow',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['shadow-none', 'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg', 'shadow-xl', 'shadow-2xl'],
+          value: ['shadow-none', 'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg', 'shadow-xl', 'shadow-2xl'].find(s => cls.includes(s)) || 'shadow',
+          options: [
+            { label: 'None', value: 'shadow-none' },
+            { label: 'Subtle', value: 'shadow-sm' },
+            { label: 'Standard', value: 'shadow' },
+            { label: 'Medium', value: 'shadow-md' },
+            { label: 'Large', value: 'shadow-lg' },
+            { label: 'XL', value: 'shadow-xl' },
+            { label: '2XL', value: 'shadow-2xl' }
+          ],
+          onChange: function(node, val) {
+            ['shadow-none', 'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg', 'shadow-xl', 'shadow-2xl'].forEach(function(c) { node.classList.remove(c); });
+            if (val && val !== 'shadow-none') node.classList.add(val);
+          }
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 13. FOOTER ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'footer',
+    name: 'Footer',
+    category: 'Layout & Containers',
+    match: function(el) {
+      return getTag(el) === 'footer';
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Footer Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'centered',
+          name: 'Centered Layout',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          value: cls.includes('footer-center'),
+          onChange: function(node, val) {
+            if (val) node.classList.add('footer-center');
+            else node.classList.remove('footer-center');
+          }
+        },
+        {
+          key: 'bg',
+          name: 'Background Tone',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral text-neutral-content', 'bg-transparent'],
+          value: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral text-neutral-content', 'bg-transparent'].find(b => cls.includes(b)) || 'bg-base-200',
+          options: [
+            { label: 'Base 100', value: 'bg-base-100' },
+            { label: 'Base 200', value: 'bg-base-200' },
+            { label: 'Base 300', value: 'bg-base-300' },
+            { label: 'Dark Neutral', value: 'bg-neutral text-neutral-content' },
+            { label: 'Transparent', value: 'bg-transparent' }
+          ]
+        },
+        {
+          key: 'divider',
+          name: 'Top Divider',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          value: cls.includes('border-t'),
+          onChange: function(node, val) {
+            if (val) node.classList.add('border-t', 'border-base-content/10');
+            else node.classList.remove('border-t', 'border-base-content/10');
+          }
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 14. HERO ARCHETYPE (DaisyUI hero)
+  // ==========================================
+  Registry.register({
+    id: 'hero',
+    name: 'Hero Section',
+    category: 'Layout & Containers',
+    match: function(el) {
+      const cls = safeClasses(el);
+      const tag = getTag(el);
+      return (tag === 'section' || tag === 'div' || tag === 'main') && cls.includes('hero');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Hero Settings' },
+        { id: 'background', header: 'Background Media' },
+        { id: 'overlay', header: 'Color Overlay' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const bgCont = el.querySelector(':scope > .hero-bg');
+      let currentBg = 'none';
+      let bgImgSrc = '';
+      let bgVidSrc = '';
+      let hasOverlay = !!el.querySelector('.hero-overlay');
+
+      if (bgCont) {
+        const img = bgCont.querySelector('img');
+        const vid = bgCont.querySelector('video');
+        if (vid) { currentBg = 'video'; bgVidSrc = vid.getAttribute('src') || ''; }
+        else if (img) { currentBg = 'image'; bgImgSrc = img.getAttribute('src') || ''; }
+      }
+
+      const props = [
+        {
+          key: 'minHeight',
+          name: 'Minimum Height',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['min-h-[200px]', 'min-h-[400px]', 'min-h-[500px]', 'min-h-screen', 'min-h-0'],
+          value: ['min-h-[200px]', 'min-h-[400px]', 'min-h-[500px]', 'min-h-screen', 'min-h-0'].find(h => cls.includes(h)) || 'min-h-[500px]',
+          options: [
+            { label: 'Small (200px)', value: 'min-h-[200px]' },
+            { label: 'Medium (400px)', value: 'min-h-[400px]' },
+            { label: 'Large (500px)', value: 'min-h-[500px]' },
+            { label: 'Full Screen', value: 'min-h-screen' },
+            { label: 'Auto', value: 'min-h-0' }
+          ]
+        },
+        {
+          key: 'contentAlign',
+          name: 'Content Alignment',
+          section: 'default',
+          type: 'buttons',
+          htmlAttr: 'class',
+          validValues: ['hero-start', 'hero-center', 'hero-end'],
+          value: ['hero-start', 'hero-center', 'hero-end'].find(a => cls.includes(a)) || 'hero-center',
+          options: [
+            { label: 'Left', value: 'hero-start' },
+            { label: 'Center', value: 'hero-center' },
+            { label: 'Right', value: 'hero-end' }
+          ]
+        },
+        {
+          key: 'section-bg',
+          name: 'Background Mode',
+          section: 'background',
+          type: 'buttons',
+          value: currentBg,
+          refreshes: true,
+          options: [
+            { label: 'None', value: 'none' },
+            { label: 'Image', value: 'bg-image' },
+            { label: 'Video', value: 'bg-video' }
+          ],
+          onChange: function(node, val) {
+            let bgContainer = node.querySelector('.hero-bg');
+            if (!bgContainer) {
+              bgContainer = document.createElement('div');
+              bgContainer.className = 'hero-bg absolute inset-0 -z-10';
+              node.style.position = 'relative';
+              node.insertBefore(bgContainer, node.firstChild);
+            }
+            bgContainer.innerHTML = '';
+            if (val === 'bg-image') {
+              const img = document.createElement('img');
+              img.className = 'w-full h-full object-cover';
+              img.src = 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=80';
+              bgContainer.appendChild(img);
+            } else if (val === 'bg-video') {
+              const vid = document.createElement('video');
+              vid.className = 'w-full h-full object-cover';
+              vid.autoplay = true; vid.loop = true; vid.muted = true; vid.playsInline = true;
+              vid.src = 'https://www.w3schools.com/html/mov_bbb.mp4';
+              bgContainer.appendChild(vid);
+            }
+          }
+        },
+        {
+          key: 'bg-image-src',
+          name: 'Image Source URL',
+          section: 'background',
+          group: 'bg-image',
+          type: 'image',
+          value: bgImgSrc,
+          onChange: function(node, val) {
+            const img = node.querySelector('.hero-bg > img');
+            if (img) img.src = val;
+          }
+        },
+        {
+          key: 'bg-video-src',
+          name: 'Video Source URL',
+          section: 'background',
+          group: 'bg-video',
+          type: 'text',
+          value: bgVidSrc,
+          onChange: function(node, val) {
+            const vid = node.querySelector('.hero-bg > video');
+            if (vid) vid.src = val;
+          }
+        },
+        {
+          key: 'overlay',
+          name: 'Enable Color Overlay',
+          section: 'overlay',
+          type: 'toggle',
+          value: hasOverlay,
+          refreshes: true,
+          onChange: function(node, val) {
+            let o = node.querySelector('.hero-overlay');
+            if (val) {
+              if (!o) {
+                o = document.createElement('div');
+                o.className = 'hero-overlay absolute inset-0 -z-5 bg-black/60';
+                node.style.position = 'relative';
+                node.insertBefore(o, node.firstChild);
+              } else o.classList.remove('hidden');
+            } else if (o) o.classList.add('hidden');
+          }
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 15. DRAWER ARCHETYPE (DaisyUI drawer)
+  // ==========================================
+  Registry.register({
+    id: 'drawer',
+    name: 'Drawer / Sidebar',
+    category: 'Layout & Containers',
+    match: function(el) {
+      const cls = safeClasses(el);
+      return cls.includes('drawer') || getTag(el) === 'div' && (el.closest('.drawer') !== null);
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Drawer Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'open',
+          name: 'Drawer Open',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          value: cls.includes('drawer-open') || el.querySelector('.drawer-toggle:checked'),
+          onChange: function(node, val) {
+            if (val) node.classList.add('drawer-open');
+            else node.classList.remove('drawer-open');
+          }
+        },
+        {
+          key: 'sidePosition',
+          name: 'Sidebar Side',
+          section: 'default',
+          type: 'buttons',
+          htmlAttr: 'class',
+          validValues: ['drawer-end', 'drawer-start'],
+          value: cls.includes('drawer-end') ? 'drawer-end' : 'drawer-start',
+          options: [
+            { label: 'Left', value: 'drawer-start' },
+            { label: 'Right', value: 'drawer-end' }
+          ]
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 16. FLEX CONTAINER ARCHETYPE (DaisyUI/Tailwind)
+  // ==========================================
+  Registry.register({
+    id: 'flex',
+    name: 'Flex Container',
+    category: 'Layout & Containers',
+    match: function(el) {
+      const cls = safeClasses(el);
+      return getTag(el) === 'div' && cls.includes('flex') && !cls.includes('flex-') && !cls.includes('inline-flex');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Flex Direction' },
+        { id: 'alignment', header: 'Alignment' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'direction',
+          name: 'Flex Direction',
+          section: 'default',
+          type: 'buttons',
+          htmlAttr: 'class',
+          validValues: ['flex-row', 'flex-row-reverse', 'flex-col', 'flex-col-reverse'],
+          value: ['flex-row-reverse', 'flex-col', 'flex-col-reverse'].find(d => cls.includes(d)) || 'flex-row',
+          options: [
+            { label: 'Row →', value: 'flex-row' },
+            { label: 'Row ←', value: 'flex-row-reverse' },
+            { label: 'Col ↓', value: 'flex-col' },
+            { label: 'Col ↑', value: 'flex-col-reverse' }
+          ]
+        },
+        {
+          key: 'wrap',
+          name: 'Flex Wrap',
+          section: 'default',
+          type: 'buttons',
+          htmlAttr: 'class',
+          validValues: ['flex-wrap', 'flex-nowrap', 'flex-wrap-reverse'],
+          value: cls.includes('flex-wrap-reverse') ? 'flex-wrap-reverse' : (cls.includes('flex-wrap') ? 'flex-wrap' : (cls.includes('flex-nowrap') ? 'flex-nowrap' : 'flex-wrap')),
+          options: [
+            { label: 'Wrap', value: 'flex-wrap' },
+            { label: 'No Wrap', value: 'flex-nowrap' },
+            { label: 'Reverse', value: 'flex-wrap-reverse' }
+          ]
+        },
+        {
+          key: 'justifyContent',
+          name: 'Justify Content',
+          section: 'alignment',
+          type: 'buttons',
+          htmlAttr: 'class',
+          validValues: ['justify-start', 'justify-center', 'justify-end', 'justify-between', 'justify-around', 'justify-evenly', 'justify-items-start', 'justify-items-center', 'justify-items-end'],
+          value: ['justify-center', 'justify-end', 'justify-between', 'justify-around', 'justify-evenly', 'justify-items-start', 'justify-items-center', 'justify-items-end'].find(j => cls.includes(j)) || 'justify-start',
+          options: [
+            { label: 'Start', value: 'justify-start' },
+            { label: 'Center', value: 'justify-center' },
+            { label: 'End', value: 'justify-end' },
+            { label: 'Between', value: 'justify-between' },
+            { label: 'Around', value: 'justify-around' }
+          ]
+        },
+        {
+          key: 'alignItems',
+          name: 'Align Items',
+          section: 'alignment',
+          type: 'buttons',
+          htmlAttr: 'class',
+          validValues: ['items-start', 'items-center', 'items-end', 'items-baseline', 'items-stretch'],
+          value: ['items-center', 'items-end', 'items-baseline', 'items-stretch'].find(a => cls.includes(a)) || 'items-start',
+          options: [
+            { label: 'Start', value: 'items-start' },
+            { label: 'Center', value: 'items-center' },
+            { label: 'End', value: 'items-end' },
+            { label: 'Stretch', value: 'items-stretch' }
+          ]
+        },
+        {
+          key: 'gap',
+          name: 'Gap',
+          section: 'alignment',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['gap-0', 'gap-1', 'gap-2', 'gap-3', 'gap-4', 'gap-6', 'gap-8'],
+          value: ['gap-0', 'gap-1', 'gap-2', 'gap-3', 'gap-4', 'gap-6', 'gap-8'].find(g => cls.includes(g)) || 'gap-4',
+          options: [
+            { label: 'None', value: 'gap-0' },
+            { label: '0.25rem', value: 'gap-1' },
+            { label: '0.5rem', value: 'gap-2' },
+            { label: '0.75rem', value: 'gap-3' },
+            { label: '1rem', value: 'gap-4' },
+            { label: '1.5rem', value: 'gap-6' },
+            { label: '2rem', value: 'gap-8' }
+          ],
+          onChange: function(node, val) {
+            ['gap-0', 'gap-1', 'gap-2', 'gap-3', 'gap-4', 'gap-6', 'gap-8'].forEach(function(c) { node.classList.remove(c); });
+            if (val) node.classList.add(val);
+          }
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 17. MOCKUP WINDOW ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'mockup-window',
+    name: 'Mockup Window',
+    category: 'Layout & Containers',
+    match: function(el) {
+      return safeClasses(el).includes('mockup-window');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Mockup Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'bg',
+          name: 'Background',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral'],
+          value: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral'].find(b => cls.includes(b)) || 'bg-base-100',
+          options: [
+            { label: 'Base 100', value: 'bg-base-100' },
+            { label: 'Base 200', value: 'bg-base-200' },
+            { label: 'Base 300', value: 'bg-base-300' },
+            { label: 'Neutral', value: 'bg-neutral' }
+          ]
+        },
+        {
+          key: 'border',
+          name: 'Show Border',
+          section: 'default',
+          type: 'toggle',
+          htmlAttr: 'class',
+          value: cls.includes('border'),
+          onChange: function(node, val) {
+            if (val) node.classList.add('border', 'border-base-content/10');
+            else node.classList.remove('border', 'border-base-content/10');
+          }
+        },
+        {
+          key: 'titleBar',
+          name: 'Show Title Bar',
+          section: 'default',
+          type: 'toggle',
+          value: !!el.querySelector('.mockup-button'),
+          onChange: function(node, val) {
+            let btn = node.querySelector('.mockup-button');
+            if (val && !btn) {
+              btn = document.createElement('div');
+              btn.className = 'mockup-button';
+              node.insertBefore(btn, node.firstChild);
+            } else if (!val && btn) {
+              btn.remove();
+            }
+          }
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 18. MOCKUP BROWSER ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'mockup-browser',
+    name: 'Mockup Browser',
+    category: 'Layout & Containers',
+    match: function(el) {
+      return safeClasses(el).includes('mockup-browser');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Browser Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const urlBar = el.querySelector('.mockup-browser-url');
+      const props = [
+        {
+          key: 'url',
+          name: 'URL Bar Text',
+          section: 'default',
+          type: 'text',
+          value: urlBar ? (urlBar.textContent || '') : 'www.example.com',
+          onChange: function(node, val) {
+            let urlEl = node.querySelector('.mockup-browser-url');
+            if (!urlEl) {
+              urlEl = document.createElement('div');
+              urlEl.className = 'mockup-browser-url';
+              node.insertBefore(urlEl, node.firstChild);
+            }
+            urlEl.textContent = val;
+          }
+        },
+        {
+          key: 'bg',
+          name: 'Background',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral'],
+          value: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'bg-neutral'].find(b => cls.includes(b)) || 'bg-base-100',
+          options: [
+            { label: 'Base 100', value: 'bg-base-100' },
+            { label: 'Base 200', value: 'bg-base-200' },
+            { label: 'Base 300', value: 'bg-base-300' },
+            { label: 'Neutral', value: 'bg-neutral' }
+          ]
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
+  // ==========================================
+  // 19. MOCKUP PHONE ARCHETYPE (DaisyUI)
+  // ==========================================
+  Registry.register({
+    id: 'mockup-phone',
+    name: 'Mockup Phone',
+    category: 'Layout & Containers',
+    match: function(el) {
+      return safeClasses(el).includes('mockup-phone');
+    },
+    getSections: function() {
+      return [
+        { id: 'default', header: 'Phone Settings' },
+        { id: 'general', header: 'General' }
+      ];
+    },
+    getProperties: function(el) {
+      const cls = safeClasses(el);
+      const props = [
+        {
+          key: 'orientation',
+          name: 'Orientation',
+          section: 'default',
+          type: 'buttons',
+          htmlAttr: 'class',
+          validValues: ['mockup-phone', 'mockup-phone-horizontal'],
+          value: cls.includes('mockup-phone-horizontal') ? 'mockup-phone-horizontal' : 'mockup-phone',
+          options: [
+            { label: 'Portrait', value: 'mockup-phone' },
+            { label: 'Landscape', value: 'mockup-phone-horizontal' }
+          ]
+        },
+        {
+          key: 'bg',
+          name: 'Background',
+          section: 'default',
+          type: 'select',
+          htmlAttr: 'class',
+          validValues: ['bg-base-100', 'bg-base-200', 'bg-neutral'],
+          value: ['bg-base-100', 'bg-base-200', 'bg-neutral'].find(b => cls.includes(b)) || 'bg-base-100',
+          options: [
+            { label: 'Base 100', value: 'bg-base-100' },
+            { label: 'Base 200', value: 'bg-base-200' },
+            { label: 'Neutral', value: 'bg-neutral' }
+          ]
+        }
+      ];
+      return props.concat(getBaseGeneralProps(el));
+    }
+  });
+
   // Expose to window
   window.NexusBuilderComponents = Registry;
 
