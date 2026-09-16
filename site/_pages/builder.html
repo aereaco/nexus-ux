@@ -1183,7 +1183,8 @@
       pageSections = sections;
     },
 
-    syncCanvasHtmlToDraft: function() {
+    syncCanvasHtmlToDraft: function(force) {
+      if (!force && !bottomPanelExpanded && !exportModalOpen) return;
       const root = getCanvasRoot();
       if (root) {
         canvasHtmlDraft = root.innerHTML.trim();
