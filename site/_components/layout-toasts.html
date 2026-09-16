@@ -4,6 +4,7 @@
   <template data-for="toast in toasts">
     <div
       class="alert shadow-2xl pointer-events-auto transition-all duration-300 flex items-center gap-3 text-sm py-2.5 px-4 rounded-box bg-base-100/95 backdrop-blur-md text-base-content border"
+      data-effect="if (toast && toast.id) { const tid = toast.id; window.setTimeout(() => { toasts = (toasts || []).filter(t => t.id !== tid); }, toast.duration || 7000); }"
       data-class="{
         'border-success/40 shadow-success/10': toast.type === 'success',
         'border-info/40 shadow-info/10': toast.type === 'info',
