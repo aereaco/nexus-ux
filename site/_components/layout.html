@@ -775,15 +775,50 @@
     <div class="flex-1 flex flex-col min-h-0 w-full grow relative overflow-hidden">
 
       <!-- Floating Side Hover Expanding Tab | Breadcrumbs & Page Tabs Toggle (when floatingBookmarks is true) -->
-      <div data-show="floatingBookmarks" class="absolute end-0 top-6 z-40" data-signal="{ hovered: false }"
+      <div data-show="floatingBookmarks" class="absolute end-0 z-40 transition-[max-width,width] duration-300 select-none"
+        data-signal="{
+          hovered: false,
+          dragging: false,
+          startY: 0,
+          startTop: 0,
+          bookmarkTop: Number(localStorage.bookmarkTop || 24),
+          onPointerDown: function(e) {
+            if (e.button !== 0) return;
+            dragging = true;
+            startY = e.clientY;
+            startTop = bookmarkTop;
+            e.currentTarget.setPointerCapture(e.pointerId);
+          },
+          onPointerMove: function(e) {
+            if (!dragging) return;
+            const parent = $el.parentElement;
+            const parentRect = parent ? parent.getBoundingClientRect() : { height: window.innerHeight };
+            const maxTop = Math.max(8, parentRect.height - 48);
+            const newTop = Math.max(8, Math.min(maxTop, startTop + (e.clientY - startY)));
+            bookmarkTop = newTop;
+            localStorage.setItem('bookmarkTop', String(newTop));
+          },
+          onPointerUp: function(e) {
+            if (dragging) {
+              dragging = false;
+              try { e.currentTarget.releasePointerCapture(e.pointerId); } catch(err) {}
+            }
+          }
+        }"
+        data-style="{ top: bookmarkTop + 'px' }"
         data-on-mouseenter_delay.150ms="hovered = true" data-on-mouseleave="hovered = false">
         <nav aria-label="Breadcrumb"
           class="flex items-center overflow-hidden rounded-ss-lg rounded-es-lg border border-base-content/10 bg-base-100 text-base-content transition-[max-width,width] duration-300 ease-in-out whitespace-nowrap shadow-sm"
-          data-class="{ 'max-w-md w-auto shadow-2xl': hovered, 'max-w-12 w-12': !hovered }">
+          data-class="{ 'max-w-md w-auto shadow-2xl': hovered, 'max-w-14 w-14': !hovered }">
 
-          <!-- Anchored Header / Icon (Always present, never destroyed) -->
-          <div class="flex items-center h-10 px-3 shrink-0 bg-secondary text-secondary-content cursor-pointer">
-            <iconify-icon icon="material-symbols-light:bookmark-outline" class="text-2xl"></iconify-icon>
+          <!-- Anchored Drag Handle / Icon (Always present, vertically draggable, never destroyed) -->
+          <div class="flex items-center h-10 px-2.5 gap-1 shrink-0 bg-secondary text-secondary-content cursor-ns-resize touch-none select-none"
+            title="Drag vertically to reposition"
+            data-on-pointerdown="onPointerDown($evt)"
+            data-on-pointermove="onPointerMove($evt)"
+            data-on-pointerup="onPointerUp($evt)">
+            <iconify-icon icon="material-symbols-light:drag-indicator" class="text-base opacity-70"></iconify-icon>
+            <iconify-icon icon="material-symbols-light:bookmark-outline" class="text-xl"></iconify-icon>
             <!-- Breadcrumbs: Fades & Expands on hover -->
             <div
               class="breadcrumbs text-sm font-semibold max-w-xs overflow-x-auto scrollbar-none transition-all duration-300 flex items-center shrink-0 w-auto"
