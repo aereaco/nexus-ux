@@ -123,7 +123,7 @@ const mutationObserverModule: ObserverModule = {
               //   effect → setAttribute → observer → RUN_EFFECT_RUNNERS_KEY
               //   → effect → setAttribute → observer → ∞
               if (attrName === 'style' || attrName === 'draggable' ||
-                  (attrName?.startsWith('data-') && attrName !== 'data-theme') || attrName?.startsWith('nexus-')) return;
+                  attrName?.startsWith('data-') || attrName?.startsWith('nexus-')) return;
 
               // For non-framework attributes (e.g. third-party library changes),
               // notify borrowers only — NOT the element's own effects.

@@ -15661,7 +15661,7 @@ ${match}</ul>
                         });
                       }
                     }
-                    if (attrName === "style" || attrName === "draggable" || attrName?.startsWith("data-") && attrName !== "data-theme" || attrName?.startsWith("nexus-"))
+                    if (attrName === "style" || attrName === "draggable" || attrName?.startsWith("data-") || attrName?.startsWith("nexus-"))
                       return;
                     const borrows = ownership.getBorrowers(target);
                     borrows.forEach((borrow) => {
