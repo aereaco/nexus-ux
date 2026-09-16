@@ -38,7 +38,7 @@
           <span data-bind="copiedToast ? 'Copied to Clipboard!' : 'Copy Code'"></span>
         </button>
 
-        <button class="btn btn-primary btn-sm gap-2 shadow-lg shadow-primary/20" data-on-click="downloadExportHtml()">
+        <button class="btn btn-primary btn-sm gap-2 shadow-lg shadow-primary/20" data-on-click="downloadExportHtml(); exportModalOpen = false">
           <iconify-icon icon="material-symbols-light:download" class="text-base"></iconify-icon>
           Download .html
         </button>
