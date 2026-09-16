@@ -743,7 +743,7 @@
         g.terminalBuffers = { ...(g.terminalBuffers || {}), [tab]: curBuf };
         g.terminalInputText = '';
       }
-    }"    }"
+    }"
   data-class="{ 'md:grid-cols-[max-content_1fr]': !collapsed, 'md:grid-cols-[4rem_1fr]': collapsed, 'h-screen max-h-screen overflow-hidden': fixedHeader, 'min-h-screen': !fixedHeader }"
   data-effect="if (!favHydrated && indexedDB?.favorites) { favHydrated = true; indexedDB.favorites.all().then(items => { if (items && items.length) { favorites = items; favoriteGroups = [...new Set(items.map(f => (f?.group || '').trim()).filter(Boolean))]; } }); }"
   data-on-resize_window="isMobile = window.matchMedia('(max-width: 767px)').matches"
