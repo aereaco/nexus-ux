@@ -303,7 +303,7 @@
         data-drag="{ list: 'favorites', group: 'favorites' }">
         <template data-for="fav in (favorites || []).filter(f => !f.group || !f.group.trim())">
           <div data-drag-item
-            data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }"
+            data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav, source: 'sidebar' }"
             class="rounded-xl transition-all duration-300 flex border border-transparent min-w-0 cursor-move relative group"
             data-class="{
               'p-3 flex-col items-center justify-center text-center h-28 bg-base-200/70 hover:bg-base-200': favViewMode === 'grid',
@@ -314,7 +314,7 @@
                 'flex-col items-center w-full': favViewMode === 'grid',
                 'items-center gap-3': favViewMode === 'list'
               }"
-              data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav }">
+              data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'fav', target: fav, source: 'sidebar' }">
               <iconify-icon data-bind-icon="fav.icon || 'material-symbols-light:star'" class="text-warning shrink-0"
                 data-class="{
                   'text-3xl mb-1': favViewMode === 'grid',
