@@ -26,13 +26,14 @@
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
         moved = true;
       }
-      const parent = $el.parentElement;
-      const parentRect = parent ? parent.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight };
-      const maxRight = Math.max(12, parentRect.width - 76);
-      const maxBottom = Math.max(12, parentRect.height - 76);
+      const fabRoot = e.currentTarget.closest('[data-show=\'!chatbarOpen\']') || $el;
+      const container = (fabRoot && fabRoot.offsetParent) || document.body;
+      const containerRect = container.getBoundingClientRect();
+      const maxRight = Math.max(12, containerRect.width - 76);
+      const maxBottom = Math.max(12, containerRect.height - 76);
       
-      const newRight = Math.max(12, Math.min(maxRight, startRight - dx));
-      const newBottom = Math.max(12, Math.min(maxBottom, startBottom - dy));
+      const newRight = Math.max(12, Math.min(maxRight, Math.round(startRight - dx)));
+      const newBottom = Math.max(12, Math.min(maxBottom, Math.round(startBottom - dy)));
       
       fabRight = newRight;
       fabBottom = newBottom;
@@ -49,13 +50,31 @@
       if (!moved) {
         chatFabOpen = !chatFabOpen;
       }
+    },
+    clampPosition: function() {
+      const fabRoot = $el.closest ? $el.closest('[data-show=\'!chatbarOpen\']') : null;
+      const container = (fabRoot && fabRoot.offsetParent) || document.body;
+      const containerRect = container.getBoundingClientRect();
+      const maxRight = Math.max(12, containerRect.width - 76);
+      const maxBottom = Math.max(12, containerRect.height - 76);
+      if (fabRight > maxRight) {
+        fabRight = maxRight;
+        localStorage.setItem('fabRight', String(maxRight));
+      }
+      if (fabBottom > maxBottom) {
+        fabBottom = maxBottom;
+        localStorage.setItem('fabBottom', String(maxBottom));
+      }
     }
   }"
-  data-style="{ right: fabRight + 'px', bottom: fabBottom + 'px' }">
+  data-style="{ right: fabRight + 'px', bottom: fabBottom + 'px' }"
+  data-on-resize_window="clampPosition()"
+  data-effect="if (typeof sidebarOpen !== 'undefined' || typeof terminalOpen !== 'undefined') { clampPosition(); }">
 
-  <!-- Speed Dial Action Pills: Stacks upward when chatFabOpen is true -->
+  <!-- Speed Dial Action Pills: Stacks upward when near bottom, downward when near top -->
   <div data-show="chatFabOpen"
-    class="mb-3 flex flex-col items-end gap-3 transition-all duration-300">
+    data-class="{ 'order-first mb-3': fabBottom <= 320, 'order-last mt-3': fabBottom > 320 }"
+    class="flex flex-col items-end gap-3 transition-all duration-300">
     <!-- "New Conversation" Action -->
     <div class="flex items-center gap-2.5">
       <span class="badge badge-neutral shadow-lg font-medium text-xs py-2 px-3">New Conversation</span>
@@ -99,7 +118,8 @@
   </div>
 
   <!-- Primary Floating Action Button (FAB): Freely draggable anywhere inside content container -->
-  <div class="flex items-center justify-end">
+  <div class="flex items-center justify-end"
+    data-class="{ 'order-last': fabBottom <= 320, 'order-first': fabBottom > 320 }">
     <button type="button"
       class="btn btn-circle btn-lg btn-primary shadow-2xl hover:scale-105 active:scale-95 transition-transform duration-200 border-2 border-primary-content/20 flex items-center justify-center relative cursor-grab active:cursor-grabbing touch-none select-none"
       aria-label="Toggle Collaboration Speed Dial"
@@ -107,6 +127,7 @@
       data-on-pointerdown="onPointerDown($evt)"
       data-on-pointermove="onPointerMove($evt)"
       data-on-pointerup="onPointerUp($evt)"
+      data-on-pointercancel="onPointerUp($evt)"
       data-on-click="onClick()">
       <!-- Main Chat Icon (when speed dial closed) -->
       <iconify-icon icon="material-symbols-light:chat" class="text-3xl transition-transform duration-300 pointer-events-none"
