@@ -685,6 +685,20 @@
         compType = 'link';
       } else if (['p', 'span', 'blockquote', 'code', 'kbd', 'li'].includes(tag) || (raw.children.length === 0 && raw.textContent.trim().length > 0)) {
         compType = 'text';
+      } else if (tag === 'header' && !rawClasses.includes('navbar')) {
+        compType = 'header';
+      } else if (tag === 'footer') {
+        compType = 'footer';
+      } else if (rawClasses.includes('hero')) {
+        compType = 'hero';
+      } else if (rawClasses.includes('drawer')) {
+        compType = 'drawer';
+      } else if (rawClasses.includes('mockup-window')) {
+        compType = 'mockup-window';
+      } else if (rawClasses.includes('mockup-browser')) {
+        compType = 'mockup-browser';
+      } else if (rawClasses.includes('mockup-phone')) {
+        compType = 'mockup-phone';
       }
       inspector.componentType = compType;
 
