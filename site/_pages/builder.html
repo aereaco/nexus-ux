@@ -671,56 +671,58 @@
 
       // 1. Dynamic Component Archetype Detection
       let compType = inspector.componentType || 'element';
-      if (['section', 'header', 'footer', 'main'].includes(tag) || rawClasses.includes('hero') || raw.getAttribute('data-section')) {
-        compType = 'section';
-      } else if (rawClasses.includes('row') || rawClasses.includes('grid-row') || raw.getAttribute('data-grid-row')) {
-        compType = 'gridrow';
-      } else if (tag === 'svg' || rawClasses.includes('svg-image') || rawClasses.includes('separator')) {
-        compType = 'svgimage';
-      } else if (tag === 'img' || (tag === 'figure' && raw.querySelector('img'))) {
-        compType = 'image';
-      } else if (tag === 'button' || rawClasses.includes('btn') || (tag === 'a' && rawClasses.includes('btn'))) {
-        compType = 'button';
-      } else if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag)) {
-        compType = 'heading';
-      } else if (rawClasses.includes('card')) {
-        compType = 'card';
-      } else if (rawClasses.includes('badge')) {
-        compType = 'badge';
-      } else if (rawClasses.includes('alert')) {
-        compType = 'alert';
-      } else if (rawClasses.includes('collapse') || tag === 'details') {
-        compType = 'collapse';
-      } else if (rawClasses.includes('tabs') || raw.getAttribute('role') === 'tablist') {
-        compType = 'tabs';
-      } else if (['input', 'textarea'].includes(tag)) {
-        compType = 'input';
-      } else if (tag === 'select') {
-        compType = 'select';
-      } else if (tag === 'form') {
-        compType = 'form';
-      } else if (tag === 'table' || rawClasses.includes('table')) {
-        compType = 'table';
-      } else if (tag === 'a') {
-        compType = 'link';
-      } else if (['p', 'span', 'blockquote', 'code', 'kbd', 'li'].includes(tag) || (raw.children.length === 0 && raw.textContent.trim().length > 0)) {
-        compType = 'text';
-      } else if (tag === 'header' && !rawClasses.includes('navbar')) {
-        compType = 'header';
-      } else if (tag === 'footer') {
-        compType = 'footer';
-      } else if (rawClasses.includes('hero')) {
-        compType = 'hero';
-      } else if (rawClasses.includes('drawer')) {
-        compType = 'drawer';
-      } else if (rawClasses.includes('mockup-window')) {
-        compType = 'mockup-window';
-      } else if (rawClasses.includes('mockup-browser')) {
-        compType = 'mockup-browser';
-      } else if (rawClasses.includes('mockup-phone')) {
-        compType = 'mockup-phone';
+      if (!window.NexusBuilderComponents || !compType || compType.startsWith('element-') || compType === 'element') {
+        if (['section', 'header', 'footer', 'main'].includes(tag) || rawClasses.includes('hero') || raw.getAttribute('data-section')) {
+          compType = 'section';
+        } else if (rawClasses.includes('row') || rawClasses.includes('grid-row') || raw.getAttribute('data-grid-row')) {
+          compType = 'gridrow';
+        } else if (tag === 'svg' || rawClasses.includes('svg-image') || rawClasses.includes('separator')) {
+          compType = 'svgimage';
+        } else if (tag === 'img' || (tag === 'figure' && raw.querySelector('img'))) {
+          compType = 'image';
+        } else if (tag === 'button' || rawClasses.includes('btn') || (tag === 'a' && rawClasses.includes('btn'))) {
+          compType = 'button';
+        } else if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag)) {
+          compType = 'heading';
+        } else if (rawClasses.includes('card')) {
+          compType = 'card';
+        } else if (rawClasses.includes('badge')) {
+          compType = 'badge';
+        } else if (rawClasses.includes('alert')) {
+          compType = 'alert';
+        } else if (rawClasses.includes('collapse') || tag === 'details') {
+          compType = 'collapse';
+        } else if (rawClasses.includes('tabs') || raw.getAttribute('role') === 'tablist') {
+          compType = 'tabs';
+        } else if (['input', 'textarea'].includes(tag)) {
+          compType = 'input';
+        } else if (tag === 'select') {
+          compType = 'select';
+        } else if (tag === 'form') {
+          compType = 'form';
+        } else if (tag === 'table' || rawClasses.includes('table')) {
+          compType = 'table';
+        } else if (tag === 'a') {
+          compType = 'link';
+        } else if (['p', 'span', 'blockquote', 'code', 'kbd', 'li'].includes(tag) || (raw.children.length === 0 && raw.textContent.trim().length > 0)) {
+          compType = 'text';
+        } else if (tag === 'header' && !rawClasses.includes('navbar')) {
+          compType = 'header';
+        } else if (tag === 'footer') {
+          compType = 'footer';
+        } else if (rawClasses.includes('hero')) {
+          compType = 'hero';
+        } else if (rawClasses.includes('drawer')) {
+          compType = 'drawer';
+        } else if (rawClasses.includes('mockup-window')) {
+          compType = 'mockup-window';
+        } else if (rawClasses.includes('mockup-browser')) {
+          compType = 'mockup-browser';
+        } else if (rawClasses.includes('mockup-phone')) {
+          compType = 'mockup-phone';
+        }
+        inspector.componentType = compType;
       }
-      inspector.componentType = compType;
 
       // 2. Populate Archetype Specific Props
       const p = inspector.props;
