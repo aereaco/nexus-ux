@@ -67,15 +67,13 @@
             syncCanvasHtmlToDraft();
           }, 200);
 
-          const selectBoxEl = window.document.getElementById('select-box');
-          const highlightBoxEl = window.document.getElementById('highlight-box');
           let scrollRaf = null;
 
-          // Webstudio-style Synchronous Coordinate Synchronization
+          // Webstudio-style Synchronous Coordinate Synchronization via Reactive Signals
           const syncBoxPosition = () => {
             const el = typeof toRawNode === 'function' ? toRawNode(selectedEl) : (selectedEl && selectedEl.__v_raw ? selectedEl.__v_raw : selectedEl);
-            if (!el || !selectBoxEl || previewMode) {
-              if (selectBoxEl) selectBoxEl.style.display = 'none';
+            if (!el || previewMode) {
+              selectedBox.visible = false;
               return;
             }
             const elRect = el.getBoundingClientRect();
@@ -83,7 +81,7 @@
 
             // Check if element is scrolled out of view
             if (elRect.bottom < hostRect.top || elRect.top > hostRect.bottom) {
-              selectBoxEl.style.display = 'none';
+              selectedBox.visible = false;
               return;
             }
 
@@ -92,21 +90,16 @@
             const width = elRect.width;
             const height = elRect.height;
 
-            selectBoxEl.style.display = 'block';
-            selectBoxEl.style.top = top + 'px';
-            selectBoxEl.style.left = left + 'px';
-            selectBoxEl.style.width = width + 'px';
-            selectBoxEl.style.height = height + 'px';
-
             selectedBox.top = top;
             selectedBox.left = left;
             selectedBox.width = width;
             selectedBox.height = height;
+            selectedBox.visible = true;
           };
 
           // Webstudio Capture-Phase Passive Scroll Tracking (Eliminates Drift)
           const onScroll = () => {
-            if (highlightBoxEl) highlightBoxEl.style.display = 'none';
+            hoverBox.visible = false;
             if (selectedEl) {
               if (scrollRaf) window.cancelAnimationFrame(scrollRaf);
               scrollRaf = window.requestAnimationFrame(syncBoxPosition);
@@ -114,7 +107,7 @@
           };
 
           host.addEventListener('scroll', onScroll, { passive: true, capture: true });
-          const canvasContainer = window.document.getElementById('canvas');
+          const canvasContainer = typeof $ === 'function' ? $('#canvas') : (window.document.getElementById('canvas'));
           if (canvasContainer) {
             canvasContainer.addEventListener('scroll', onScroll, { passive: true, capture: true });
           }
