@@ -166,6 +166,8 @@
                     data-bind-aria-selected="(flatResults || [])[searchActiveIndex]?.path === item.path ? 'true' : 'false'"
                     data-on-mouseenter="const idx = (flatResults || []).findIndex(function(it) { return it.path === item.path; }); if (idx !== -1) searchActiveIndex = idx;"
                     data-on-click="
+                      searchOpen = false;
+                      if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
                       const q = (searchDebouncedQuery || searchQuery || '').trim();
                       if (q) {
                         recentSearches = [q, ...(recentSearches || []).filter(function(s) { return s !== q; })].slice(0, 6);
@@ -198,8 +200,6 @@
                         };
                       }
                       router.navigate(item.path);
-                      searchOpen = false;
-                      if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }
                     ">
                     <div class="flex items-center justify-between w-full">
                       <div class="flex items-center gap-2.5 min-w-0">
