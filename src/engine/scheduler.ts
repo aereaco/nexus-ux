@@ -339,8 +339,11 @@ class Scheduler {
         );
 
         if (shouldYield) {
-          queue.splice(0, head);
-          head = 0;
+          if (head > 512) {
+            queue.copyWithin(0, head);
+            queue.length -= head;
+            head = 0;
+          }
           this.syncSharedState();
           await yieldToBrowser();
           // Continue processing remaining jobs with a fresh time slice
@@ -348,8 +351,11 @@ class Scheduler {
         }
       }
     } finally {
-      if (head > 0) {
-        queue.splice(0, head);
+      if (head >= queue.length) {
+        queue.length = 0;
+      } else if (head > 0) {
+        queue.copyWithin(0, head);
+        queue.length -= head;
       }
       this.syncSharedState();
     }

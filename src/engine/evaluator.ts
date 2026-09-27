@@ -220,6 +220,14 @@ function validateExpression(expression: string, el: Element | Text | Comment): U
 }
 
 
+let evalFrameCounter = 0;
+export function getEvalFrame(): number {
+  return evalFrameCounter;
+}
+export function advanceEvalFrame(): number {
+  return ++evalFrameCounter;
+}
+
 // Module-level compiled expression cache (Alpine.js & Vue compiler parity) with LRU eviction
 const MAX_COMPILED_CACHE_SIZE = 2048;
 const compiledExpressionCache = new Map<string, Function>();
@@ -296,6 +304,7 @@ export function evaluateLater(
     }
 
     currentEvalDepth++;
+    advanceEvalFrame();
     try {
       const currentScope = callExtras && Object.keys(callExtras).length > 0
         ? new Proxy(callExtras, {

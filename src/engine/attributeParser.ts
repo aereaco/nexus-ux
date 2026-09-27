@@ -25,7 +25,29 @@ export interface ParsedAttribute {
  *   data-signal_global       → { directive: "signal", modifiers: ["global"] }
  *   data-for                 → { directive: "for" }
  */
+interface ParsedAttributeStructure {
+  directive?: string;
+  argument?: string;
+  modifiers: string[];
+  target?: string;
+}
+
+const parsedAttributeStructureCache = new Map<string, ParsedAttributeStructure | null>();
+
 export function parseAttribute(name: string, _runtime: RuntimeContext, element: HTMLElement): ParsedAttribute | null {
+  const cached = parsedAttributeStructureCache.get(name);
+  if (cached === null) return null;
+  if (cached !== undefined) {
+    return {
+      name,
+      value: element.getAttribute(name) || '',
+      directive: cached.directive,
+      argument: cached.argument,
+      modifiers: cached.modifiers,
+      target: cached.target
+    };
+  }
+
   let rawName = '';
   let isNexus = false;
 
@@ -41,6 +63,7 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
   }
 
   if (!isNexus) {
+    parsedAttributeStructureCache.set(name, null);
     return null; // Not a Nexus-UX attribute
   }
 
@@ -94,13 +117,18 @@ export function parseAttribute(name: string, _runtime: RuntimeContext, element: 
     }
   }
 
+  const structure: ParsedAttributeStructure = {
+    directive,
+    argument,
+    modifiers,
+    target
+  };
+  parsedAttributeStructureCache.set(name, structure);
+
   return {
-    name: name,
+    name,
     value: element.getAttribute(name) || '',
-    directive: directive,
-    argument: argument,
-    modifiers: modifiers,
-    target: target
+    ...structure
   };
 }
 

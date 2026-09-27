@@ -42,6 +42,7 @@ import {
   DEFAULT_IDB_DATABASE,
   type IndexedDBStoreOperations
 } from './reflect.ts';
+import { getEvalFrame } from './evaluator.ts';
 
 export {
   createReflectProxy,
@@ -342,6 +343,18 @@ export function getElementScope(
 ): Record<string | symbol, unknown> {
   const reflectProxy = createReflectProxy(runtime, el instanceof Element ? el : undefined);
 
+  let cachedDataStack: Record<string, unknown>[] | null = null;
+  let lastFrame = -1;
+
+  const resolveStack = (): Record<string, unknown>[] => {
+    const frame = getEvalFrame();
+    if (frame !== lastFrame || !cachedDataStack) {
+      cachedDataStack = getDataStack(el);
+      lastFrame = frame;
+    }
+    return cachedDataStack;
+  };
+
   return new Proxy({}, {
     has(target, key): boolean {
       if (key === Symbol.unscopables) return false;
@@ -362,8 +375,8 @@ export function getElementScope(
           return resolveScopeProvider(key, el, runtime);
         }
 
-        // 3. Local Data Stack (ZCZS live ancestor traversal)
-        const dataStack = getDataStack(el);
+        // 3. Local Data Stack (ZCZS live ancestor traversal, frame-memoized)
+        const dataStack = resolveStack();
         for (const data of dataStack) {
           if (key in data) {
             return runtime.unref((data as any)[key]);
@@ -404,8 +417,8 @@ export function getElementScope(
           return true;
         }
 
-        // 2. Local Data Stack
-        const dataStack = getDataStack(el);
+        // 2. Local Data Stack (frame-memoized)
+        const dataStack = resolveStack();
         for (const data of dataStack) {
           if (key in data) {
             (data as any)[key] = value;

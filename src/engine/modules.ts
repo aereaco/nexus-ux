@@ -523,18 +523,27 @@ export class ModuleCoordinator {
     if (currentIsolation !== 'ux') {
       const handlersToExecute: {
         directiveName: string;
+        attrName: string;
+        attrValue: string;
         handle: () => (() => void) | void;
         originalIndex: number;
       }[] = [];
 
-      Array.from(element.attributes).forEach((attr, index) => {
+      const rawAttributes = element.attributes;
+      const attrLen = rawAttributes.length;
+      for (let index = 0; index < attrLen; index++) {
+        const attr = rawAttributes[index];
         try {
           const parsedAttr = this.runtimeContext.parseAttribute(attr.name, this.runtimeContext, element);
           if (parsedAttr?.directive) {
             const module = this.attributeModules.get(parsedAttr.directive);
             if (module) {
+              const attrName = attr.name;
+              const attrValue = attr.value;
               handlersToExecute.push({
                 directiveName: parsedAttr.directive,
+                attrName,
+                attrValue,
                 handle: () => {
                   let scopedRuntime = this.runtimeContext;
                   if (parsedAttr.modifiers && parsedAttr.modifiers.length > 0) {
@@ -559,7 +568,7 @@ export class ModuleCoordinator {
                     });
                     scopedRuntime.evaluate = currentEvaluate;
                   }
-                  return module.handle(element, attr.value, scopedRuntime, parsedAttr);
+                  return module.handle(element, attrValue, scopedRuntime, parsedAttr);
                 },
                 originalIndex: index,
               });
@@ -568,7 +577,7 @@ export class ModuleCoordinator {
         } catch (err) {
           logger.warn(this.runtimeContext, `[Directive Isolation] Fault in attribute parse for '${attr.name}' on <${element.tagName}>:`, err);
         }
-      });
+      }
 
       handlersToExecute.sort((a, b) => {
         if (a.directiveName === 'signal' && b.directiveName !== 'signal') return -1;
@@ -582,8 +591,8 @@ export class ModuleCoordinator {
 
       handlersToExecute.forEach(handler => {
         const enhancedEl = element as NexusEnhancedElement;
-        const fullAttrName = Array.from(element.attributes)[handler.originalIndex]?.name || handler.directiveName;
-        const hashKey = `${fullAttrName}:${this.runtimeContext.attrHash(handler.directiveName, element.getAttribute(fullAttrName) || '')}`;
+        const fullAttrName = handler.attrName;
+        const hashKey = `${fullAttrName}:${this.runtimeContext.attrHash(handler.directiveName, handler.attrValue)}`;
 
         let elRemovals = enhancedEl[CLEANUP_FUNCTIONS_KEY];
         if (elRemovals?.has(hashKey)) return;
