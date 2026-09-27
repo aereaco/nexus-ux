@@ -13146,6 +13146,38 @@ ${match}</ul>
       return this.workers;
     }
     /**
+     * Returns current active tier.
+     */
+    getTier() {
+      return this.currentTier;
+    }
+    /**
+     * Dispatches a named task to a worker thread from the pool.
+     */
+    async executeTask(taskName, payload) {
+      await this.ensureWorkers();
+      if (this.workers.length === 0) {
+        throw new Error(`No workers available to execute task: ${taskName}`);
+      }
+      const id = ++taskIdCounter;
+      const worker = this.workers[workerRoundRobin % this.workers.length];
+      workerRoundRobin = (workerRoundRobin + 1) % this.workers.length;
+      return new Promise((resolve, reject) => {
+        pendingWorkerTasks.set(id, { resolve, reject });
+        try {
+          worker.postMessage({
+            type: "EXECUTE",
+            id,
+            taskName,
+            payload
+          });
+        } catch (err) {
+          pendingWorkerTasks.delete(id);
+          reject(err);
+        }
+      });
+    }
+    /**
      * Cleanup resources
      */
     dispose() {

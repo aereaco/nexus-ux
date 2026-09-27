@@ -411,6 +411,41 @@ class EngineTopology {
   }
 
   /**
+   * Returns current active tier.
+   */
+  public getTier(): TierLevel {
+    return this.currentTier;
+  }
+
+  /**
+   * Dispatches a named task to a worker thread from the pool.
+   */
+  public async executeTask<T = any>(taskName: string, payload: unknown): Promise<T> {
+    await this.ensureWorkers();
+    if (this.workers.length === 0) {
+      throw new Error(`No workers available to execute task: ${taskName}`);
+    }
+    const id = ++taskIdCounter;
+    const worker = this.workers[workerRoundRobin % this.workers.length];
+    workerRoundRobin = (workerRoundRobin + 1) % this.workers.length;
+
+    return new Promise<T>((resolve, reject) => {
+      pendingWorkerTasks.set(id, { resolve, reject });
+      try {
+        worker.postMessage({
+          type: 'EXECUTE',
+          id,
+          taskName,
+          payload
+        });
+      } catch (err) {
+        pendingWorkerTasks.delete(id);
+        reject(err);
+      }
+    });
+  }
+
+  /**
    * Cleanup resources
    */
   public dispose(): void {
