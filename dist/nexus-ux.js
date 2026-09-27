@@ -2610,9 +2610,12 @@ ${suggestion}`);
           globalSignals[key] = value;
           return true;
         }
-        return Reflect.set(target, key, value);
       }
     });
+    if (!hasExtras) {
+      elementScopeCache.set(el, proxy);
+    }
+    return proxy;
   }
 
   // src/modules/attributes/build.ts
