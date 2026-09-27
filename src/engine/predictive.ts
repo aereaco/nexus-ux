@@ -150,6 +150,8 @@ class Quadtree {
 export class CorePredictiveEngine {
   private history: Point[] = [];
   private quadtree!: Quadtree;
+  private candidateMap = new Map<number, HTMLElement>();
+  private candidateRects: { id: number; left: number; top: number; width: number; height: number }[] = [];
   private viewportWidth = 1920;
   private viewportHeight = 1080;
   private cleanupFns: (() => void)[] = [];

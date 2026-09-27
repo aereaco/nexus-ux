@@ -12262,6 +12262,8 @@ ${match}</ul>
   var CorePredictiveEngine = class {
     history = [];
     quadtree;
+    candidateMap = /* @__PURE__ */ new Map();
+    candidateRects = [];
     viewportWidth = 1920;
     viewportHeight = 1080;
     cleanupFns = [];
