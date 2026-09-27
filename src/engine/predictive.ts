@@ -454,27 +454,106 @@ export class CorePredictiveEngine {
       height: this.viewportHeight,
     });
 
+    this.candidateMap.clear();
+    this.candidateRects = [];
+    let nextId = 1;
+
     if (typeof document === 'undefined') return;
 
     const candidates = document.querySelectorAll(
       'a, button, input, [href], [data-route-link], [data-component], [data-on-click]'
     );
     const len = candidates.length;
+    const isLowTier = topology.getTier() < 2;
+
     for (let i = 0; i < len; i++) {
       const el = candidates[i];
       if (el instanceof HTMLElement) {
         const rect = el.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
+          const id = nextId++;
+          this.candidateMap.set(id, el);
+          this.candidateRects.push({
+            id,
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+          });
+
           const centerX = rect.left + rect.width / 2;
           const centerY = rect.top + rect.height / 2;
           this.quadtree.insert(el, centerX, centerY);
+
+          if (isLowTier && !(el as any).__nxsPrewarmAttached) {
+            (el as any).__nxsPrewarmAttached = true;
+            el.addEventListener('pointerenter', () => this.prewarmElement(el), { passive: true });
+          }
         }
       }
     }
   }
 
-  private processPrediction() {
+  private async processPrediction() {
     if (this.history.length < 3) return;
+
+    const isLowTier = topology.getTier() < 2;
+    if (isLowTier) {
+      // Tier 0/1 Mono/Dual-thread: pointerenter listener handles instant prewarming
+      // Bypasses vector math on main thread for low-end devices
+      return;
+    }
+
+    // High-tier multi-threaded mode (Tier 2/3): Offload to Web Worker!
+    try {
+      const result = await topology.executeTask<{
+        matchedIds: number[];
+        snappedId?: number;
+        snappedTarget?: { cx: number; cy: number };
+        speed?: number;
+        projX?: number;
+        projY?: number;
+      }>('PREDICT_TRAJECTORY', {
+        history: this.history,
+        candidates: this.candidateRects,
+      });
+
+      if (!result || !result.matchedIds) return;
+
+      if (this.debugTracker && result.snappedTarget) {
+        const p2 = this.history[this.history.length - 1];
+        const targetX = 100 + (result.snappedTarget.cx - p2.x);
+        const targetY = 100 + (result.snappedTarget.cy - p2.y);
+        this.debugTracker.targetLine.setAttribute('x2', targetX.toString());
+        this.debugTracker.targetLine.setAttribute('y2', targetY.toString());
+        this.debugTracker.targetLine.style.opacity = '1';
+      }
+
+      const newPredictiveNodes = new Set<HTMLElement>();
+      const matchedLen = result.matchedIds.length;
+      for (let i = 0; i < matchedLen; i++) {
+        const el = this.candidateMap.get(result.matchedIds[i]);
+        if (el) newPredictiveNodes.add(el);
+      }
+
+      newPredictiveNodes.forEach((node) => {
+        if (!this.activePredictiveNodes.has(node)) {
+          this.prewarmElement(node);
+        }
+      });
+
+      this.activePredictiveNodes.forEach((node) => {
+        if (!newPredictiveNodes.has(node)) {
+          node.classList.remove('nexus-predictive-warm');
+          node.dispatchEvent(new CustomEvent('nexus:predictive-cool'));
+        }
+      });
+
+      this.activePredictiveNodes = newPredictiveNodes;
+      return;
+    } catch (_err) {
+      // Fall through to local Quadtree fallback if worker task fails
+    }
 
     const p0 = this.history[this.history.length - 3];
     const p2 = this.history[this.history.length - 1];
