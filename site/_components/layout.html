@@ -32,136 +32,17 @@
       searchTickTrackStyle: {},
       searchTargetTick: null,
       syncPageHighlights: function(container, tabId, tokens) {
-        if (typeof window === 'undefined' || typeof window.CSS === 'undefined' || !window.CSS.highlights || typeof window.Highlight === 'undefined') return;
-        if (!container) return;
-        const effectiveTabId = tabId || (typeof router !== 'undefined' ? router.activePageTabId : '');
-        if (!tokens || tokens.length === 0 || !searchTabs || !searchTabs[effectiveTabId]) {
-          window.CSS.highlights.delete('page-match');
-          searchHighlightCount = 0;
-          searchTicks = [];
-          if (effectiveTabId && searchTabs && searchTabs[effectiveTabId]) {
-            searchTabs[effectiveTabId].count = 0;
-            searchTabs[effectiveTabId].ticks = [];
-          }
-          return;
+        if (typeof window.syncPageHighlights === 'function') {
+          window.syncPageHighlights(container, tabId, tokens);
         }
-        window.setTimeout(() => {
-          try {
-            if (!searchTabs || !searchTabs[effectiveTabId] || !searchTabs[effectiveTabId].tokens || searchTabs[effectiveTabId].tokens.length === 0) {
-              window.CSS.highlights.delete('page-match');
-              return;
-            }
-            const ranges = [];
-            const filter = window.NodeFilter ? window.NodeFilter.SHOW_TEXT : 4;
-            const walker = window.document.createTreeWalker(container, filter, null);
-            let node;
-            while ((node = walker.nextNode())) {
-              const text = node.textContent;
-              if (!text || !text.trim()) continue;
-              const lowerText = text.toLowerCase();
-              for (const token of tokens) {
-                if (!token || token.length < 2) continue;
-                let pos = 0;
-                while ((pos = lowerText.indexOf(token, pos)) !== -1) {
-                  const range = new window.Range();
-                  range.setStart(node, pos);
-                  range.setEnd(node, pos + token.length);
-                  ranges.push(range);
-                  pos += token.length;
-                }
-              }
-            }
-            if (!searchTabs || !searchTabs[effectiveTabId]) {
-              window.CSS.highlights.delete('page-match');
-              return;
-            }
-            searchHighlightCount = ranges.length;
-            if (ranges.length !== 0) {
-              window.CSS.highlights.set('page-match', new window.Highlight(...ranges));
-
-              // Compute scrollbar location ticks
-              const scrollEl = container.closest('.overflow-y-auto') || container;
-              const ticks = [];
-              if (scrollEl) {
-                const scrollRect = scrollEl.getBoundingClientRect();
-                const scrollH = scrollEl.scrollHeight;
-                const scrollT = scrollEl.scrollTop;
-
-                for (const r of ranges) {
-                  const rect = r.getBoundingClientRect();
-                  if (!rect || (rect.width === 0 && rect.height === 0)) continue;
-                  const topInScroll = (rect.top - scrollRect.top) + scrollT;
-                  const pct = Math.min(99.5, Math.max(0.5, (topInScroll / scrollH) * 100));
-                  if (!ticks.some(t => Math.abs(t - pct) < 0.8)) {
-                    ticks.push(Number(pct.toFixed(1)));
-                  }
-                }
-              }
-              searchTicks = ticks;
-              if (effectiveTabId && searchTabs && searchTabs[effectiveTabId]) {
-                searchTabs[effectiveTabId].count = ranges.length;
-                searchTabs[effectiveTabId].ticks = ticks;
-              }
-            } else {
-              window.CSS.highlights.delete('page-match');
-              searchTicks = [];
-              if (effectiveTabId && searchTabs && searchTabs[effectiveTabId]) {
-                searchTabs[effectiveTabId].count = 0;
-                searchTabs[effectiveTabId].ticks = [];
-              }
-            }
-          } catch { /* ignore range calculation errors */ }
-        }, 120);
       },
-      segmenter: null,
-      collator: null,
       getSearchTokens: function(query) {
-        const q = (query || '').trim();
-        if (!q) return [];
-        try {
-          if (typeof Intl !== 'undefined' && Intl.Segmenter) {
-            const seg = new Intl.Segmenter('en', { granularity: 'word' });
-            return Array.from(seg.segment(q)).filter(function(s) { return s.isWordLike; }).map(function(s) { return s.segment.toLowerCase(); });
-          }
-        } catch { /* fallback */ }
-        return q.toLowerCase().split(/\s+/).filter(Boolean);
+        return typeof window.getSearchTokens === 'function' ? window.getSearchTokens(query) : (query || '').toLowerCase().split(/\s+/).filter(Boolean);
       },
-      syncHighlights: (container, tokens) => {
-        if (typeof window === 'undefined' || typeof window.CSS === 'undefined' || !window.CSS.highlights || typeof window.Highlight === 'undefined') return;
-        if (!container) return;
-        if (!tokens || tokens.length === 0) {
-          window.CSS.highlights.delete('search-match');
-          return;
+      syncHighlights: function(container, tokens) {
+        if (typeof window.syncHighlights === 'function') {
+          window.syncHighlights(container, tokens);
         }
-        window.setTimeout(() => {
-          try {
-            const ranges = [];
-            const filter = window.NodeFilter ? window.NodeFilter.SHOW_TEXT : 4;
-            const walker = window.document.createTreeWalker(container, filter, null);
-            let node;
-            while ((node = walker.nextNode())) {
-              const text = node.textContent;
-              if (!text || !text.trim()) continue;
-              const lowerText = text.toLowerCase();
-              for (const token of tokens) {
-                if (!token || token.length === 0 || token.length === 1) continue;
-                let pos = 0;
-                while ((pos = lowerText.indexOf(token, pos)) !== -1) {
-                  const range = new window.Range();
-                  range.setStart(node, pos);
-                  range.setEnd(node, pos + token.length);
-                  ranges.push(range);
-                  pos += token.length;
-                }
-              }
-            }
-            if (ranges.length !== 0) {
-              window.CSS.highlights.set('search-match', new window.Highlight(...ranges));
-            } else {
-              window.CSS.highlights.delete('search-match');
-            }
-          } catch { /* ignore range calculation errors */ }
-        }, 60);
       },
       getRouteCategory: (r) => {
         if (!r || !r.path || r.path === '/') return 'Navigation';

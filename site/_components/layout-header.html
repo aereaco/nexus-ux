@@ -1,4 +1,9 @@
-<nav class="navbar w-full bg-base-300 shrink-0 z-20">
+<nav class="navbar w-full bg-base-300 shrink-0 z-20"
+  data-computed="{
+    unreadMailCount: () => (mailMessages || []).filter(m => m.unread).length,
+    cartItemCount: () => (cartItems || []).reduce((acc, i) => acc + i.qty, 0),
+    unreadNotificationCount: () => (notifications || []).filter(n => !n.read).length
+  }">
   <div class="flex-1">
     <button class="btn btn-circle btn-ghost md:hidden" data-on-click="sidebarOpen = !sidebarOpen"
       aria-label="open sidebar">
@@ -6,7 +11,7 @@
       <iconify-icon icon="material-symbols-light:menu" class="text-2xl"></iconify-icon>
     </button>
     <div class="flex-none">
-      <button data-on-click="collapsed = !collapsed; localStorage.setItem('collapsed', collapsed)"
+      <button data-on-click="collapsed = !collapsed; localStorage.collapsed = collapsed"
         aria-label="toggle sidebar" class="btn btn-circle btn-ghost hidden md:flex"
         data-class="{ 'scale-x-[-1]': !collapsed || hovered }">
         <!-- Sidebar collapse icon -->
@@ -147,9 +152,9 @@
       data-on-click_stop="headerDropdownTab = 'mail'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'mail') ? false : true">
       <div class="indicator">
         <iconify-icon icon="material-symbols-light:mail-outline" class="text-2xl"></iconify-icon>
-        <span data-show="(mailMessages || []).filter(m => m.unread).length > 0"
+        <span data-show="unreadMailCount > 0"
           class="badge badge-xs badge-info indicator-item"
-          data-bind="(mailMessages || []).filter(m => m.unread).length"></span>
+          data-bind="unreadMailCount"></span>
       </div>
     </button>
 
@@ -158,9 +163,9 @@
       data-on-click_stop="headerDropdownTab = 'cart'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'cart') ? false : true">
       <div class="indicator">
         <iconify-icon icon="material-symbols-light:shopping-cart-outline" class="text-2xl"></iconify-icon>
-        <span data-show="(cartItems || []).reduce((acc, i) => acc + i.qty, 0) > 0"
+        <span data-show="cartItemCount > 0"
           class="badge badge-xs badge-warning indicator-item"
-          data-bind="(cartItems || []).reduce((acc, i) => acc + i.qty, 0)"></span>
+          data-bind="cartItemCount"></span>
       </div>
     </button>
 
@@ -169,9 +174,9 @@
       data-on-click_stop="headerDropdownTab = 'notifications'; headerDropdownOpen = (headerDropdownOpen && headerDropdownTab === 'notifications') ? false : true">
       <div class="indicator">
         <iconify-icon icon="material-symbols-light:notifications-outline" class="text-2xl"></iconify-icon>
-        <span data-show="(notifications || []).filter(n => !n.read).length > 0"
+        <span data-show="unreadNotificationCount > 0"
           class="badge badge-xs badge-primary indicator-item"
-          data-bind="(notifications || []).filter(n => !n.read).length"></span>
+          data-bind="unreadNotificationCount"></span>
       </div>
     </button>
 
