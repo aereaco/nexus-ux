@@ -220,7 +220,8 @@ function validateExpression(expression: string, el: Element | Text | Comment): U
 }
 
 
-// Module-level compiled expression cache (Alpine.js & Vue compiler parity)
+// Module-level compiled expression cache (Alpine.js & Vue compiler parity) with LRU eviction
+const MAX_COMPILED_CACHE_SIZE = 2048;
 const compiledExpressionCache = new Map<string, Function>();
 
 export function getCompiledExpressionCacheSize(): number {
@@ -243,7 +244,11 @@ export function evaluateLater(
   // Check compilation cache first for O(1) instantaneous reuse
   let func = compiledExpressionCache.get(processedExpression);
 
-  if (!func) {
+  if (func) {
+    // Refresh LRU order by deleting and re-inserting
+    compiledExpressionCache.delete(processedExpression);
+    compiledExpressionCache.set(processedExpression, func);
+  } else {
     const diagnostic = validateExpression(expression, el);
     if (diagnostic) {
       syntaxError(
@@ -273,6 +278,13 @@ export function evaluateLater(
       }
     }
 
+    // Evict oldest entry if at capacity before caching
+    if (compiledExpressionCache.size >= MAX_COMPILED_CACHE_SIZE) {
+      const oldestKey = compiledExpressionCache.keys().next().value;
+      if (oldestKey !== undefined) {
+        compiledExpressionCache.delete(oldestKey);
+      }
+    }
     compiledExpressionCache.set(processedExpression, func);
   }
 

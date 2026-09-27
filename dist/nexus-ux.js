@@ -12911,6 +12911,7 @@ ${match}</ul>
   // src/engine/topology.ts
   async function runInWorker(fn, args, transferable) {
     const callArgs = args ? Array.from(args) : [];
+    await topology.ensureWorkers();
     const workers = topology.getWorkers();
     if (workers.length === 0) {
       return await fn(...callArgs);
@@ -13033,13 +13034,21 @@ ${match}</ul>
               return;
             }
           }
-          if (config.usesWorkers && this.currentTier > 0) {
-            await this.spawnWorkers(this.currentTier);
-          }
+          this.terminateWorkers();
           if (this.autoScaleEnabled && this.currentTier > 0) {
             this.startMonitoring();
           } else {
             this.stopMonitoring();
+          }
+        }
+        /**
+         * Lazily ensure workers are spawned for the current tier.
+         * Defers worker thread creation until runInWorker() or an off-thread task is invoked.
+         */
+        async ensureWorkers() {
+          const config = TIER_CONFIGS[this.currentTier];
+          if (config.usesWorkers && this.currentTier > 0 && this.workers.length === 0) {
+            await this.spawnWorkers(this.currentTier);
           }
         }
         /**
@@ -13051,9 +13060,22 @@ ${match}</ul>
           this.terminateWorkers();
           for (let i = 0; i < workerCount; i++) {
             try {
-              let scriptSrc = "/dist/nexus-ux.js";
-              if (typeof document !== "undefined" && document.currentScript instanceof HTMLScriptElement) {
-                scriptSrc = document.currentScript.src;
+              let scriptSrc = "/dist/logic.worker.js";
+              if (typeof document !== "undefined") {
+                let current = null;
+                if (document.currentScript instanceof HTMLScriptElement) {
+                  current = document.currentScript.src;
+                } else {
+                  const scriptEl = document.querySelector('script[src*="nexus-ux"]');
+                  if (scriptEl instanceof HTMLScriptElement) {
+                    current = scriptEl.src;
+                  }
+                }
+                if (current) {
+                  const isMin = current.includes(".min.js");
+                  const base = current.substring(0, current.lastIndexOf("/"));
+                  scriptSrc = `${base}/logic.worker.${isMin ? "min.js" : "js"}`;
+                }
               }
               const worker = new Worker(scriptSrc, { type: "module" });
               worker.onmessage = (e) => {
@@ -17253,12 +17275,16 @@ ${bridge}`, {
     }
     return null;
   }
+  var MAX_COMPILED_CACHE_SIZE = 2048;
   var compiledExpressionCache = /* @__PURE__ */ new Map();
   function evaluateLater(el, expression, runtime, initialExtras = {}) {
     const processedExpression = preProcessExpression(expression);
     const scope = getElementScope(el, runtime, initialExtras);
     let func = compiledExpressionCache.get(processedExpression);
-    if (!func) {
+    if (func) {
+      compiledExpressionCache.delete(processedExpression);
+      compiledExpressionCache.set(processedExpression, func);
+    } else {
       const diagnostic = validateExpression(expression, el);
       if (diagnostic) {
         syntaxError(
@@ -17283,6 +17309,12 @@ ${bridge}`, {
           }
         } else {
           throw e;
+        }
+      }
+      if (compiledExpressionCache.size >= MAX_COMPILED_CACHE_SIZE) {
+        const oldestKey = compiledExpressionCache.keys().next().value;
+        if (oldestKey !== void 0) {
+          compiledExpressionCache.delete(oldestKey);
         }
       }
       compiledExpressionCache.set(processedExpression, func);

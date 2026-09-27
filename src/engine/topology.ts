@@ -136,15 +136,25 @@ class EngineTopology {
       }
     }
 
-    if (config.usesWorkers && this.currentTier > 0) {
-      await this.spawnWorkers(this.currentTier);
-    }
+    // Terminate existing workers so tier change cleans up; workers are lazily respawned on demand
+    this.terminateWorkers();
 
-    // Start lag monitoring for auto-scaling
+    // Start lag monitoring for auto-scaling only if explicitly enabled
     if (this.autoScaleEnabled && this.currentTier > 0) {
       this.startMonitoring();
     } else {
       this.stopMonitoring();
+    }
+  }
+
+  /**
+   * Lazily ensure workers are spawned for the current tier.
+   * Defers worker thread creation until runInWorker() or an off-thread task is invoked.
+   */
+  public async ensureWorkers(): Promise<void> {
+    const config = TIER_CONFIGS[this.currentTier];
+    if (config.usesWorkers && this.currentTier > 0 && this.workers.length === 0) {
+      await this.spawnWorkers(this.currentTier);
     }
   }
 
@@ -160,9 +170,22 @@ class EngineTopology {
 
     for (let i = 0; i < workerCount; i++) {
       try {
-        let scriptSrc = '/dist/nexus-ux.js';
-        if (typeof document !== 'undefined' && document.currentScript instanceof HTMLScriptElement) {
-           scriptSrc = document.currentScript.src;
+        let scriptSrc = '/dist/logic.worker.js';
+        if (typeof document !== 'undefined') {
+          let current: string | null = null;
+          if (document.currentScript instanceof HTMLScriptElement) {
+            current = document.currentScript.src;
+          } else {
+            const scriptEl = document.querySelector('script[src*="nexus-ux"]');
+            if (scriptEl instanceof HTMLScriptElement) {
+              current = scriptEl.src;
+            }
+          }
+          if (current) {
+            const isMin = current.includes('.min.js');
+            const base = current.substring(0, current.lastIndexOf('/'));
+            scriptSrc = `${base}/logic.worker.${isMin ? 'min.js' : 'js'}`;
+          }
         }
         
         const worker = new Worker(scriptSrc, { type: 'module' });
@@ -424,6 +447,7 @@ export async function runInWorker<A extends readonly unknown[], R>(
   transferable?: Transferable[]
 ): Promise<R> {
   const callArgs = (args ? Array.from(args) : []) as unknown as A;
+  await topology.ensureWorkers();
   const workers = topology.getWorkers();
   if (workers.length === 0) {
     return await fn(...callArgs);

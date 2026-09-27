@@ -375,6 +375,21 @@ async function buildBundle(options: BuildOptions = {}) {
     await esbuild.build(esbuildOptions);
     console.log(`Build complete: ${outFile}`);
 
+    // Build dedicated lightweight logic worker bundle
+    const workerEntryPoint = "./src/engine/logic.worker.ts";
+    const workerOutFile = path.resolve(cwd, "dist", "logic.worker.js");
+    await esbuild.build({
+      plugins: [...denoPlugins({ configPath })],
+      entryPoints: [workerEntryPoint],
+      outfile: workerOutFile,
+      bundle: true,
+      format: "esm",
+      target: "es2022",
+      legalComments: "none",
+      minify: false,
+    });
+    console.log(`Worker build complete: ${workerOutFile}`);
+
     if (minify) {
       const minFile = outFile.replace(".js", ".min.js");
       const brFile = `${minFile}.br`;
@@ -393,6 +408,18 @@ async function buildBundle(options: BuildOptions = {}) {
       const compressed = compress(new TextEncoder().encode(minified), 11);
       await Deno.writeFile(brFile, compressed);
       console.log(`Brotli compressed: ${brFile} (${(compressed.length / 1024).toFixed(2)} KB)`);
+
+      // Minify worker
+      const minWorkerFile = workerOutFile.replace(".js", ".min.js");
+      const workerCode = await Deno.readTextFile(workerOutFile);
+      const workerResult = await swcMinify(workerCode, {
+        module: true,
+        compress: { passes: 2 },
+        mangle: true
+      });
+      const workerMinified = workerResult.code || workerCode;
+      await Deno.writeTextFile(minWorkerFile, workerMinified);
+      console.log(`Minified worker: ${minWorkerFile} (${(workerMinified.length / 1024).toFixed(2)} KB)`);
     }
 
   } catch (e) {
