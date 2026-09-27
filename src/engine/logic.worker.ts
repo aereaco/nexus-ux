@@ -68,6 +68,68 @@ const tasks: Record<string, (data: unknown) => unknown> = {
     const numbers = data as number[];
     // Example data processing
     return numbers.map(x => x * 2).filter(x => x > 10);
+  },
+  'PREDICT_TRAJECTORY': (data: unknown) => {
+    const { history, candidates } = data as {
+      history: { x: number; y: number; z: number; t: number }[];
+      candidates: { id: number; left: number; top: number; width: number; height: number }[];
+    };
+    if (!history || history.length < 3) return { matchedIds: [] };
+
+    const p0 = history[history.length - 3];
+    const p2 = history[history.length - 1];
+    const dt = (p2.t - p0.t) / 1000;
+    if (dt <= 0) return { matchedIds: [] };
+
+    const vx = (p2.x - p0.x) / dt;
+    const vy = (p2.y - p0.y) / dt;
+    const speed = Math.sqrt(vx * vx + vy * vy);
+
+    if (speed < 50) return { matchedIds: [], speed };
+
+    const timeHorizon = 0.15; // 150ms prediction
+    const projX = p2.x + vx * timeHorizon;
+    const projY = p2.y + vy * timeHorizon;
+
+    const minX = Math.min(p2.x, projX) - 20;
+    const minY = Math.min(p2.y, projY) - 20;
+    const maxX = Math.max(p2.x, projX) + 20;
+    const maxY = Math.max(p2.y, projY) + 20;
+
+    const matchedIds: number[] = [];
+    let minD = Infinity;
+    let snappedId: number | undefined = undefined;
+    let snappedCx = 0;
+    let snappedCy = 0;
+
+    const len = candidates ? candidates.length : 0;
+    for (let i = 0; i < len; i++) {
+      const c = candidates[i];
+      const cx = c.left + c.width / 2;
+      const cy = c.top + c.height / 2;
+
+      if (cx >= minX && cx <= maxX && cy >= minY && cy <= maxY) {
+        matchedIds.push(c.id);
+        const d = Math.hypot(cx - projX, cy - projY);
+        if (d < minD) {
+          minD = d;
+          snappedId = c.id;
+          snappedCx = cx;
+          snappedCy = cy;
+        }
+      }
+    }
+
+    return {
+      matchedIds,
+      snappedId,
+      snappedTarget: snappedId ? { cx: snappedCx, cy: snappedCy } : undefined,
+      speed,
+      vx,
+      vy,
+      projX,
+      projY
+    };
   }
 };
 
