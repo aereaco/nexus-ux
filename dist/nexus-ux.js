@@ -2338,10 +2338,23 @@ ${suggestion}`);
   }
 
   // src/engine/scope.ts
+  var frameDataStackCache = /* @__PURE__ */ new WeakMap();
   function getDataStack(element) {
+    const currentFrame = getEvalFrame();
+    const cached = frameDataStackCache.get(element);
+    if (cached && cached.frame === currentFrame) {
+      return cached.stack;
+    }
     const stack = [];
     let curr = element;
     while (curr) {
+      if (curr !== element) {
+        const cachedAncestor = frameDataStackCache.get(curr);
+        if (cachedAncestor && cachedAncestor.frame === currentFrame) {
+          stack.push(...cachedAncestor.stack);
+          break;
+        }
+      }
       const enhanced = curr;
       if (enhanced[DATA_STACK_KEY] && enhanced[DATA_STACK_KEY].length > 0) {
         stack.push(...enhanced[DATA_STACK_KEY]);
@@ -2369,6 +2382,7 @@ ${suggestion}`);
         }
       }
     }
+    frameDataStackCache.set(element, { frame: currentFrame, stack });
     return stack;
   }
   function addScopeToNode(element, data, referenceNode) {

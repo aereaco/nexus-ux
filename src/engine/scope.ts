@@ -53,17 +53,33 @@ export {
   type IndexedDBStoreOperations
 };
 
+const frameDataStackCache = new WeakMap<Node, { frame: number; stack: Record<string, unknown>[] }>();
+
 /**
  * Retrieves the data stack associated with a given HTMLElement by dynamically
  * traversing ancestors in the live DOM hierarchy (Zero-Copy Zero-Serialization).
  * Local scopes on the immediate element appear first, followed by ancestor scopes,
- * ending with root/host scopes.
+ * ending with root/host scopes. Frame-memoized (Alpine.js & W3C Context Protocol).
  */
 export function getDataStack(element: HTMLElement | Text | Comment | Element): Record<string, unknown>[] {
+  const currentFrame = getEvalFrame();
+  const cached = frameDataStackCache.get(element);
+  if (cached && cached.frame === currentFrame) {
+    return cached.stack;
+  }
+
   const stack: Record<string, unknown>[] = [];
   let curr: Node | null = element;
 
   while (curr) {
+    if (curr !== element) {
+      const cachedAncestor = frameDataStackCache.get(curr);
+      if (cachedAncestor && cachedAncestor.frame === currentFrame) {
+        stack.push(...cachedAncestor.stack);
+        break;
+      }
+    }
+
     const enhanced = curr as unknown as NexusEnhancedElement;
 
     // 1. If explicit legacy/cloned DATA_STACK_KEY is attached (e.g. Teleport or Draggable clone), include it
@@ -98,6 +114,7 @@ export function getDataStack(element: HTMLElement | Text | Comment | Element): R
     }
   }
 
+  frameDataStackCache.set(element, { frame: currentFrame, stack });
   return stack;
 }
 
