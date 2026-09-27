@@ -60,6 +60,18 @@ export function segment(input: string, separator: string): string[] {
 }
 
 /**
+ * Strips comments and unnecessary whitespace from CSS template strings.
+ */
+export function minifyCSS(css: string): string {
+  return css
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\s*([{:;,>+~])\s*/g, '$1')
+    .replace(/;}/g, '}')
+    .trim();
+}
+
+/**
  * Lazily creates and adopts a constructable CSSStyleSheet into a root node
  * (Document or ShadowRoot) and the document if not already adopted.
  */
@@ -71,7 +83,7 @@ export function ensureAdoptedStylesheet(
   if (typeof CSSStyleSheet === 'undefined') return undefined;
   if (!ref.sheet) {
     ref.sheet = new CSSStyleSheet();
-    ref.sheet.replaceSync(css);
+    ref.sheet.replaceSync(minifyCSS(css));
   }
   const sheet = ref.sheet;
   const targetRoot = (root && 'adoptedStyleSheets' in root) ? root : null;

@@ -234,7 +234,11 @@ function morphChildren(fromParent: HTMLElement, toParent: HTMLElement, config: a
         });
       } else {
         if (matchedFromChild !== currentFromChild) {
-          fromParent.insertBefore(matchedFromChild, currentFromChild);
+          if (typeof (fromParent as any).moveBefore === 'function' && matchedFromChild.parentNode === fromParent) {
+            (fromParent as any).moveBefore(matchedFromChild, currentFromChild);
+          } else {
+            fromParent.insertBefore(matchedFromChild, currentFromChild);
+          }
         } else {
           currentFromChild = currentFromChild.nextSibling;
         }

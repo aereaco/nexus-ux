@@ -229,16 +229,27 @@ const forModule: AttributeModule = {
           }
         }
 
-        // Re-order in DOM — only move nodes that are out of position.
-        // Avoids triggering unnecessary childList mutations which cascade
-        // into effect re-runs via RUN_EFFECT_RUNNERS_KEY on the parent.
-        let expectedBefore: Node | null = anchor;
-        for (let i = nextNodes.length - 1; i >= 0; i--) {
-          const node = nextNodes[i];
-          if (node.nextSibling !== expectedBefore) {
-            anchor.parentNode?.insertBefore(node, expectedBefore);
+        // Re-order in DOM — batch initial mounts via DocumentFragment;
+        // for updates, only move nodes that are out of position.
+        if (mountedMap.size === newlyCreatedNodes.length && newlyCreatedNodes.length > 1) {
+          const fragment = document.createDocumentFragment();
+          for (let i = 0; i < nextNodes.length; i++) {
+            fragment.appendChild(nextNodes[i]);
           }
-          expectedBefore = node;
+          anchor.parentNode?.insertBefore(fragment, anchor);
+        } else {
+          let expectedBefore: Node | null = anchor;
+          for (let i = nextNodes.length - 1; i >= 0; i--) {
+            const node = nextNodes[i];
+            if (node.nextSibling !== expectedBefore) {
+              if (typeof (anchor.parentNode as any)?.moveBefore === 'function' && node.parentNode === anchor.parentNode) {
+                (anchor.parentNode as any).moveBefore(node, expectedBefore);
+              } else {
+                anchor.parentNode?.insertBefore(node, expectedBefore);
+              }
+            }
+            expectedBefore = node;
+          }
         }
 
         // Process newly created nodes AFTER they are connected to the DOM tree so

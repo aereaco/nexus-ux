@@ -400,55 +400,62 @@ class StyleSheetManager {
     }
   }
 
+  public adoptSingleElement(el: Element): void {
+    if (!el || typeof document === 'undefined') return;
+
+    // 1. Static classList
+    if (el.classList) {
+      el.classList.forEach((cls) => this.adoptClass(cls, el as HTMLElement));
+    }
+
+    // 2. data-class expressions (extract all quoted class tokens)
+    const dataClass = el.getAttribute('data-class');
+    if (dataClass) {
+      const matches = dataClass.match(/['"]([^'"]+)['"]/g);
+      if (matches) {
+        matches.forEach((m) => {
+          const raw = m.slice(1, -1);
+          raw.split(/\s+/).filter(Boolean).forEach((cls) => {
+            this.adoptClass(cls, el as HTMLElement);
+          });
+        });
+      }
+    }
+
+    // 3. Suffixed data-class-* attributes
+    if (el.attributes) {
+      const attrs = el.attributes;
+      const len = attrs.length;
+      for (let i = 0; i < len; i++) {
+        const attr = attrs[i];
+        if (attr.name.startsWith('data-class-')) {
+          const cls = attr.name.slice(11);
+          if (cls) this.adoptClass(cls, el as HTMLElement);
+        }
+      }
+    }
+
+    // 4. Nested <template> contents (e.g. sub-templates inside components)
+    if (el instanceof HTMLTemplateElement && el.content) {
+      this.adoptElementSubtree(el.content);
+    }
+  }
+
   public adoptElementSubtree(rootEl?: HTMLElement | Element | ShadowRoot | DocumentFragment): void {
     if (!rootEl || typeof document === 'undefined') return;
 
-    const processElement = (el: Element) => {
-      // 1. Static classList
-      if (el.classList) {
-        el.classList.forEach((cls) => this.adoptClass(cls, el as HTMLElement));
-      }
-
-      // 2. data-class expressions (extract all quoted class tokens)
-      const dataClass = el.getAttribute('data-class');
-      if (dataClass) {
-        const matches = dataClass.match(/['"]([^'"]+)['"]/g);
-        if (matches) {
-          matches.forEach((m) => {
-            const raw = m.slice(1, -1);
-            raw.split(/\s+/).filter(Boolean).forEach((cls) => {
-              this.adoptClass(cls, el as HTMLElement);
-            });
-          });
-        }
-      }
-
-      // 3. Suffixed data-class-* attributes
-      if (el.attributes) {
-        Array.from(el.attributes).forEach((attr) => {
-          if (attr.name.startsWith('data-class-')) {
-            const cls = attr.name.slice(11);
-            if (cls) this.adoptClass(cls, el as HTMLElement);
-          }
-        });
-      }
-
-      // 4. Nested <template> contents (e.g. sub-templates inside components)
-      if (el instanceof HTMLTemplateElement && el.content) {
-        this.adoptElementSubtree(el.content);
-      }
-    };
-
     if ('getAttribute' in rootEl && (rootEl as Element).getAttribute) {
-      processElement(rootEl as Element);
+      this.adoptSingleElement(rootEl as Element);
     }
 
     const all = rootEl.querySelectorAll ? rootEl.querySelectorAll('*') : [];
-    all.forEach((el) => {
+    const len = all.length;
+    for (let i = 0; i < len; i++) {
+      const el = all[i];
       if (el instanceof Element) {
-        processElement(el);
+        this.adoptSingleElement(el);
       }
-    });
+    }
   }
 
   adoptClass(className: string, el?: HTMLElement, runtime?: RuntimeContext): void {

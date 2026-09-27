@@ -146,20 +146,30 @@ export async function flip(
     const dy = initialRect.top - finalRect.top;
 
     if (dx !== 0 || dy !== 0) {
-      el.style.transition = 'none';
-      el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-      el.offsetWidth; // Force repaint
-      el.style.transition = `transform ${duration}ms ${easing}`;
-      el.style.transform = 'translate3d(0, 0, 0)';
+      if (typeof el.animate === 'function') {
+        el.animate([
+          { transform: `translate3d(${dx}px, ${dy}px, 0)` },
+          { transform: 'translate3d(0, 0, 0)' }
+        ], {
+          duration,
+          easing
+        });
+      } else {
+        el.style.transition = 'none';
+        el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+        el.offsetWidth; // Force repaint fallback
+        el.style.transition = `transform ${duration}ms ${easing}`;
+        el.style.transform = 'translate3d(0, 0, 0)';
 
-      el.addEventListener(
-        'transitionend',
-        () => {
-          el.style.transition = '';
-          el.style.transform = '';
-        },
-        { once: true }
-      );
+        el.addEventListener(
+          'transitionend',
+          () => {
+            el.style.transition = '';
+            el.style.transform = '';
+          },
+          { once: true }
+        );
+      }
     }
   });
 }

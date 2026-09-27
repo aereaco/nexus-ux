@@ -3,7 +3,7 @@ import { RuntimeContext } from './composition.ts';
 import { NexusEnhancedElement, ownership } from './reactivity.ts';
 import { reportError } from './debug.ts';
 import { CLEANUP_FUNCTIONS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY } from './consts.ts';
-import { stylesheet } from '../modules/attributes/stylesheet.ts';
+import { stylesheet, markExternalStylesSettled } from '../modules/attributes/stylesheet.ts';
 import { corePredictiveEngine } from './predictive.ts';
 
 // Module-level state for cross-batch move detection
@@ -11,12 +11,8 @@ const movedNodes = new WeakSet<HTMLElement>();
 const movedNodeTimers = new Map<HTMLElement, number>();
 
 function isExternalOverlay(node: HTMLElement): boolean {
-  let current: HTMLElement | null = node;
-  while (current) {
-    if (current.id && (current.id.includes('preact-') || current.id.includes('jetski') || current.id.includes('webpack-') || current.id.includes('chrome-extension'))) {
-      return true;
-    }
-    current = current.parentElement;
+  if (typeof node.closest === 'function') {
+    return Boolean(node.closest('[id*="preact-"], [id*="jetski"], [id*="webpack-"], [id*="chrome-extension"]'));
   }
   return false;
 }
@@ -46,7 +42,7 @@ const mutationObserverModule: ObserverModule = {
                 if (isExternalOverlay(node)) return;
                 if (shouldIgnoreNode(node)) return;
                 addedThisBatch.add(node);
-                stylesheet.adoptElementSubtree(node);
+                stylesheet.adoptSingleElement(node);
               }
             });
           }
@@ -110,9 +106,7 @@ const mutationObserverModule: ObserverModule = {
               if (attrName === 'class' || attrName === 'data-theme') {
                 context.adoptStyle(target);
                 if (target === document.documentElement) {
-                  import('../modules/attributes/stylesheet.ts').then(mod => {
-                    mod.markExternalStylesSettled();
-                  }).catch(() => {});
+                  markExternalStylesSettled();
                 }
               }
 
