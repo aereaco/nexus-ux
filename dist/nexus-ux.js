@@ -2485,7 +2485,45 @@ ${suggestion}`);
       }
     });
   }
+  var elementScopeCache = /* @__PURE__ */ new WeakMap();
+  var JS_BUILTIN_GLOBALS = /* @__PURE__ */ new Set([
+    "Math",
+    "Number",
+    "String",
+    "Boolean",
+    "Array",
+    "Object",
+    "Date",
+    "RegExp",
+    "JSON",
+    "console",
+    "parseInt",
+    "parseFloat",
+    "isNaN",
+    "isFinite",
+    "undefined",
+    "NaN",
+    "Infinity",
+    "window",
+    "document",
+    "globalThis",
+    "Map",
+    "Set",
+    "WeakMap",
+    "WeakSet",
+    "Promise",
+    "Symbol",
+    "Error",
+    "TypeError",
+    "RangeError"
+  ]);
   function getElementScope(el, runtime, initialExtras) {
+    const hasExtras = initialExtras && Object.keys(initialExtras).length > 0;
+    if (!hasExtras) {
+      const cached = elementScopeCache.get(el);
+      if (cached)
+        return cached;
+    }
     const reflectProxy = createReflectProxy(runtime, el instanceof Element ? el : void 0);
     let cachedDataStack = null;
     let lastFrame = -1;
@@ -2497,7 +2535,7 @@ ${suggestion}`);
       }
       return cachedDataStack;
     };
-    return new Proxy({}, {
+    const proxy = new Proxy({}, {
       has(target, key) {
         if (key === Symbol.unscopables)
           return false;
@@ -2509,6 +2547,11 @@ ${suggestion}`);
         if (key === Symbol.unscopables)
           return void 0;
         if (typeof key === "string") {
+          if (JS_BUILTIN_GLOBALS.has(key)) {
+            const val = globalThis[key];
+            if (val !== void 0)
+              return val;
+          }
           if (initialExtras && key in initialExtras) {
             return initialExtras[key];
           }

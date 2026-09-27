@@ -326,6 +326,15 @@ export function createScopeProxy(
 // Authoritative Scope Resolution Engine
 // ============================================================================
 
+const elementScopeCache = new WeakMap<Node, Record<string | symbol, unknown>>();
+
+const JS_BUILTIN_GLOBALS = new Set([
+  'Math', 'Number', 'String', 'Boolean', 'Array', 'Object', 'Date', 'RegExp',
+  'JSON', 'console', 'parseInt', 'parseFloat', 'isNaN', 'isFinite',
+  'undefined', 'NaN', 'Infinity', 'window', 'document', 'globalThis',
+  'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Error', 'TypeError', 'RangeError'
+]);
+
 /**
  * Assembles the full authoritative scope chain for an element:
  *   1. Initial extras & call-site extras
@@ -341,6 +350,12 @@ export function getElementScope(
   runtime: RuntimeContext,
   initialExtras?: Record<string, unknown>
 ): Record<string | symbol, unknown> {
+  const hasExtras = initialExtras && Object.keys(initialExtras).length > 0;
+  if (!hasExtras) {
+    const cached = elementScopeCache.get(el);
+    if (cached) return cached;
+  }
+
   const reflectProxy = createReflectProxy(runtime, el instanceof Element ? el : undefined);
 
   let cachedDataStack: Record<string, unknown>[] | null = null;
@@ -355,7 +370,7 @@ export function getElementScope(
     return cachedDataStack;
   };
 
-  return new Proxy({}, {
+  const proxy = new Proxy({}, {
     has(target, key): boolean {
       if (key === Symbol.unscopables) return false;
       if (typeof key === 'string') return true; // Route through get to eliminate ReferenceError crashes
@@ -365,6 +380,12 @@ export function getElementScope(
     get(target, key): unknown {
       if (key === Symbol.unscopables) return undefined;
       if (typeof key === 'string') {
+        // 0. Fast-path JS standard globals & built-ins (O(1) bypass of all ancestor walks)
+        if (JS_BUILTIN_GLOBALS.has(key)) {
+          const val = (globalThis as any)[key];
+          if (val !== undefined) return val;
+        }
+
         // 1. Extras provided directly to the evaluation
         if (initialExtras && key in initialExtras) {
           return initialExtras[key];
