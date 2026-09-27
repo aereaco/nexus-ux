@@ -259,11 +259,20 @@ export class CorePredictiveEngine {
     const onDomMutated = () => this.scheduleQuadtreeRebuild();
     document.addEventListener('nexus:dom-mutated', onDomMutated, { passive: true });
 
+    let predictionRaf: number | null = null;
+    const schedulePrediction = () => {
+      if (predictionRaf !== null) return;
+      predictionRaf = requestAnimationFrame(() => {
+        predictionRaf = null;
+        this.processPrediction();
+      });
+    };
+
     // 1. Mouse Trajectory Tracker ($V_{xyzt}$)
     const onMouseMove = (e: MouseEvent) => {
       setupDebugTracker();
       this.recordPoint(e.clientX, e.clientY, 0, performance.now());
-      this.processPrediction();
+      schedulePrediction();
     };
 
     // 2. Touch 1-Pixel Contact Barrier & Swipe Drag Velocity
@@ -279,7 +288,7 @@ export class CorePredictiveEngine {
       if (e.touches.length > 0) {
         const touch = e.touches[0];
         this.recordPoint(touch.clientX, touch.clientY, 0, performance.now());
-        this.processPrediction();
+        schedulePrediction();
       }
     };
 
@@ -288,7 +297,7 @@ export class CorePredictiveEngine {
       if (e.pointerType === 'pen') {
         const z = (e as any).pressure ? (e as any).pressure * 10 : 1;
         this.recordPoint(e.clientX, e.clientY, z, performance.now());
-        this.processPrediction();
+        schedulePrediction();
       }
     };
 
@@ -351,6 +360,7 @@ export class CorePredictiveEngine {
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('focusin', onFocusIn);
+      if (predictionRaf !== null) cancelAnimationFrame(predictionRaf);
       if (gamepadTimer) cancelAnimationFrame(gamepadTimer);
       if (this.quadtreeDebounce !== null) {
         if (typeof (window as any).cancelIdleCallback === 'function') {
@@ -443,17 +453,13 @@ export class CorePredictiveEngine {
 
     if (typeof document === 'undefined') return;
 
-    const isInteractive = (el: HTMLElement) =>
-      el.tagName === 'A' ||
-      el.tagName === 'BUTTON' ||
-      el.tagName === 'INPUT' ||
-      el.hasAttribute('href') ||
-      el.hasAttribute('data-route-link') ||
-      el.hasAttribute('data-component') ||
-      Array.from(el.attributes).some((a) => a.name.startsWith('data-on-'));
-
-    document.querySelectorAll('*').forEach((el) => {
-      if (el instanceof HTMLElement && isInteractive(el)) {
+    const candidates = document.querySelectorAll(
+      'a, button, input, [href], [data-route-link], [data-component], [data-on-click]'
+    );
+    const len = candidates.length;
+    for (let i = 0; i < len; i++) {
+      const el = candidates[i];
+      if (el instanceof HTMLElement) {
         const rect = el.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
           const centerX = rect.left + rect.width / 2;
@@ -461,7 +467,7 @@ export class CorePredictiveEngine {
           this.quadtree.insert(el, centerX, centerY);
         }
       }
-    });
+    }
   }
 
   private processPrediction() {

@@ -10899,19 +10899,33 @@ ${match}</ul>
   if (typeof document !== "undefined") {
     ensureScrollbarStyles();
   }
+  var scrollContainerCache = /* @__PURE__ */ new WeakMap();
   function findScrollParent(el) {
-    while (el && el !== document.body && el !== document.documentElement) {
-      if (el.getAttribute("data-scrollbar") === "none" || el.classList.contains("scrollbar-none")) {
+    if (!el)
+      return null;
+    if (scrollContainerCache.has(el)) {
+      return scrollContainerCache.get(el);
+    }
+    if (typeof el.closest === "function" && el.closest("[data-scrollbar_ignore]")) {
+      scrollContainerCache.set(el, null);
+      return null;
+    }
+    let curr = el;
+    while (curr && curr !== document.body && curr !== document.documentElement) {
+      if (curr.hasAttribute("data-scrollbar_ignore") || curr.getAttribute("data-scrollbar") === "none" || curr.classList.contains("scrollbar-none")) {
+        scrollContainerCache.set(el, null);
         return null;
       }
-      const s = window.getComputedStyle(el);
-      const hasScrollY = s.overflowY !== "hidden" && s.overflowY !== "clip" && s.overflow !== "hidden" && (s.overflowY === "auto" || s.overflowY === "scroll") && el.scrollHeight > el.clientHeight;
-      const hasScrollX = s.overflowX !== "hidden" && s.overflowX !== "clip" && s.overflow !== "hidden" && (s.overflowX === "auto" || s.overflowX === "scroll") && el.scrollWidth > el.clientWidth;
+      const s = window.getComputedStyle(curr);
+      const hasScrollY = s.overflowY !== "hidden" && s.overflowY !== "clip" && s.overflow !== "hidden" && (s.overflowY === "auto" || s.overflowY === "scroll") && curr.scrollHeight > curr.clientHeight;
+      const hasScrollX = s.overflowX !== "hidden" && s.overflowX !== "clip" && s.overflow !== "hidden" && (s.overflowX === "auto" || s.overflowX === "scroll") && curr.scrollWidth > curr.clientWidth;
       if (hasScrollY || hasScrollX) {
-        return el;
+        scrollContainerCache.set(el, curr);
+        return curr;
       }
-      el = el.parentElement;
+      curr = curr.parentElement;
     }
+    scrollContainerCache.set(el, null);
     return null;
   }
   var globalConfig = {
@@ -11295,7 +11309,10 @@ ${match}</ul>
   function isScrollContainer(el) {
     if (!el || !(el instanceof HTMLElement))
       return false;
-    if (!el.isConnected || el.getAttribute("data-scrollbar") === "none" || el.classList.contains("scrollbar-none")) {
+    if (!el.isConnected || el.hasAttribute("data-scrollbar_ignore") || el.getAttribute("data-scrollbar") === "none" || el.classList.contains("scrollbar-none")) {
+      return false;
+    }
+    if (typeof el.closest === "function" && el.closest("[data-scrollbar_ignore]")) {
       return false;
     }
     const s = window.getComputedStyle(el);
@@ -11363,17 +11380,28 @@ ${match}</ul>
       }
     };
     let pointerRaf = null;
+    let lastResolvedContainer = null;
     const onGlobalPointerMove = (e) => {
-      if (pointerRaf !== null)
+      if (globalConfig.mode !== "overlay" && activeInstances.size === 0)
         return;
       const target = e.target;
+      if (!(target instanceof Element))
+        return;
+      if (typeof target.closest === "function" && target.closest("[data-scrollbar_ignore]")) {
+        return;
+      }
+      if (lastResolvedContainer && lastResolvedContainer.contains(target)) {
+        triggerContainerMotion(lastResolvedContainer);
+        return;
+      }
+      if (pointerRaf !== null)
+        return;
       pointerRaf = requestAnimationFrame(() => {
         pointerRaf = null;
-        if (target instanceof Element) {
-          const scrollContainer = findScrollParent(target);
-          if (scrollContainer) {
-            triggerContainerMotion(scrollContainer);
-          }
+        const scrollContainer = findScrollParent(target);
+        lastResolvedContainer = scrollContainer;
+        if (scrollContainer) {
+          triggerContainerMotion(scrollContainer);
         }
       });
     };
@@ -11411,8 +11439,18 @@ ${match}</ul>
         ensureScrollbarStyles(document);
       }
     },
-    handle: (el, value, runtime) => {
-      const isGlobal = el.hasAttribute("data-scrollbar_global") || el.tagName.toLowerCase() === "html";
+    handle: (el, value, runtime, parsedAttr) => {
+      const isIgnore = el.hasAttribute("data-scrollbar_ignore") || parsedAttr?.modifiers && parsedAttr.modifiers.includes("ignore");
+      if (isIgnore) {
+        el.setAttribute("data-scrollbar_ignore", "true");
+        const inst = overlayInstances.get(el);
+        if (inst) {
+          inst.destroy();
+          overlayInstances.delete(el);
+        }
+        return;
+      }
+      const isGlobal = el.hasAttribute("data-scrollbar_global") || parsedAttr?.modifiers && parsedAttr.modifiers.includes("global") || el.tagName.toLowerCase() === "html";
       let config = {};
       if (value && value.trim()) {
         try {
@@ -13214,10 +13252,19 @@ ${match}</ul>
       }
       const onDomMutated = () => this.scheduleQuadtreeRebuild();
       document.addEventListener("nexus:dom-mutated", onDomMutated, { passive: true });
+      let predictionRaf = null;
+      const schedulePrediction = () => {
+        if (predictionRaf !== null)
+          return;
+        predictionRaf = requestAnimationFrame(() => {
+          predictionRaf = null;
+          this.processPrediction();
+        });
+      };
       const onMouseMove = (e) => {
         setupDebugTracker();
         this.recordPoint(e.clientX, e.clientY, 0, performance.now());
-        this.processPrediction();
+        schedulePrediction();
       };
       const onTouchStart = (e) => {
         if (e.touches.length > 0) {
@@ -13230,14 +13277,14 @@ ${match}</ul>
         if (e.touches.length > 0) {
           const touch = e.touches[0];
           this.recordPoint(touch.clientX, touch.clientY, 0, performance.now());
-          this.processPrediction();
+          schedulePrediction();
         }
       };
       const onPointerMove = (e) => {
         if (e.pointerType === "pen") {
           const z = e.pressure ? e.pressure * 10 : 1;
           this.recordPoint(e.clientX, e.clientY, z, performance.now());
-          this.processPrediction();
+          schedulePrediction();
         }
       };
       const onFocusIn = (e) => {
@@ -13290,6 +13337,8 @@ ${match}</ul>
         window.removeEventListener("touchmove", onTouchMove);
         window.removeEventListener("pointermove", onPointerMove);
         window.removeEventListener("focusin", onFocusIn);
+        if (predictionRaf !== null)
+          cancelAnimationFrame(predictionRaf);
         if (gamepadTimer)
           cancelAnimationFrame(gamepadTimer);
         if (this.quadtreeDebounce !== null) {
@@ -13372,9 +13421,13 @@ ${match}</ul>
       });
       if (typeof document === "undefined")
         return;
-      const isInteractive = (el) => el.tagName === "A" || el.tagName === "BUTTON" || el.tagName === "INPUT" || el.hasAttribute("href") || el.hasAttribute("data-route-link") || el.hasAttribute("data-component") || Array.from(el.attributes).some((a) => a.name.startsWith("data-on-"));
-      document.querySelectorAll("*").forEach((el) => {
-        if (el instanceof HTMLElement && isInteractive(el)) {
+      const candidates = document.querySelectorAll(
+        "a, button, input, [href], [data-route-link], [data-component], [data-on-click]"
+      );
+      const len = candidates.length;
+      for (let i = 0; i < len; i++) {
+        const el = candidates[i];
+        if (el instanceof HTMLElement) {
           const rect = el.getBoundingClientRect();
           if (rect.width > 0 && rect.height > 0) {
             const centerX = rect.left + rect.width / 2;
@@ -13382,7 +13435,7 @@ ${match}</ul>
             this.quadtree.insert(el, centerX, centerY);
           }
         }
-      });
+      }
     }
     processPrediction() {
       if (this.history.length < 3)

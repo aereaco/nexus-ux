@@ -311,21 +311,37 @@ if (typeof document !== 'undefined') {
   ensureScrollbarStyles();
 }
 
+const scrollContainerCache = new WeakMap<Element, Element | null>();
+
 function findScrollParent(el: Element | null): Element | null {
-  while (el && el !== document.body && el !== document.documentElement) {
-    if (el.getAttribute('data-scrollbar') === 'none' || el.classList.contains('scrollbar-none')) {
+  if (!el) return null;
+  if (scrollContainerCache.has(el)) {
+    return scrollContainerCache.get(el)!;
+  }
+
+  if (typeof el.closest === 'function' && el.closest('[data-scrollbar_ignore]')) {
+    scrollContainerCache.set(el, null);
+    return null;
+  }
+
+  let curr: Element | null = el;
+  while (curr && curr !== document.body && curr !== document.documentElement) {
+    if (curr.hasAttribute('data-scrollbar_ignore') || curr.getAttribute('data-scrollbar') === 'none' || curr.classList.contains('scrollbar-none')) {
+      scrollContainerCache.set(el, null);
       return null;
     }
-    const s = window.getComputedStyle(el);
+    const s = window.getComputedStyle(curr);
     const hasScrollY = s.overflowY !== 'hidden' && s.overflowY !== 'clip' && s.overflow !== 'hidden' &&
-      (s.overflowY === 'auto' || s.overflowY === 'scroll') && (el.scrollHeight > el.clientHeight);
+      (s.overflowY === 'auto' || s.overflowY === 'scroll') && (curr.scrollHeight > curr.clientHeight);
     const hasScrollX = s.overflowX !== 'hidden' && s.overflowX !== 'clip' && s.overflow !== 'hidden' &&
-      (s.overflowX === 'auto' || s.overflowX === 'scroll') && (el.scrollWidth > el.clientWidth);
+      (s.overflowX === 'auto' || s.overflowX === 'scroll') && (curr.scrollWidth > curr.clientWidth);
     if (hasScrollY || hasScrollX) {
-      return el;
+      scrollContainerCache.set(el, curr);
+      return curr;
     }
-    el = el.parentElement;
+    curr = curr.parentElement;
   }
+  scrollContainerCache.set(el, null);
   return null;
 }
 
@@ -761,7 +777,10 @@ export function isGlobalOverlayActive(): boolean {
 
 export function isScrollContainer(el: HTMLElement): boolean {
   if (!el || !(el instanceof HTMLElement)) return false;
-  if (!el.isConnected || el.getAttribute('data-scrollbar') === 'none' || el.classList.contains('scrollbar-none')) {
+  if (!el.isConnected || el.hasAttribute('data-scrollbar_ignore') || el.getAttribute('data-scrollbar') === 'none' || el.classList.contains('scrollbar-none')) {
+    return false;
+  }
+  if (typeof el.closest === 'function' && el.closest('[data-scrollbar_ignore]')) {
     return false;
   }
   const s = window.getComputedStyle(el);
@@ -835,16 +854,34 @@ function setupGlobalCaptureListeners(runtime: RuntimeContext): void {
   };
 
   let pointerRaf: number | null = null;
+  let lastResolvedContainer: Element | null = null;
+
   const onGlobalPointerMove = (e: Event) => {
-    if (pointerRaf !== null) return;
+    // If not in overlay mode and no active overlay instances exist, exit immediately in O(1)
+    if (globalConfig.mode !== 'overlay' && activeInstances.size === 0) return;
+
     const target = e.target;
+    if (!(target instanceof Element)) return;
+
+    // Fast-path: If pointer is inside an ignored element, exit immediately
+    if (typeof target.closest === 'function' && target.closest('[data-scrollbar_ignore]')) {
+      return;
+    }
+
+    // Fast-path: Container Containment Check.
+    // If pointer is still within the previously resolved scroll container, refresh motion directly without ancestor traversal
+    if (lastResolvedContainer && lastResolvedContainer.contains(target)) {
+      triggerContainerMotion(lastResolvedContainer);
+      return;
+    }
+
+    if (pointerRaf !== null) return;
     pointerRaf = requestAnimationFrame(() => {
       pointerRaf = null;
-      if (target instanceof Element) {
-        const scrollContainer = findScrollParent(target);
-        if (scrollContainer) {
-          triggerContainerMotion(scrollContainer);
-        }
+      const scrollContainer = findScrollParent(target);
+      lastResolvedContainer = scrollContainer;
+      if (scrollContainer) {
+        triggerContainerMotion(scrollContainer);
       }
     });
   };
@@ -885,8 +922,23 @@ const scrollbarModule: AttributeModule = {
       ensureScrollbarStyles(document);
     }
   },
-  handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
-    const isGlobal = el.hasAttribute('data-scrollbar_global') || el.tagName.toLowerCase() === 'html';
+  handle: (el: HTMLElement, value: string, runtime: RuntimeContext, parsedAttr?: any): (() => void) | void => {
+    const isIgnore = el.hasAttribute('data-scrollbar_ignore') ||
+      (parsedAttr?.modifiers && parsedAttr.modifiers.includes('ignore'));
+
+    if (isIgnore) {
+      el.setAttribute('data-scrollbar_ignore', 'true');
+      const inst = overlayInstances.get(el);
+      if (inst) {
+        inst.destroy();
+        overlayInstances.delete(el);
+      }
+      return;
+    }
+
+    const isGlobal = el.hasAttribute('data-scrollbar_global') || 
+      (parsedAttr?.modifiers && parsedAttr.modifiers.includes('global')) ||
+      el.tagName.toLowerCase() === 'html';
 
     let config: ScrollbarConfig = {};
     if (value && value.trim()) {
