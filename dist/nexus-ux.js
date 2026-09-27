@@ -1006,14 +1006,70 @@ ${suggestion}`);
     rawMap.set(proxy, target);
     return proxy;
   }
+  var shallowReactiveMap = /* @__PURE__ */ new WeakMap();
   function shallowReactive(target) {
-    return reactive(target);
+    if (!canObserve(target))
+      return target;
+    if (isReactive(target))
+      return target;
+    const existingProxy = shallowReactiveMap.get(target);
+    if (existingProxy)
+      return existingProxy;
+    const proxy = new Proxy(target, {
+      get(t, key, receiver) {
+        if (key === "__v_raw")
+          return t;
+        if (key === "__v_isReactive")
+          return true;
+        if (key === "__v_isShallow")
+          return true;
+        track(t, key);
+        return Reflect.get(t, key, receiver);
+      },
+      set(t, key, value, receiver) {
+        if (t !== toRaw(receiver)) {
+          return Reflect.set(t, key, value, receiver);
+        }
+        const oldVal = Reflect.get(t, key, receiver);
+        const oldLength = Array.isArray(t) ? t.length : 0;
+        const success = Reflect.set(t, key, value);
+        if (success) {
+          const isNewKey = !Object.prototype.hasOwnProperty.call(t, key);
+          if (oldVal !== value || Array.isArray(t) && t.length !== oldLength) {
+            trigger(t, key);
+            if (isNewKey)
+              trigger(t, ITERATE_KEY);
+          }
+        }
+        return success;
+      },
+      deleteProperty(t, key) {
+        const hasKey = Object.prototype.hasOwnProperty.call(t, key);
+        const success = Reflect.deleteProperty(t, key);
+        if (success && hasKey) {
+          trigger(t, key);
+          trigger(t, ITERATE_KEY);
+        }
+        return success;
+      },
+      has(t, key) {
+        track(t, key);
+        return Reflect.has(t, key);
+      },
+      ownKeys(t) {
+        track(t, Array.isArray(t) ? "length" : ITERATE_KEY);
+        return Reflect.ownKeys(t);
+      }
+    });
+    shallowReactiveMap.set(target, proxy);
+    rawMap.set(proxy, target);
+    return proxy;
   }
   function readonly(target) {
     return reactive(target);
   }
   function shallowReadonly(target) {
-    return reactive(target);
+    return shallowReactive(target);
   }
   function effect(fn, options) {
     const effectRunner = {
