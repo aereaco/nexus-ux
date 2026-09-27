@@ -6659,7 +6659,8 @@ ${scripts}
               mountedMap.delete(key);
             }
           }
-          if (mountedMap.size === newlyCreatedNodes.length && newlyCreatedNodes.length > 1) {
+          const isInitialMount = nextNodes.length === newlyCreatedNodes.length && newlyCreatedNodes.length > 1;
+          if (isInitialMount) {
             const fragment = document.createDocumentFragment();
             for (let i = 0; i < nextNodes.length; i++) {
               fragment.appendChild(nextNodes[i]);
@@ -15470,9 +15471,11 @@ ${match}</ul>
             return;
           isProcessing = true;
           const addedThisBatch = /* @__PURE__ */ new Set();
+          let hasChildListMutations = false;
           const now = performance.now();
           for (const mutation of mutationsList) {
             if (mutation.type === "childList") {
+              hasChildListMutations = true;
               mutation.addedNodes.forEach((node) => {
                 if (node instanceof HTMLElement) {
                   if (isExternalOverlay(node))
@@ -15554,7 +15557,9 @@ ${match}</ul>
                 });
               }
             }
-            document.dispatchEvent(new CustomEvent("nexus:dom-mutated", { bubbles: true }));
+            if (hasChildListMutations) {
+              document.dispatchEvent(new CustomEvent("nexus:dom-mutated", { bubbles: true }));
+            }
             addedThisBatch.forEach((node) => {
               movedNodes.add(node);
               movedNodeTimers.set(node, performance.now());
@@ -15960,12 +15965,15 @@ ${bridge}`, {
         }
       }
     }
+    isKnownClass(className) {
+      return this._knownClasses.has(className);
+    }
     adoptClass(className, el, runtime) {
       if (!className || className.trim() === "")
         return;
-      if (el && el.closest && el.closest("[data-ignore-style]"))
-        return;
       if (this._knownClasses.has(className))
+        return;
+      if (el && el.closest && el.closest("[data-ignore-style]"))
         return;
       const hasSignalMatch = className.match(/^[a-z]+-\$([a-zA-Z_$][\w$]*)$/);
       if (hasSignalMatch && el && runtime) {

@@ -458,10 +458,14 @@ class StyleSheetManager {
     }
   }
 
+  isKnownClass(className: string): boolean {
+    return this._knownClasses.has(className);
+  }
+
   adoptClass(className: string, el?: HTMLElement, runtime?: RuntimeContext): void {
     if (!className || className.trim() === '') return;
-    if (el && el.closest && el.closest('[data-ignore-style]')) return;
     if (this._knownClasses.has(className)) return;
+    if (el && el.closest && el.closest('[data-ignore-style]')) return;
 
     // Support dynamic data signals binding (e.g., w-$width, bg-$myColor).
     // These are processed globally and only set element CSS variables — they do
