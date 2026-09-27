@@ -340,8 +340,9 @@ class Scheduler {
           console.error('[Nexus Scheduler] Job error:', e);
         }
 
-        // Stall detection: yield if we've exceeded the budget or user input is pending
-        const shouldYield = (head < queue.length) && (
+        // Stall detection: stride checks every 16 jobs to eliminate performance.now() CPU timer overhead (React Scheduler parity)
+        const shouldCheckStall = (head & 15) === 0 || head === queue.length;
+        const shouldYield = shouldCheckStall && (head < queue.length) && (
           performance.now() - startTime > this.stallBudget ||
           (typeof navigator !== 'undefined' && (navigator as any).scheduling?.isInputPending?.() === true)
         );

@@ -563,7 +563,8 @@ ${suggestion}`);
           } catch (e) {
             console.error("[Nexus Scheduler] Job error:", e);
           }
-          const shouldYield = head < queue.length && (performance.now() - startTime > this.stallBudget || typeof navigator !== "undefined" && navigator.scheduling?.isInputPending?.() === true);
+          const shouldCheckStall = (head & 15) === 0 || head === queue.length;
+          const shouldYield = shouldCheckStall && head < queue.length && (performance.now() - startTime > this.stallBudget || typeof navigator !== "undefined" && navigator.scheduling?.isInputPending?.() === true);
           if (shouldYield) {
             if (head > 512) {
               queue.copyWithin(0, head);
