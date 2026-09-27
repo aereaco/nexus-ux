@@ -330,9 +330,6 @@ ${suggestion}`);
   function getEvalFrame() {
     return currentEvalFrame;
   }
-  function advanceEvalFrame() {
-    return ++currentEvalFrame;
-  }
   var PHASE_CURRENT = 0;
   var PHASE_PENDING = 1;
   var CAPTURE_LEN = 2;
@@ -16905,38 +16902,8 @@ ${bridge}`, {
         return;
       }
       currentEvalDepth++;
-      advanceEvalFrame();
       try {
-        const currentScope = callExtras && Object.keys(callExtras).length > 0 ? new Proxy(callExtras, {
-          has(target, key) {
-            if (key === Symbol.unscopables)
-              return false;
-            if (typeof key === "string")
-              return key in target || key in scope;
-            return key in target;
-          },
-          get(target, key) {
-            if (key === Symbol.unscopables)
-              return void 0;
-            if (typeof key === "string") {
-              if (key in target)
-                return target[key];
-              return scope[key];
-            }
-            return void 0;
-          },
-          set(target, key, value) {
-            if (typeof key === "string") {
-              if (key in target) {
-                target[key] = value;
-                return true;
-              }
-              scope[key] = value;
-              return true;
-            }
-            return false;
-          }
-        }) : scope;
+        const currentScope = callExtras && Object.keys(callExtras).length > 0 ? Object.assign(Object.create(scope), callExtras) : scope;
         const result = func.call(el, currentScope);
         if (shouldAutoEvaluateFunctions && typeof result === "function") {
           receiver(result.call(el, currentScope));

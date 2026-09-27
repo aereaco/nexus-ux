@@ -299,35 +299,9 @@ export function evaluateLater(
     }
 
     currentEvalDepth++;
-    advanceEvalFrame();
     try {
       const currentScope = callExtras && Object.keys(callExtras).length > 0
-        ? new Proxy(callExtras, {
-            has(target, key): boolean {
-              if (key === Symbol.unscopables) return false;
-              if (typeof key === 'string') return (key in target) || (key in (scope as any));
-              return (key in target);
-            },
-            get(target, key): unknown {
-              if (key === Symbol.unscopables) return undefined;
-              if (typeof key === 'string') {
-                if (key in target) return target[key];
-                return (scope as any)[key];
-              }
-              return undefined;
-            },
-            set(target, key, value): boolean {
-              if (typeof key === 'string') {
-                if (key in target) {
-                  target[key] = value;
-                  return true;
-                }
-                (scope as any)[key] = value;
-                return true;
-              }
-              return false;
-            }
-          })
+        ? Object.assign(Object.create(scope), callExtras)
         : scope;
 
       const result = func.call(el, currentScope);
