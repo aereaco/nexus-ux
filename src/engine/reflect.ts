@@ -352,7 +352,8 @@ export function wrapGlobalFunction(fn: Function, globalContext: any): Function {
   if (!proxy) {
     proxy = new Proxy(fn, {
       apply(target, thisArg, args) {
-        return Reflect.apply(target, thisArg == null || thisArg === proxy ? globalContext : thisArg, args);
+        const isScopeReceiver = thisArg == null || thisArg === proxy || (thisArg !== globalContext && typeof thisArg === 'object' && !(typeof Window !== 'undefined' && thisArg instanceof Window));
+        return Reflect.apply(target, isScopeReceiver ? globalContext : thisArg, args);
       },
       construct(target, args, newTarget) {
         return Reflect.construct(target, args, newTarget === proxy ? target : newTarget);
