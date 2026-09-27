@@ -471,9 +471,14 @@ export function getElementScope(
         return true;
       }
 
-      return Reflect.set(target, key, value);
     }
   });
+
+  if (!hasExtras) {
+    elementScopeCache.set(el, proxy);
+  }
+
+  return proxy;
 }
 
 /**
