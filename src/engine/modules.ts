@@ -623,20 +623,26 @@ export class ModuleCoordinator {
     // Both HTMLElement and SVGElement subtrees are fully processed so that
     // declarative directives (data-for, data-bind-*, data-flow-edges, ...) work
     // inside <svg> just as they do in HTML.
-    Array.from(element.children).forEach(child => {
+    const children = element.children;
+    const childLen = children.length;
+    for (let i = 0; i < childLen; i++) {
+      const child = children[i];
       if (child instanceof HTMLElement || child instanceof SVGElement) {
         this.processElement(child as unknown as HTMLElement, forceReWalk, currentIsolation);
       } else if (child instanceof Element && child.classList && child.classList.length > 0) {
         if (currentIsolation !== 'style') {
-          child.classList.forEach(cls => stylesheet.adoptClass(cls, child as unknown as HTMLElement, this.runtimeContext));
-          Array.from(child.children).forEach(grandchild => {
+          this.runtimeContext.adoptStyle(child as unknown as HTMLElement);
+          const grandchildren = child.children;
+          const gcLen = grandchildren.length;
+          for (let j = 0; j < gcLen; j++) {
+            const grandchild = grandchildren[j];
             if (grandchild instanceof Element && grandchild.classList && grandchild.classList.length > 0) {
-              grandchild.classList.forEach(cls => stylesheet.adoptClass(cls, grandchild as unknown as HTMLElement, this.runtimeContext));
+              this.runtimeContext.adoptStyle(grandchild as unknown as HTMLElement);
             }
-          });
+          }
         }
       }
-    });
+    }
   }
 }
 

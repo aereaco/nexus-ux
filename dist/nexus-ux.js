@@ -1427,7 +1427,7 @@ ${suggestion}`);
     initializeJitEngine: () => initializeJitEngine,
     jitSheet: () => jitSheet,
     markExternalStylesSettled: () => markExternalStylesSettled,
-    stylesheet: () => stylesheet2
+    stylesheet: () => stylesheet
   });
 
   // src/engine/cache.ts
@@ -2632,7 +2632,7 @@ ${suggestion}`);
   }
   function collectStyles(root, shouldMinify) {
     const sheets = [];
-    const managedRules = stylesheet2.collectRules();
+    const managedRules = stylesheet.collectRules();
     if (managedRules)
       sheets.push(managedRules);
     document.querySelectorAll("head style").forEach((style) => {
@@ -2771,7 +2771,7 @@ ${scripts}
           const result = runtime.evaluate(el, value);
           if (parsed.argument) {
             if (result) {
-              stylesheet2.adoptClass(parsed.argument, el, runtime);
+              stylesheet.adoptClass(parsed.argument, el, runtime);
               el.classList.add(parsed.argument);
             } else {
               el.classList.remove(parsed.argument);
@@ -3170,7 +3170,7 @@ ${scripts}
                 } else {
                   runtime.morphDOM(shadow, html);
                 }
-                stylesheet2.adoptElementSubtree(shadow);
+                stylesheet.adoptElementSubtree(shadow);
                 Array.from(shadow.children).forEach((child) => {
                   if (child instanceof HTMLElement || child instanceof SVGElement) {
                     runtime.processElement(child);
@@ -3183,7 +3183,7 @@ ${scripts}
                 } else {
                   runtime.morphDOM(el, html);
                 }
-                stylesheet2.adoptElementSubtree(el);
+                stylesheet.adoptElementSubtree(el);
                 Array.from(el.children).forEach((child) => {
                   if (child instanceof HTMLElement || child instanceof SVGElement) {
                     runtime.processElement(child);
@@ -6906,7 +6906,7 @@ ${scripts}
       if (href.startsWith("idb://")) {
         const cssText = await resolveContent(href);
         if (cssText) {
-          const cleanup = await stylesheet2.adoptRawCSS(cssText, `import-${id}-${href}`);
+          const cleanup = await stylesheet.adoptRawCSS(cssText, `import-${id}-${href}`);
           cleanupFns4.push(cleanup);
           runtime.log(`Nexus Import [${id}]: CSS adopted (idb): ${href}`);
           return;
@@ -6953,7 +6953,7 @@ ${scripts}
       const cssText = await resolveContent(href);
       if (!cssText)
         return;
-      const cleanup = await stylesheet2.adoptRawCSS(cssText, `import-adopt-${id}-${href}`);
+      const cleanup = await stylesheet.adoptRawCSS(cssText, `import-adopt-${id}-${href}`);
       cleanupFns4.push(cleanup);
       runtime.log(`Nexus Import [${id}]: CSS adopted (constructable): ${href}`);
     });
@@ -7089,7 +7089,7 @@ ${scripts}
       const cssText = isVFSUri(content) ? await resolveContent(content) : content;
       if (!cssText)
         return;
-      const cleanup = await stylesheet2.adoptCSS(cssText, `import-style-${id}`);
+      const cleanup = await stylesheet.adoptCSS(cssText, `import-style-${id}`);
       cleanupFns4.push(cleanup);
       runtime.log(`Nexus Import [${id}]: Style adopted (ZCZS)`);
     });
@@ -15393,7 +15393,7 @@ ${match}</ul>
                   if (shouldIgnoreNode(node))
                     return;
                   addedThisBatch.add(node);
-                  stylesheet2.adoptSingleElement(node);
+                  stylesheet.adoptSingleElement(node);
                 }
               });
             }
@@ -15750,7 +15750,7 @@ ${decls}
       await refreshThemeBridge();
       while (pendingClasses.length > 0) {
         const { className, el, runtime } = pendingClasses.shift();
-        stylesheet2.adoptClass(className, el, runtime);
+        stylesheet.adoptClass(className, el, runtime);
       }
     })().catch((err) => {
       compilerReadyPromise = null;
@@ -16027,7 +16027,7 @@ ${bridge}`, {
       this._nextId = 0;
     }
   };
-  var stylesheet2 = new StyleSheetManager();
+  var stylesheet = new StyleSheetManager();
   var _isJitEngineBooted = false;
   function initializeJitEngine() {
     if (_isJitEngineBooted)
@@ -16047,7 +16047,7 @@ ${bridge}`, {
     onRegister(runtime) {
       runtime._styleAdopter = (el) => {
         if (el.classList && el.classList.length > 0) {
-          el.classList.forEach((cls) => stylesheet2.adoptClass(cls, el, runtime));
+          el.classList.forEach((cls) => stylesheet.adoptClass(cls, el, runtime));
         }
       };
       if (typeof document !== "undefined" && !document.querySelector("style[data-nexus-tailwind-bridge]") && document.querySelector('script[src*="tailwindcss/browser"]')) {
@@ -16066,7 +16066,7 @@ ${bridge}`, {
       const cleanupFns4 = [];
       if (expression && expression.trim()) {
         const css = expression.trim();
-        cleanupFns4.push(stylesheet2.adoptCSSSync(css, void 0, document));
+        cleanupFns4.push(stylesheet.adoptCSSSync(css, void 0, document));
       }
       const root = el.getRootNode();
       if (root && "adoptedStyleSheets" in root) {
@@ -16075,9 +16075,9 @@ ${bridge}`, {
           root.adoptedStyleSheets = [...sheetsList, jitSheet];
         }
       }
-      stylesheet2.emitPreflightAndTheme(el);
+      stylesheet.emitPreflightAndTheme(el);
       cleanupFns4.push(() => {
-        stylesheet2.emitPreflightAndTheme(el);
+        stylesheet.emitPreflightAndTheme(el);
       });
       return () => cleanupFns4.forEach((fn) => fn());
     }
@@ -16544,7 +16544,7 @@ ${bridge}`, {
     });
     toAdd.forEach((cls) => {
       if (!el.classList.contains(cls)) {
-        stylesheet2.adoptClass(cls, el);
+        stylesheet.adoptClass(cls, el);
         el.classList.add(cls);
       }
       currentAdded.add(cls);
@@ -17436,20 +17436,26 @@ ${bridge}`, {
       if (element[IS_TEMPLATE_KEY]) {
         return;
       }
-      Array.from(element.children).forEach((child) => {
+      const children = element.children;
+      const childLen = children.length;
+      for (let i = 0; i < childLen; i++) {
+        const child = children[i];
         if (child instanceof HTMLElement || child instanceof SVGElement) {
           this.processElement(child, forceReWalk, currentIsolation);
         } else if (child instanceof Element && child.classList && child.classList.length > 0) {
           if (currentIsolation !== "style") {
-            child.classList.forEach((cls) => stylesheet.adoptClass(cls, child, this.runtimeContext));
-            Array.from(child.children).forEach((grandchild) => {
+            this.runtimeContext.adoptStyle(child);
+            const grandchildren = child.children;
+            const gcLen = grandchildren.length;
+            for (let j = 0; j < gcLen; j++) {
+              const grandchild = grandchildren[j];
               if (grandchild instanceof Element && grandchild.classList && grandchild.classList.length > 0) {
-                grandchild.classList.forEach((cls) => stylesheet.adoptClass(cls, grandchild, this.runtimeContext));
+                this.runtimeContext.adoptStyle(grandchild);
               }
-            });
+            }
           }
         }
-      });
+      }
     }
   };
   function getGlobalSignals() {
