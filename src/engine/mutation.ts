@@ -32,11 +32,13 @@ const mutationObserverModule: ObserverModule = {
         isProcessing = true;
 
         const addedThisBatch = new Set<HTMLElement>();
+        let hasChildListMutations = false;
         const now = performance.now();
 
         // Pre-pass: collect all added nodes in this batch of mutations first
         for (const mutation of mutationsList) {
           if (mutation.type === 'childList') {
+            hasChildListMutations = true;
             mutation.addedNodes.forEach(node => {
               if (node instanceof HTMLElement) {
                 if (isExternalOverlay(node)) return;
@@ -138,8 +140,10 @@ const mutationObserverModule: ObserverModule = {
             }
           }
 
-          // Dispatch event once per batch to notify modules (like Predictive Engine) that DOM has changed
-          document.dispatchEvent(new CustomEvent('nexus:dom-mutated', { bubbles: true }));
+          // Dispatch event once per batch to notify modules (like Predictive Engine) that DOM structure has changed
+          if (hasChildListMutations) {
+            document.dispatchEvent(new CustomEvent('nexus:dom-mutated', { bubbles: true }));
+          }
 
           // Track moved nodes for cross-batch stability
           addedThisBatch.forEach(node => {

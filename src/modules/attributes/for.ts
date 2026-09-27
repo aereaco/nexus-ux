@@ -231,7 +231,8 @@ const forModule: AttributeModule = {
 
         // Re-order in DOM — batch initial mounts via DocumentFragment;
         // for updates, only move nodes that are out of position.
-        if (mountedMap.size === newlyCreatedNodes.length && newlyCreatedNodes.length > 1) {
+        const isInitialMount = nextNodes.length === newlyCreatedNodes.length && newlyCreatedNodes.length > 1;
+        if (isInitialMount) {
           const fragment = document.createDocumentFragment();
           for (let i = 0; i < nextNodes.length; i++) {
             fragment.appendChild(nextNodes[i]);
