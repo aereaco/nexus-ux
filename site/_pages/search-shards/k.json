@@ -1,0 +1,331 @@
+[
+  {
+    "id": "flow",
+    "route": "/flow",
+    "path": "/_pages/flow.html",
+    "title": "Flow Canvas",
+    "category": "Apps",
+    "keywords": [],
+    "content": "Flow Canvas Flow Canvas Signal Driven Complete spatial node graph with reactive fine-grained proxies Shift Drag Marquee Del Delete Arrows Nudge Nodes Edges Zoom Fit Add Node In Out Pos Fit View Live Reactive Store ZCZS 60fps Viewport Pan Canvas Studio Grid Snapping Grid Spacing Snap to Grid Show Minimap Wire Routing Engine Default Routing Style SmoothStep Rounded Orthogonal Bezier Cubic Directional Step Sharp 90 Angles Straight Direct Linear Animate All Stop Wires Active Connectors No active connections. Drag between node handles to create wires. Graph Schema IO Export Graph JSON Import Graph JSON Clear Canvas xyFlow Spatial Engine Nexus-UX ZCZS Tune spatial coordinates ports subflow nesting and schema Visual Studio JSON Schema Node Identifier Display Label Node Kind Standard Action Card Input Trigger Green Accent Output Sink Warning Accent Subflow Group Container Parent Subflow Group None Root Canvas Pos X Pos Y Width Height Connection Ports Edge Points No connection ports attached. Click below to add an edge point. Source Output Port Target Input Port Right Side Left Side Top Side Bottom Side Add Port Direct Schema JSON Definition Real-time synchronization Cancel Save Changes close Configure Wire Connector Spatial curve routing arrow markers animation and port attachments Visual Studio JSON Schema Wire ID Display Badge Label Routing Algorithm SmoothStep Rounded Orthogonal Bezier Cubic Directional Step Sharp 90 Angles Straight Direct Linear Arrowhead Marker None Bare Wire Ch",
+    "icon": "material-symbols-light:flowchart-outline"
+  },
+  {
+    "id": "todo",
+    "route": "/todo",
+    "path": "/_pages/todo.html",
+    "title": "Todo List",
+    "category": "Apps",
+    "keywords": [],
+    "content": "Todo List Todo List HTML-first reactive state management List Grid Compact Add Task All Active Completed Clear Completed Ready for your focus... Diagnostic Overlay viewport x items total Due Date DD/MM/YYYY Edit Done Cancel Save No Keep it Yes",
+    "icon": "material-symbols-light:checklist"
+  },
+  {
+    "id": "_left-panel",
+    "route": "/builder/_left-panel",
+    "path": "/_pages/builder/_left-panel.html",
+    "title": "_left-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "1. Files Add Landing Page Active Blank Canvas Empty Scratchpad 2. Navigation Page Sections Click refresh to inspect DOM hierarchy No landmark sections detected. 3. Components Blocks Sections All Actions Display Nav Feedback Inputs Layout Actions Button btn btn-primary Join Buttons Segmented group Dropdown Menu flyout Modal Dialog popup Swap Rotate state icon Theme Switch theme-controller Data Display Card card card-body Collapse collapse-arrow Alert alert-info/warning Badge Status pill Avatar Rounded profile Stats KPI card Table table-zebra Chat Bubble chat-start/end Countdown countdown Diff Side-by-side Timeline Step sequence Kbd Key chip Navigation Navbar Responsive header Tabs tabs-bordered Breadcrumbs Path navigation Menu Sidebar menu list Pagination Numbered pager Steps Multi-step flow Feedback Loading Spinner / dots Progress Horizontal bar Radial Gauge Circular progress Skeleton Shimmer placeholder Tooltip Hover hint Toast Corner popup Data Inputs Input Field input-bordered Select select-bordered Textarea textarea-bordered Checkbox checkbox-primary Radio radio-primary Toggle toggle-primary Range range-primary Rating mask-star File Input file-input-bordered Fieldset fieldset-legend Input Group join input btn Button Group join-item btn Contact Form Container form with inputs and submit Layout Hero Banner hero hero-content Divider divider Indicator Corner badge Footer Multi-column Stack Layered pile Mask mask-squircle Container container mx-auto Header Sticky header Drawer",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "_right-panel",
+    "route": "/builder/_right-panel",
+    "path": "/_pages/builder/_right-panel.html",
+    "title": "_right-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "landing",
+    "route": "/landing",
+    "path": "/_pages/builder/templates/landing.html",
+    "title": "landing",
+    "category": "General",
+    "keywords": [],
+    "content": "Overview Components Templates Pricing N Nexus Studio Overview Components Templates Pricing Sign In Get Started New DaisyUI 5 Native Components Tokens Next-Generation Visual Website Builder Assemble lightning-fast reactive web interfaces directly in the browser with declarative HTML bindings zero compilation lag and deep component inspection. Start Building Free Explore Templates Components 87 DaisyUI 5 Web Native Themes 32 Instant Canvas Sync Overhead 0 kb Zero-Serialization Heap Architecture Engineered for Velocity Everything you need to craft production web applications with zero friction. Dynamic Component Inspectors Click any element heading button or section to instantly inspect and modify variants layouts and responsive breakpoints. Learn More rarr Theme-Adaptive Styling Switch themes live on the canvas. High-contrast dark modes vibrant synthwave palettes and clean business layouts update instantly. Learn More rarr Zero-Serialization Pipeline DOM morphing reconcilers diff elements in-place while keeping user focus and input states completely intact. Learn More rarr N Nexus-UX Studio Copyright copy 2026 - All rights reserved Documentation Components Changelog GitHub",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "doc-changelog",
+    "route": "/docs/changelog",
+    "path": "/_pages/docs/changelog.md",
+    "title": "Changelog",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-changelog title Changelog route /docs/changelog icon material-symbols-light history order 3 category Docs --- Nexus-UX Changelog Codebase Alignment Analysis Latest Alignment Date 2026-09-13 --- Recent Major Release 2026-09-13 Native API Reflect Proxy Engine Scope Resolution Unification and ZCZS Storage Compliance Native Web API Reflect Proxy Engine src/engine/reflect.ts - Authoritative Reflect Factory createReflectProxy Implemented authoritative factory wrapping native browser APIs window localStorage sessionStorage document screen navigator fetch indexedDB in Proxy/Reflect traps with zero regex scanning overhead and zero intermediate serialization. Proxies are cached via WeakMap for zero-allocation reuse. - Dual-Compatibility Web Storage Supports both standard Web API methods getItem setItem removeItem clear key length and direct property reads/writes localStorage.collapsed false with reactive track storage key and trigger storage key hooks and automatic cross-tab synchronization via native storage events. - Callable fetch Proxy Provides a transparent proxy for fetch url options returning native Promise fully supporting .then .catch etc. while ensuring fetch is never shadowed by internal engine utility objects. - Reactive indexedDB Operations Exposes structured store operations createStoreOperations getIndexedDBProxy for zero-overhead persistence without transaction boilerplate. Scope Resolution Unification src/engine/scope.ts src/engine/evaluator.ts - Single Auth",
+    "icon": "material-symbols-light:history"
+  },
+  {
+    "id": "doc-license",
+    "route": "/docs/license",
+    "path": "/_pages/docs/license.md",
+    "title": "License",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-license title License route /docs/license icon material-symbols-light verified-user-outline order 5 category Docs --- MIT License Copyright c 2026 Nexus-UX Authors Permission is hereby granted free of charge to any person obtaining a copy of this software and associated documentation files the Software to deal in the Software without restriction including without limitation the rights to use copy modify merge publish distribute sublicense and/or sell copies of the Software and to permit persons to whom the Software is furnished to do so subject to the following conditions The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND EXPRESS OR IMPLIED INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM DAMAGES OR OTHER LIABILITY WHETHER IN AN ACTION OF CONTRACT TORT OR OTHERWISE ARISING FROM OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
+    "icon": "material-symbols-light:verified-user-outline"
+  },
+  {
+    "id": "doc-readme",
+    "route": "/docs/readme",
+    "path": "/_pages/docs/readme.md",
+    "title": "README",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-readme title README route /docs/readme icon material-symbols-light info-outline order 4 category Docs --- Nexus-UX Signal-Driven Universal Reactivity. High-Fidelity Tailwind JIT. Omni-State DOM-as-State Framework. Nexus-UX is a reactive framework designed for developers who demand absolute performance granular control and a zero-build experience. It collapses the traditional frontend stack by treating the DOM as a queryable reactive state graph while achieving 100 functional parity with Tailwind v4 . --- The Five Pillars 1. Omni-State DOM-as-State We assert that the DOM _is_ the primary state graph. No phantom Virtual DOM. No reconciliation tax. The HTML attributes are the declaration source while the binary signal heap is the runtime truth. 2. Native JIT Engine Tailwind v4 Nexus-UX achieves 1 1 bit-for-bit parity with the official Tailwind v4 CDN. It compiles utility classes into a high-performance Unified Adopted StyleSheets Registry in real-time. 3. Zero-DOM Pollution Using CSSStyleSheet.replaceSync Nexus-UX eliminates all legacy and tag pollution. Styles automatically penetrate Shadow DOM boundaries without duplicative parsing. 4. ZCZS Zero-Copy Zero-Serialization A value-pooling reactive core designed for 120fps animations. Data flows from kernel to DOM via binary signal heaps bypassing JSON serialization. 5. Agentic Readiness Built for Machine Reasoning Efficiency . Built-in Resolution Beacons report missing selectors and failed expressions back to Agentic Ho",
+    "icon": "material-symbols-light:info-outline"
+  },
+  {
+    "id": "doc-reference",
+    "route": "/docs/reference",
+    "path": "/_pages/docs/reference.md",
+    "title": "Technical Reference",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-reference title Technical Reference route /docs/reference icon material-symbols-light menu-book-outline order 1 category Docs --- Nexus-UX The Exhaustive Technical Reference The Practical Manual From Syntax to Practice Theory is knowing how it works. Practice is making it work. This document bridges both. This guide is the definitive practical reference for developers and AI agents building with Nexus-UX. It is the core Toolkit for rapid development focused on outcomes and practical implementation patterns. Built on the Omni-State DOM-as-State philosophy it demonstrates how to use Nexus-UX as the Functional Soul for modern web components. IMPORTANT Contributing Compliance All development on Nexus-UX by human contributors and AI agents alike must adhere to the workspace directives defined in .agent/rules/directives.md . This includes the ZCZS mandate ownership tracking patterns the engine-vs-module architectural contract MutationObserver policy DDD workflow and granular version control. See Spec 1B nexus-ux-spec.md chapter-1b-architecture-contract--development-compliance for the full contract. --- Table of Contents 1. Preface Quick Start preface-quick-start 2. Chapter 1 The Language NEG Grammar Fundamentals chapter-1-the-language-neg-grammar--fundamentals 3. Chapter 2 Essential Directives State Binding chapter-2-essential-directives-state--binding 4. Chapter 3 Control Flow Rendering chapter-3-control-flow--rendering 5. Chapter 4 Events Behavioral Pipelines chapter-4",
+    "icon": "material-symbols-light:menu-book-outline"
+  },
+  {
+    "id": "labs-attributes",
+    "route": "/labs/attributes",
+    "path": "/_pages/labs/attributes.html",
+    "title": "Attributes",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Attributes Labs Category 30 Active Directives Reactive Attributes Directives Declarative HTML directives governing state initialization two-way bindings physical and visual rendering keyed loops and lifecycle hooks. data-signal State Declares local or global fine-grained reactive state blocks directly in the DOM namespace. Open Lab rarr data-bind Binding Two-way native browser API binding and HTML attribute synchronization. Open Lab rarr data-for Loop Zero-allocation keyed list rendering with in-place DOM morphing. Open Lab rarr data-if Conditional Physical conditional DOM mounting with anchor comments and deterministic teardown. Open Lab rarr data-show Toggle Visual visibility toggle via display styles without structural DOM teardown. Open Lab rarr data-on Events Declarative event handling with modifiers evt and pipeline execution. Open Lab rarr data-class Styling Reconciles dynamic Tailwind / DaisyUI class lists or boolean toggles. Open Lab rarr data-style Styling Reconciles dynamic inline styles with unit formatting and camelCase support. Open Lab rarr data-effect Reactivity Continuous reactive side-effect runner tracking dependencies automatically. Open Lab rarr data-computed Computed Memoized derived getters caching reactive computations with lazy evaluation. Open Lab rarr data-drag Interaction Zero-configuration drag-and-drop list reordering with FLIP animations. Open Lab rarr data-flow Canvas Interactive node-graph canvas supporting zoom pan and SVG edge connections. O",
+    "icon": "material-symbols-light:code"
+  },
+  {
+    "id": "labs-modifiers",
+    "route": "/labs/modifiers",
+    "path": "/_pages/labs/modifiers.html",
+    "title": "Modifiers",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Modifiers Labs Category 15 Event Modifiers Event Modifiers Filters Pipeline event modifiers that attach directly to event directives e.g. data-on-click_outside or input_debounce.250 to intercept throttle filter and coordinate interactions. _debounce Timing Delays execution until specified milliseconds have elapsed since the last invocation. Open Lab rarr _delay Timing Delays handler execution by a fixed millisecond timeout before firing. Open Lab rarr _document Target Attaches event listener to document root rather than the local HTMLElement. Open Lab rarr _drag Pointer Injects delta movement coordinates drag.dx drag.dy into pointer handlers. Open Lab rarr _hold Gesture Fires only when user presses and holds the pointer for the specified millisecond duration. Open Lab rarr _keys Keyboard Filters keyboard events by key code or combination enter escape space ctrl shift . Open Lab rarr _morph Morph Morphs return string from evaluation directly into the element using morphDOM diffing. Open Lab rarr _once Lifecycle Executes event listener exactly once automatically unbinding itself afterwards. Open Lab rarr _outside Outside Fires handler only when pointer click or tap occurs outside the element boundary bounds. Open Lab rarr _prevent Default Invokes event.preventDefault to halt native browser default submission and navigation. Open Lab rarr _self Target Executes handler only if event.target is the element itself ignoring child bubbled events. Open Lab rarr _stop Propagation Calls ",
+    "icon": "material-symbols-light:remove"
+  },
+  {
+    "id": "lab-attr-computed",
+    "route": "/labs/attributes/computed",
+    "path": "/_pages/labs/attributes/computed.html",
+    "title": "data-computed",
+    "category": "Labs",
+    "keywords": [
+      "data-computed",
+      "data-computed-",
+      "prop",
+      "expr",
+      "data-computed_global"
+    ],
+    "content": "data-computed Declares cached fine-grained reactive computed values with zero serialization via code unifiedComputed /code and ghost key memory pre-allocation. div data-computed total price qty formatted total.toFixed 2 /div n div data-computed-double count 2 /div data-computed ... data-computed- prop expr data-computed_global p class opacity-80 leading-relaxed Located in code src/modules/attributes/computed.ts /code computed directives cache derived values using code unifiedComputed /code . Unlike raw effect loops computed values evaluate lazily upon read and remain cached until one of their upstream dependencies changes. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Ghost Key Pre-Allocation /strong Parses property keys ahead of execution to pre-allocate typed slots in the SignalHeap /li li strong Zero-Copy Derivations /strong Returns typed reactive references without cloning underlying objects /li li strong Dual Usage Modes /strong Supports object literal dictionaries code data-computed ... /code and per-attribute declarations code data-computed-subtotal ... /code /li /ul",
+    "icon": "material-symbols-light:calculate"
+  },
+  {
+    "id": "lab-attr-drag",
+    "route": "/labs/attributes/drag",
+    "path": "/_pages/labs/attributes/drag.html",
+    "title": "data-drag",
+    "category": "Labs",
+    "keywords": [
+      "data-drag",
+      "items",
+      "list",
+      "data-drag-item",
+      "data-drag-handle",
+      "data-drag-nodrag"
+    ],
+    "content": "data-drag Zero-configuration direct manipulation drag-and-drop engine with FLIP animations spatial collision detection and reactive array synchronization. div data-drag list items group kanban n template data-for item in items n div data-drag-item class item /div n /template n /div data-drag items list ... data-drag-item data-drag-handle data-drag-nodrag p class opacity-80 leading-relaxed Located in code src/modules/attributes/drag.ts /code the drag directive pairs direct user pointer interactions with automatic reactive array mutations. Using FLIP First Last Invert Play geometry caching elements glide smoothly to their new positions with zero layout jank. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Direct Array Mutation /strong Automatically calls code splice /code on the backing signal array upon drop /li li strong Hardware Accelerated FLIP /strong Smooth 60fps card settling using transform transitions /li li strong Cross-List Teleportation /strong Seamlessly drag items between containers sharing a code group /code /li li strong Adopted Stylesheet /strong Automatic ghost chosen and active CSS without manual styling attributes /li /ul",
+    "icon": "material-symbols-light:drag-pan"
+  },
+  {
+    "id": "lab-attr-import",
+    "route": "/labs/attributes/import",
+    "path": "/_pages/labs/attributes/import.html",
+    "title": "data-import",
+    "category": "Labs",
+    "keywords": [
+      "script",
+      "link",
+      "module",
+      "adopt"
+    ],
+    "content": "data-import Declarative external dependency loader for scripts stylesheets ESM modules HTML patterns and theme assets with automated deduplication. div data-import script https //cdn.jsdelivr.net/npm/canvas-confetti 1.6.0/dist/confetti.browser.js /div script link module adopt p class opacity-80 leading-relaxed Located in code src/modules/attributes/import.ts /code the import directive eliminates imperative code script /code tags from template files. Dependencies load asynchronously deduplicate automatically and fire readiness callbacks. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Automatic Deduplication /strong Simultaneous requests for identical libraries resolve to a single network fetch /li li strong Constructable Adoption /strong The code adopt /code key compiles remote CSS into code adoptedStyleSheets /code /li li strong Pure HTML Declarative /strong Zero imperative loader scripts required anywhere in page markup /li /ul",
+    "icon": "material-symbols-light:cloud-download"
+  },
+  {
+    "id": "lab-attr-mask",
+    "route": "/labs/attributes/mask",
+    "path": "/_pages/labs/attributes/mask.html",
+    "title": "data-mask",
+    "category": "Labs",
+    "keywords": [
+      "data-mask",
+      "template"
+    ],
+    "content": "data-mask Applies real-time input formatting masks to text fields phone numbers currency dates credit cards while preserving caret position. input data-mask 999 999-9999 / n input data-mask 9999-9999-9999-9999 / data-mask template p class opacity-80 leading-relaxed Located in code src/modules/attributes/mask.ts /code the mask directive intercepts keystrokes on code input /code elements and formats the typed string using pattern tokens. It pairs seamlessly with code data-bind-value /code to store clean or formatted values in state. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Dynamic Token Matching /strong Supports digit tokens code 9 /code alphabetic tokens code a /code and literal punctuation /li li strong Caret Position Memory /strong Smart cursor handling allows smooth forward typing and backspacing /li li strong Zero-Dependency /strong Built-in string format parser with zero external libraries /li /ul",
+    "icon": "material-symbols-light:badge"
+  },
+  {
+    "id": "lab-attr-style",
+    "route": "/labs/attributes/style",
+    "path": "/_pages/labs/attributes/style.html",
+    "title": "data-style",
+    "category": "Labs",
+    "keywords": [
+      "data-style"
+    ],
+    "content": "data-style Directly reconciles dynamic inline CSS style properties from reactive objects code transform scale zoom opacity alpha /code via code reconcileStyle /code . div data-style transform translateX x px opacity isVisible 1 0 /div data-style ... p class opacity-80 leading-relaxed Located in code src/modules/attributes/style.ts /code the style directive coordinates fine-grained CSS property updates without requiring stylesheet compilation. It uses code reconcileStyle /code to diff existing properties against newly evaluated states. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Surgical Property Diffs /strong Only properties whose values actually changed are assigned to code el.style /code /li li strong Automatic Cleanup /strong Removed or undefined keys are cleaned up using code removeProperty /code /li li strong Transforms amp GPU Acceleration /strong Ideal for coordinate translation scale rotation and dynamic CSS custom properties /li /ul",
+    "icon": "material-symbols-light:format-paint"
+  },
+  {
+    "id": "lab-mod-debounce",
+    "route": "/labs/modifiers/debounce",
+    "path": "/_pages/labs/modifiers/debounce.html",
+    "title": "_debounce",
+    "category": "Labs",
+    "keywords": [
+      "_debounce"
+    ],
+    "content": "_debounce Pipes an event listener through an auto-clearing timer delaying execution until the specified milliseconds have elapsed since the user last triggered the event. input data-on-input_debounce.300 query newValue / n input data-on-input_debounce.500 searchDatabase / _debounce. ms p class opacity-80 leading-relaxed Located in code src/modules/modifiers/debounce.ts /code this modifier manages timer handles directly on the hosting element. Each incoming event cancels any existing pending timeout and restarts the timer preventing network spam on rapid keystrokes. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Micro-Timer Management /strong Automatically cancels previous timer IDs without memory leaks /li li strong Customizable Latency /strong Specify any millisecond integer suffix e.g. code _debounce.150 /code code _debounce.750 /code /li li strong Injected Values /strong Passes the latest code newValue /code and code evt /code to the deferred handler /li /ul",
+    "icon": "material-symbols-light:hourglass-empty"
+  },
+  {
+    "id": "lab-mod-drag",
+    "route": "/labs/modifiers/drag",
+    "path": "/_pages/labs/modifiers/drag.html",
+    "title": "_drag",
+    "category": "Labs",
+    "keywords": [
+      "_drag"
+    ],
+    "content": "_drag Enriches pointer handlers with real-time drag delta coordinates code drag.dx /code code drag.dy /code code drag.x /code code drag.y /code during pointermove. div data-on-pointermove_drag posX drag.dx posY drag.dy /div _drag p class opacity-80 leading-relaxed Located in code src/modules/modifiers/drag.ts /code this event modifier tracks mouse and touch movement deltas across pointer frames. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Injected Deltas /strong Provides code drag.dx /code and code drag.dy /code for smooth coordinate manipulation /li li strong Pointer Capture /strong Keeps tracking movement even when pointer leaves element bounds /li /ul",
+    "icon": "material-symbols-light:drag-click"
+  },
+  {
+    "id": "lab-mod-hold",
+    "route": "/labs/modifiers/hold",
+    "path": "/_pages/labs/modifiers/hold.html",
+    "title": "_hold",
+    "category": "Labs",
+    "keywords": [
+      "_hold"
+    ],
+    "content": "_hold Requires continuous pointer or key depression for the specified millisecond duration before triggering the event handler press-and-hold confirmation . button data-on-pointerdown_hold.800 confirmErase Hold to Erase 800ms /button _hold. ms p class opacity-80 leading-relaxed Located in code src/modules/modifiers/hold.ts /code this modifier manages pointer down and release listeners. If the user lifts or moves pointer beyond threshold before duration expires the timer cancels automatically. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Destructive Confirmations /strong Prevent accidental clicks on delete reboot or wipe actions /li li strong Auto-Cancel on Early Release /strong Aborts immediately if pointerup occurs prematurely /li /ul",
+    "icon": "material-symbols-light:touch-long"
+  },
+  {
+    "id": "lab-mod-keys",
+    "route": "/labs/modifiers/keys",
+    "path": "/_pages/labs/modifiers/keys.html",
+    "title": "_keys",
+    "category": "Labs",
+    "keywords": [
+      "_enter",
+      "_escape",
+      "_space",
+      "ctrl",
+      "meta",
+      "alt",
+      "shift"
+    ],
+    "content": "_keys Filters keyboard events to specific keystroke matches _enter _escape _space _tab _up _down _delete and modifier key chords _ctrl _alt _shift _meta . input data-on-keydown_enter submit / n div data-on-keydown_escape closeModal /div n input data-on-keydown_ctrl_enter sendDraft / _enter _escape _space ctrl meta alt shift p class opacity-80 leading-relaxed Located in code src/modules/modifiers/keys.ts /code keyboard modifiers compare code e.key /code names case-insensitively and inspect boolean modifier flags without cumbersome switch-case logic in JavaScript. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Keyboard Ergonomics /strong Clean declarative handling for forms and modal dismissals /li li strong Compound Chords /strong Chain code ctrl enter /code or code shift tab /code seamlessly /li /ul",
+    "icon": "material-symbols-light:keyboard"
+  },
+  {
+    "id": "lab-mod-morph",
+    "route": "/labs/modifiers/morph",
+    "path": "/_pages/labs/modifiers/morph.html",
+    "title": "_morph",
+    "category": "Labs",
+    "keywords": [
+      "_morph"
+    ],
+    "content": "_morph Pipes the return value of an event handler into morphDOM diffing and patching the element in-place with user focus preservation. button data-on-click_morph fetchUpdatedCardHtml Refresh Card /button _morph p class opacity-80 leading-relaxed Located in code src/modules/modifiers/morph.ts /code the morph modifier brings server-driven or function-driven HTML patches directly into the element without replacing the element wrapper itself. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Focus Preservation /strong Keeps active input focus and caret positions intact during morphing /li li strong In-Place Diffs /strong Mutates only the exact DOM attributes and child nodes that changed /li /ul",
+    "icon": "material-symbols-light:transform"
+  },
+  {
+    "id": "lab-mod-stop",
+    "route": "/labs/modifiers/stop",
+    "path": "/_pages/labs/modifiers/stop.html",
+    "title": "_stop",
+    "category": "Labs",
+    "keywords": [
+      "_stop"
+    ],
+    "content": "_stop Automatically invokes code event.stopPropagation /code prior to evaluation halting the event from bubbling up to ancestor DOM containers. button data-on-click_stop deleteItem Delete /button _stop p class opacity-80 leading-relaxed Located in code src/modules/modifiers/stop.ts /code the stop modifier ensures that clicking on action buttons embedded inside rows or cards does not trigger the parent container s row selection handlers. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Clean Bubbling Control /strong Keeps child action events strictly isolated from parent card clicks /li li strong Declarative Syntax /strong Eliminates inline code e.stopPropagation /code code /li /ul",
+    "icon": "material-symbols-light:pan-tool"
+  },
+  {
+    "id": "lab-mod-window",
+    "route": "/labs/modifiers/window",
+    "path": "/_pages/labs/modifiers/window.html",
+    "title": "_window",
+    "category": "Labs",
+    "keywords": [
+      "_window"
+    ],
+    "content": "_window Redirects the event listener from the host element to the global window target supporting global resize keydown and scroll listeners with automatic element teardown. div data-on-resize_window updateDimensions /div n div data-on-keydown_window_escape close /div _window p class opacity-80 leading-relaxed Located in code src/modules/modifiers/window.ts /code this modifier binds directly to code window /code for global browser viewport events while scoping callback execution to the element. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Global Hotkeys /strong Listen for Escape or Ctrl K anywhere on the page /li li strong Automatic Cleanup /strong Never leaves orphan window listeners after unmounting /li /ul",
+    "icon": "material-symbols-light:web-asset"
+  },
+  {
+    "id": "lab-scope-os",
+    "route": "/labs/scopes/os",
+    "path": "/_pages/labs/scopes/os.html",
+    "title": "@os",
+    "category": "Labs",
+    "keywords": [],
+    "content": "os Operating system and platform detection scope provider enabling conditional shortcut badges vs Ctrl and OS-specific presentation. span data-show os macos K /span n span data-show os macos Ctrl K /span os p class opacity-80 leading-relaxed Located in code src/modules/scopes/os.ts /code this scope rule normalizes code navigator.userAgent /code and code navigator.userAgentData /code into friendly platform tokens. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Keyboard Shortcut Badges /strong Display Cmd for Apple users and Ctrl for Windows/Linux /li li strong Mobile vs Desktop Optimization /strong Tailor interaction targets and gestures accordingly /li /ul",
+    "icon": "material-symbols-light:desktop-windows"
+  },
+  {
+    "id": "lab-sprite-animate",
+    "route": "/labs/sprites/animate",
+    "path": "/_pages/labs/sprites/animate.html",
+    "title": "$animate",
+    "category": "Labs",
+    "keywords": [
+      "animate",
+      "keyframes",
+      "options",
+      "flip",
+      "element"
+    ],
+    "content": "animate Web Animations API wrapper and FLIP transition coordinator animate flip for 60fps hardware-accelerated element morphing and layout settling. animate el transform scale 1 transform scale 1.2 duration 300 animate el keyframes options flip element fn p class opacity-80 leading-relaxed Registered in code src/modules/sprites/animate.ts /code with core FLIP coordination in code src/engine/animation.ts /code the animate sprite orchestrates smooth physical layout settling without layout reflow thrashing. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Hardware Accelerated /strong Driven directly by the browser compositor thread /li li strong FLIP Layout Geometry /strong Seamlessly animates items entering leaving and swapping positions in lists via code flip /code /li /ul",
+    "icon": "material-symbols-light:animation"
+  },
+  {
+    "id": "lab-sprite-periodicsync",
+    "route": "/labs/sprites/periodicsync",
+    "path": "/_pages/labs/sprites/periodicsync.html",
+    "title": "$periodicSync",
+    "category": "Labs",
+    "keywords": [
+      "periodicsync",
+      "register",
+      "tag",
+      "options"
+    ],
+    "content": "periodicSync Periodic Background Sync API client registering recurring background tasks with the Service Worker to fetch fresh content periodically even when the app is closed. periodicSync.register update-news minInterval 24 60 60 1000 periodicSync.register tag options p class opacity-80 leading-relaxed Located in code src/modules/sprites/periodicSync.ts /code this sprite provides recurring background synchronization for news feeds telemetry updates and local database syncs. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Periodic Execution /strong Keeps cached data fresh before the user opens the application /li li strong Native OS Management /strong Browser schedules sync according to device battery and network state /li /ul",
+    "icon": "material-symbols-light:update"
+  },
+  {
+    "id": "lab-sprite-push",
+    "route": "/labs/sprites/push",
+    "path": "/_pages/labs/sprites/push.html",
+    "title": "$push",
+    "category": "Labs",
+    "keywords": [
+      "push",
+      "subscribe",
+      "options",
+      "permission"
+    ],
+    "content": "push Web Push Notifications client manager push.subscribe push.permission push.notify wrapping the Push API and PushManager with VAPID key negotiation. push.subscribe userVisibleOnly true applicationServerKey ... push.subscribe options push.permission p class opacity-80 leading-relaxed Located in code src/modules/sprites/push.ts /code this sprite provides native OS-level push notification integration. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong VAPID Negotiation /strong Converts base64 public keys into typed Uint8Array buffers /li li strong Background Wakeup /strong Wakes Service Worker to show notifications when app is closed /li /ul",
+    "icon": "material-symbols-light:notifications-active"
+  }
+]

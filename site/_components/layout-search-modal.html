@@ -13,9 +13,29 @@
           const q = ($el.value || '').trim();
           searchDebouncedQuery = q;
           searchTokens = (typeof getSearchTokens === 'function' ? getSearchTokens(q) : q.toLowerCase().split(/\s+/).filter(Boolean));
-          searchResults = (q && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(q, searchIndex) : [];
-          flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
-          searchActiveIndex = 0;
+          if (q) {
+            window.fetch('/api/search?q=' + encodeURIComponent(q))
+              .then(function(r) { return r.ok ? r.json() : []; })
+              .then(function(groups) {
+                searchResults = groups || [];
+                flatResults = (groups || []).flatMap(function(grp) { return grp.items || []; });
+                searchActiveIndex = 0;
+              })
+              .catch(function() {
+                const prefix = q.charAt(0).toLowerCase();
+                window.fetch('/_pages/search-shards/' + encodeURIComponent(prefix) + '.json')
+                  .then(function(r) { return r.ok ? r.json() : []; })
+                  .then(function(entries) {
+                    searchResults = (typeof searchResultGroups === 'function') ? searchResultGroups(q, entries) : [];
+                    flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
+                    searchActiveIndex = 0;
+                  });
+              });
+          } else {
+            searchResults = [];
+            flatResults = [];
+            searchActiveIndex = 0;
+          }
         "
         data-on-keydown_escape="searchOpen = false; if (typeof CSS !== 'undefined' && CSS.highlights) { CSS.highlights.delete('search-match'); }"
         data-on-keydown_prevent_down="
@@ -70,9 +90,13 @@
               searchQuery = activeRecent;
               searchDebouncedQuery = activeRecent;
               searchTokens = (typeof getSearchTokens === 'function' ? getSearchTokens(activeRecent) : [activeRecent]);
-              searchResults = (activeRecent && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(activeRecent, searchIndex) : [];
-              flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
-              searchActiveIndex = 0;
+              window.fetch('/api/search?q=' + encodeURIComponent(activeRecent))
+                .then(function(r) { return r.ok ? r.json() : []; })
+                .then(function(groups) {
+                  searchResults = groups || [];
+                  flatResults = (groups || []).flatMap(function(grp) { return grp.items || []; });
+                  searchActiveIndex = 0;
+                });
             }
           }
         "
@@ -123,9 +147,13 @@
                   searchQuery = recent;
                   searchDebouncedQuery = recent;
                   searchTokens = (typeof getSearchTokens === 'function' ? getSearchTokens(recent) : [recent]);
-                  searchResults = (recent && searchIndex && searchIndex.length !== 0 && typeof searchResultGroups === 'function') ? searchResultGroups(recent, searchIndex) : [];
-                  flatResults = (searchResults || []).flatMap(function(grp) { return grp.items || []; });
-                  searchActiveIndex = 0;
+                  window.fetch('/api/search?q=' + encodeURIComponent(recent))
+                    .then(function(r) { return r.ok ? r.json() : []; })
+                    .then(function(groups) {
+                      searchResults = groups || [];
+                      flatResults = (groups || []).flatMap(function(grp) { return grp.items || []; });
+                      searchActiveIndex = 0;
+                    });
                 ">
                 <iconify-icon icon="material-symbols-light:history"
                   class="text-lg opacity-60 shrink-0"

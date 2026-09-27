@@ -310,7 +310,12 @@ async function handler(req: Request): Promise<Response> {
     return srcRes;
   }
 
-  // B. Physical Static File Check (SITE_DIR)
+  // C. Virtual Search API (/api/search?q=...)
+  if (url.pathname === "/api/search") {
+    return await handleServerSearch(url);
+  }
+
+  // D. Physical Static File Check (SITE_DIR)
   // Let serveDir check if this exact file physically exists on disk in /site
   const staticRes = await serveDir(req, { fsRoot: SITE_DIR, quiet: true });
   if (staticRes.status !== 404) {
@@ -426,6 +431,149 @@ function startWatcher() {
       timer = setTimeout(flush, DEBOUNCE_MS);
     }
   })();
+}
+
+// 7.5 Virtual Search API Resolver
+async function handleServerSearch(url: URL): Promise<Response> {
+  const rawQ = url.searchParams.get("q") || "";
+  const q = rawQ.trim();
+  if (!q) {
+    return new Response(JSON.stringify([]), {
+      status: 200,
+      headers: { "Content-Type": "application/json; charset=UTF-8" }
+    });
+  }
+
+  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const prefix = q.charAt(0).toLowerCase();
+  const shardsDir = join(SITE_DIR, "_pages", "search-shards");
+  const shardPath = join(shardsDir, `${prefix}.json`);
+  const manifestPath = join(shardsDir, "manifest.json");
+
+  let entries: any[] = [];
+  try {
+    const raw = await Deno.readTextFile(shardPath);
+    entries = JSON.parse(raw);
+  } catch (_) {
+    try {
+      const raw = await Deno.readTextFile(manifestPath);
+      entries = JSON.parse(raw);
+    } catch (_) {}
+  }
+
+  const navMatches: any[] = [];
+  const contentMatches: any[] = [];
+  const seenPaths = new Set<string>();
+  const lowerQ = q.toLowerCase();
+
+  for (const entry of entries) {
+    if (!entry) continue;
+    const title = (entry.title || entry.id || "").toLowerCase();
+    const route = (entry.route || entry.path || "").toLowerCase();
+    const cat = (entry.category || "General").toLowerCase();
+    const id = (entry.id || "").toLowerCase();
+    const kws = Array.isArray(entry.keywords) ? entry.keywords.join(" ").toLowerCase() : "";
+    const searchable = `${title} ${route} ${cat} ${id} ${kws}`;
+
+    if (terms.every(term => searchable.includes(term))) {
+      let score = 0;
+      if (title === lowerQ) score += 100;
+      else if (title.startsWith(lowerQ)) score += 50;
+      else if (title.includes(lowerQ)) score += 30;
+      if (terms.every(t => title.includes(t))) score += 20;
+
+      for (const t of terms) {
+        if (title.includes(t)) score += 10;
+        if (route.includes(t)) score += 5;
+        if (cat.includes(t)) score += 3;
+        if (kws.includes(t)) score += 4;
+      }
+
+      navMatches.push({
+        id: entry.route || entry.path,
+        path: entry.route || entry.path,
+        component: entry.path,
+        name: entry.id,
+        meta: {
+          title: entry.title || entry.id,
+          icon: entry.icon || "material-symbols-light:description-outline"
+        },
+        category: entry.category || "General",
+        score
+      });
+      seenPaths.add(entry.route || entry.path);
+    }
+  }
+
+  navMatches.sort((a, b) => b.score - a.score);
+
+  for (const entry of entries) {
+    if (!entry || seenPaths.has(entry.route || entry.path)) continue;
+    const text = entry.content || "";
+    if (!text) continue;
+    const lowerText = text.toLowerCase();
+
+    if (terms.every(term => lowerText.includes(term))) {
+      let bestPos = -1;
+      for (const t of terms) {
+        const p = lowerText.indexOf(t);
+        if (p !== -1) {
+          bestPos = (bestPos === -1) ? p : Math.min(bestPos, p);
+        }
+      }
+
+      if (bestPos !== -1) {
+        const start = Math.max(0, bestPos - 35);
+        const end = Math.min(text.length, bestPos + 45);
+        let snippet = text.slice(start, end).trim();
+        if (start !== 0) snippet = "…" + snippet;
+        if (end !== text.length) snippet = snippet + "…";
+
+        contentMatches.push({
+          id: "content_" + (entry.route || entry.path),
+          path: entry.route || entry.path,
+          component: entry.path,
+          name: entry.id,
+          meta: {
+            title: entry.title || entry.id,
+            icon: entry.icon || "material-symbols-light:description-outline"
+          },
+          category: entry.category || "General",
+          snippet
+        });
+      }
+    }
+  }
+
+  const groups: any[] = [];
+  if (navMatches.length > 0) {
+    groups.push({
+      id: "nav_" + q,
+      type: "nav",
+      title: "Pages & Navigation",
+      icon: "material-symbols-light:navigation-outline",
+      items: navMatches
+    });
+  }
+  if (contentMatches.length > 0) {
+    groups.push({
+      id: "content_" + q,
+      type: "content",
+      title: "Page Content Matches",
+      icon: "material-symbols-light:description-outline",
+      items: contentMatches
+    });
+  }
+
+  return new Response(JSON.stringify(groups), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json; charset=UTF-8",
+      "Cache-Control": "no-store",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp"
+    }
+  });
 }
 
 // 8. Start Server

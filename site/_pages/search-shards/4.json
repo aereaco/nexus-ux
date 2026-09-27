@@ -1,0 +1,57 @@
+[
+  {
+    "id": "_canvas",
+    "route": "/builder/_canvas",
+    "path": "/_pages/builder/_canvas.html",
+    "title": "_canvas",
+    "category": "General",
+    "keywords": [],
+    "content": "Left Center Right Justify Size 12px 14px 16px 18px 20px 24px 32px 48px Add Component / Section After Inside Hero Section Features Grid Pricing Table CTA Banner",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "_right-panel",
+    "route": "/builder/_right-panel",
+    "path": "/_pages/builder/_right-panel.html",
+    "title": "_right-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "lab-attr-flow",
+    "route": "/labs/attributes/flow",
+    "path": "/_pages/labs/attributes/flow.html",
+    "title": "data-flow",
+    "category": "Labs",
+    "keywords": [
+      "data-flow",
+      "data-flow-viewport",
+      "data-flow-node",
+      "node",
+      "data-flow-edges",
+      "data-flow-minimap",
+      "data-flow-resizer",
+      "data-flow-handle",
+      "type",
+      "data-flow-side",
+      "side",
+      "data-flow-nodrag"
+    ],
+    "content": "data-flow Reactive node-graph and workflow canvas directive with hardware-accelerated pan zoom grid snapping orthogonal SmoothStep/Bezier routing minimap 8-point node resizer and marquee selection. div data-flow grid 20 n div data-flow-viewport n svg data-flow-edges class text-primary /svg n div data-flow-node node n div data-flow-resizer /div n span data-flow-handle source data-flow-side right /span n span data-flow-handle target data-flow-side left /span n /div n /div n div data-flow-minimap class absolute bottom-3 right-3 /div n /div data-flow data-flow-viewport data-flow-node node data-flow-edges data-flow-minimap data-flow-resizer data-flow-handle type data-flow-side side data-flow-nodrag p class opacity-80 leading-relaxed Located in code src/modules/attributes/flow.ts /code and code src/modules/sprites/flow.ts /code the flow suite implements complete xyFlow parity within Nexus-UX s zero-serialization reactive engine. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Infinite Canvas amp Viewport /strong Smooth wheel zoom 0.2x to 4x and pan with grid snapping /li li strong Orthogonal Edge Routing /strong SmoothStep with rounded corner bends Step and Bezier routes with SVG arrowheads and labels /li li strong Marquee Multi-Selection /strong Shift drag draws an SVG selection bounding box selecting multiple nodes for group translation /li li strong Hierarchical Sub-flows /strong Declaring code parentId /code links child nodes to a parent container for re",
+    "icon": "material-symbols-light:account-tree"
+  },
+  {
+    "id": "lab-scope-container",
+    "route": "/labs/scopes/container",
+    "path": "/_pages/labs/scopes/container.html",
+    "title": "@container",
+    "category": "Labs",
+    "keywords": [
+      "container"
+    ],
+    "content": "container Evaluates component-level container queries reactively via ResizeObserver allowing components to adapt based on their parent container width rather than full viewport width. div data-show container min-width 400px /div container p class opacity-80 leading-relaxed Located in code src/modules/scopes/container.ts /code container queries decouple responsive component layout from the global browser window enabling truly modular design. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong ResizeObserver Backed /strong Monitors container element dimensions with zero polling overhead /li li strong True Component Isolation /strong Adapts layout whether embedded in a narrow sidebar or a wide main pane /li /ul",
+    "icon": "material-symbols-light:aspect-ratio"
+  }
+]

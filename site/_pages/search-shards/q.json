@@ -1,0 +1,167 @@
+[
+  {
+    "id": "doc-readme",
+    "route": "/docs/readme",
+    "path": "/_pages/docs/readme.md",
+    "title": "README",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-readme title README route /docs/readme icon material-symbols-light info-outline order 4 category Docs --- Nexus-UX Signal-Driven Universal Reactivity. High-Fidelity Tailwind JIT. Omni-State DOM-as-State Framework. Nexus-UX is a reactive framework designed for developers who demand absolute performance granular control and a zero-build experience. It collapses the traditional frontend stack by treating the DOM as a queryable reactive state graph while achieving 100 functional parity with Tailwind v4 . --- The Five Pillars 1. Omni-State DOM-as-State We assert that the DOM _is_ the primary state graph. No phantom Virtual DOM. No reconciliation tax. The HTML attributes are the declaration source while the binary signal heap is the runtime truth. 2. Native JIT Engine Tailwind v4 Nexus-UX achieves 1 1 bit-for-bit parity with the official Tailwind v4 CDN. It compiles utility classes into a high-performance Unified Adopted StyleSheets Registry in real-time. 3. Zero-DOM Pollution Using CSSStyleSheet.replaceSync Nexus-UX eliminates all legacy and tag pollution. Styles automatically penetrate Shadow DOM boundaries without duplicative parsing. 4. ZCZS Zero-Copy Zero-Serialization A value-pooling reactive core designed for 120fps animations. Data flows from kernel to DOM via binary signal heaps bypassing JSON serialization. 5. Agentic Readiness Built for Machine Reasoning Efficiency . Built-in Resolution Beacons report missing selectors and failed expressions back to Agentic Ho",
+    "icon": "material-symbols-light:info-outline"
+  },
+  {
+    "id": "doc-reference",
+    "route": "/docs/reference",
+    "path": "/_pages/docs/reference.md",
+    "title": "Technical Reference",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-reference title Technical Reference route /docs/reference icon material-symbols-light menu-book-outline order 1 category Docs --- Nexus-UX The Exhaustive Technical Reference The Practical Manual From Syntax to Practice Theory is knowing how it works. Practice is making it work. This document bridges both. This guide is the definitive practical reference for developers and AI agents building with Nexus-UX. It is the core Toolkit for rapid development focused on outcomes and practical implementation patterns. Built on the Omni-State DOM-as-State philosophy it demonstrates how to use Nexus-UX as the Functional Soul for modern web components. IMPORTANT Contributing Compliance All development on Nexus-UX by human contributors and AI agents alike must adhere to the workspace directives defined in .agent/rules/directives.md . This includes the ZCZS mandate ownership tracking patterns the engine-vs-module architectural contract MutationObserver policy DDD workflow and granular version control. See Spec 1B nexus-ux-spec.md chapter-1b-architecture-contract--development-compliance for the full contract. --- Table of Contents 1. Preface Quick Start preface-quick-start 2. Chapter 1 The Language NEG Grammar Fundamentals chapter-1-the-language-neg-grammar--fundamentals 3. Chapter 2 Essential Directives State Binding chapter-2-essential-directives-state--binding 4. Chapter 3 Control Flow Rendering chapter-3-control-flow--rendering 5. Chapter 4 Events Behavioral Pipelines chapter-4",
+    "icon": "material-symbols-light:menu-book-outline"
+  },
+  {
+    "id": "labs-scopes",
+    "route": "/labs/scopes",
+    "path": "/_pages/labs/scopes.html",
+    "title": "Scopes",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Scopes Labs Category 6 Reactive Scopes Reactive Scopes Query Rules NEG query rules rule param ... providing responsive queries container queries authentication gating and runtime platform inspection. media Viewport Reactive viewport media queries e.g. media min-width 768px updating without listeners. Open Lab rarr container Container Evaluates container dimension queries relative to immediate parent element dimensions and bounds. Open Lab rarr auth Security Enforces role-based authentication rules and permission gates directly in the DOM data stack. Open Lab rarr native Bridge Verifies presence of native mobile or desktop app shell bridges Capacitor Electron WebKit . Open Lab rarr os Platform Runtime platform detection macos windows linux ios android . Open Lab rarr view Geometry Live geometry metrics exposing view.width view.height view.isPortrait and view.isLandscape. Open Lab rarr",
+    "icon": "material-symbols-light:alternate-email"
+  },
+  {
+    "id": "labs-sprites",
+    "route": "/labs/sprites",
+    "path": "/_pages/labs/sprites.html",
+    "title": "Sprites",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Sprites Labs Category 14 Injected Sprites Injected Sprites Utilities Built-in framework utilities and native runtime clients accessible directly inside any HTML expression without imports or boilerplate. animate Animation Web Animations API runner with spring physics and zero-layout-shift FLIP list transitions. Open Lab rarr bgFetch Offline Background Fetch API wrapper executing large persistent file downloads across tab closures. Open Lab rarr bgSync Sync Background Sync API for deferred requests guaranteeing delivery when network recovers. Open Lab rarr flow Canvas Spatial canvas node link coordinator and Bezier connector engine for node graphs. Open Lab rarr gql GraphQL Zero-dependency GraphQL query and mutation client returning fine-grained reactive refs. Open Lab rarr mask Utility Programmatic string formatting and pattern masking utility for non-input expressions. Open Lab rarr mcp AI Agent Model Context Protocol AI assistant client for direct LLM sampling and runtime diagnostics. Open Lab rarr periodicSync Sync Periodic Background Sync manager for background data polling and silent cache updates. Open Lab rarr predictive Predictive Quadtree predictive engine forecasting user pointer trajectories and pre-fetching assets. Open Lab rarr push Notifications Web Push notification subscription manager and permission controller. Open Lab rarr ... Selector Contextual DOM selector engine with directional combinators closest child next - prev . Open Lab rarr sql Database SurrealD",
+    "icon": "material-symbols-light:attach-money"
+  },
+  {
+    "id": "lab-attr-computed",
+    "route": "/labs/attributes/computed",
+    "path": "/_pages/labs/attributes/computed.html",
+    "title": "data-computed",
+    "category": "Labs",
+    "keywords": [
+      "data-computed",
+      "data-computed-",
+      "prop",
+      "expr",
+      "data-computed_global"
+    ],
+    "content": "data-computed Declares cached fine-grained reactive computed values with zero serialization via code unifiedComputed /code and ghost key memory pre-allocation. div data-computed total price qty formatted total.toFixed 2 /div n div data-computed-double count 2 /div data-computed ... data-computed- prop expr data-computed_global p class opacity-80 leading-relaxed Located in code src/modules/attributes/computed.ts /code computed directives cache derived values using code unifiedComputed /code . Unlike raw effect loops computed values evaluate lazily upon read and remain cached until one of their upstream dependencies changes. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Ghost Key Pre-Allocation /strong Parses property keys ahead of execution to pre-allocate typed slots in the SignalHeap /li li strong Zero-Copy Derivations /strong Returns typed reactive references without cloning underlying objects /li li strong Dual Usage Modes /strong Supports object literal dictionaries code data-computed ... /code and per-attribute declarations code data-computed-subtotal ... /code /li /ul",
+    "icon": "material-symbols-light:calculate"
+  },
+  {
+    "id": "lab-mod-debounce",
+    "route": "/labs/modifiers/debounce",
+    "path": "/_pages/labs/modifiers/debounce.html",
+    "title": "_debounce",
+    "category": "Labs",
+    "keywords": [
+      "_debounce"
+    ],
+    "content": "_debounce Pipes an event listener through an auto-clearing timer delaying execution until the specified milliseconds have elapsed since the user last triggered the event. input data-on-input_debounce.300 query newValue / n input data-on-input_debounce.500 searchDatabase / _debounce. ms p class opacity-80 leading-relaxed Located in code src/modules/modifiers/debounce.ts /code this modifier manages timer handles directly on the hosting element. Each incoming event cancels any existing pending timeout and restarts the timer preventing network spam on rapid keystrokes. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Micro-Timer Management /strong Automatically cancels previous timer IDs without memory leaks /li li strong Customizable Latency /strong Specify any millisecond integer suffix e.g. code _debounce.150 /code code _debounce.750 /code /li li strong Injected Values /strong Passes the latest code newValue /code and code evt /code to the deferred handler /li /ul",
+    "icon": "material-symbols-light:hourglass-empty"
+  },
+  {
+    "id": "lab-scope-container",
+    "route": "/labs/scopes/container",
+    "path": "/_pages/labs/scopes/container.html",
+    "title": "@container",
+    "category": "Labs",
+    "keywords": [
+      "container"
+    ],
+    "content": "container Evaluates component-level container queries reactively via ResizeObserver allowing components to adapt based on their parent container width rather than full viewport width. div data-show container min-width 400px /div container p class opacity-80 leading-relaxed Located in code src/modules/scopes/container.ts /code container queries decouple responsive component layout from the global browser window enabling truly modular design. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong ResizeObserver Backed /strong Monitors container element dimensions with zero polling overhead /li li strong True Component Isolation /strong Adapts layout whether embedded in a narrow sidebar or a wide main pane /li /ul",
+    "icon": "material-symbols-light:aspect-ratio"
+  },
+  {
+    "id": "lab-scope-media",
+    "route": "/labs/scopes/media",
+    "path": "/_pages/labs/scopes/media.html",
+    "title": "@media",
+    "category": "Labs",
+    "keywords": [
+      "media"
+    ],
+    "content": "media Scoped reactive media query rule evaluating code window.matchMedia /code directly in NEG expressions updating dynamically as viewport dimensions cross CSS breakpoints. media min-width 768px isDesktop true n div data-show media min-width 1024px /div media p class opacity-80 leading-relaxed Located in code src/modules/scopes/media.ts /code the media scope provider links code window.matchMedia /code change listeners directly into the reactive dependency graph. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Native MediaQueryList /strong Backed directly by browser native C matchMedia implementation /li li strong Zero Polling /strong Updates trigger strictly on change events when breakpoint thresholds cross /li li strong Universal Scope Rule /strong Usable in any NEG attribute expression /li /ul",
+    "icon": "material-symbols-light:devices"
+  },
+  {
+    "id": "lab-sprite-bgsync",
+    "route": "/labs/sprites/bgsync",
+    "path": "/_pages/labs/sprites/bgsync.html",
+    "title": "$bgSync",
+    "category": "Labs",
+    "keywords": [
+      "bgsync",
+      "register",
+      "tag"
+    ],
+    "content": "bgSync Background Synchronization API client manager registering sync tags with the Service Worker to replay pending offline mutations when connectivity restores. bgSync.register sync-comments bgSync.register tag p class opacity-80 leading-relaxed Located in code src/modules/sprites/bgSync.ts /code this sprite provides resilient offline data pipelines by registering background sync tags with the service worker registration. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Offline Mutation Replay /strong Queues actions while offline fires when connection returns /li li strong Battery amp Network Aware /strong OS defers sync until network conditions are optimal /li /ul",
+    "icon": "material-symbols-light:sync"
+  },
+  {
+    "id": "lab-sprite-flow",
+    "route": "/labs/sprites/flow",
+    "path": "/_pages/labs/sprites/flow.html",
+    "title": "$flow",
+    "category": "Labs",
+    "keywords": [
+      "flow",
+      "zoomin",
+      "fitview"
+    ],
+    "content": "flow Exposes reactive node-graph canvas manipulation methods and viewport query access flow.zoomIn flow.zoomOut flow.fitView flow.centerNode directly in expressions. flow.zoomIn n flow.fitView padding 20 flow.zoomIn flow.fitView p class opacity-80 leading-relaxed Located in code src/modules/sprites/flow.ts /code the flow sprite exposes programmatic navigation controls for xyflow canvas containers. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Camera Navigation /strong Pan zoom and center operations with smooth easing /li li strong Live Viewport Metrics /strong Access active scale and offset coordinates from any child element /li /ul",
+    "icon": "material-symbols-light:schema"
+  },
+  {
+    "id": "lab-sprite-gql",
+    "route": "/labs/sprites/gql",
+    "path": "/_pages/labs/sprites/gql.html",
+    "title": "$gql",
+    "category": "Labs",
+    "keywords": [
+      "gql",
+      "query",
+      "variables",
+      "mutate",
+      "mutation"
+    ],
+    "content": "gql Zero-dependency GraphQL query and mutation client with automated cacheEngine response caching and live WebSocket subscription bindings. gql.query user id 1 name email gql.query query variables gql.mutate mutation variables p class opacity-80 leading-relaxed Located in code src/modules/sprites/gql.ts /code this sprite provides GraphQL capabilities without heavy Apollo or Relay bundles. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Zero-Dependency Client /strong Lightweight fetch-based client under 2KB /li li strong CacheEngine Integration /strong Automatically persists query snapshots in IndexedDB /li /ul",
+    "icon": "mdi:graphql"
+  },
+  {
+    "id": "lab-sprite-selector",
+    "route": "/labs/sprites/selector",
+    "path": "/_pages/labs/sprites/selector.html",
+    "title": "$(...)",
+    "category": "Labs",
+    "keywords": [
+      "selector"
+    ],
+    "content": "... Context-aware DOM traversal engine returning reactive element proxies with special combinators closest ancestor direct child next sibling - previous sibling parent query . .card .classList.add active n input .focus selector - p class opacity-80 leading-relaxed Located in code src/modules/sprites/selector.ts /code the ... engine returns reactive proxies wrapping DOM elements. Modifying properties on the proxy directly triggers reactive updates. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Directional Combinators /strong code /code for closest code gt /code for children code /code for next sibling /li li strong Reactive Proxies /strong Intercepts calls via Reflect to notify dependent signals /li /ul",
+    "icon": "material-symbols-light:travel-explore"
+  },
+  {
+    "id": "lab-sprite-sql",
+    "route": "/labs/sprites/sql",
+    "path": "/_pages/labs/sprites/sql.html",
+    "title": "$sql",
+    "category": "Labs",
+    "keywords": [
+      "sql",
+      "query",
+      "params",
+      "live",
+      "table",
+      "callback"
+    ],
+    "content": "sql SurrealDB and SQL WebSocket live query runner providing real-time data subscriptions query parameterization and zero-serialization table streams. sql.query SELECT FROM user WHERE active true n sql.live telemetry data handleTelemetry data sql.query sql params sql.live table callback p class opacity-80 leading-relaxed Located in code src/modules/sprites/sql.ts /code the sql sprite pairs SurrealDB WebSocket connections directly with reactive signal scopes for true database-to-DOM synchronization. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Live Push Queries /strong Database record mutations stream straight to UI templates /li li strong Zero Serialization Overhead /strong Streamed JSON records bind directly into the reactive graph /li /ul",
+    "icon": "material-symbols-light:database"
+  }
+]

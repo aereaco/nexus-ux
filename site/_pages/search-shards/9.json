@@ -1,0 +1,63 @@
+[
+  {
+    "id": "flow",
+    "route": "/flow",
+    "path": "/_pages/flow.html",
+    "title": "Flow Canvas",
+    "category": "Apps",
+    "keywords": [],
+    "content": "Flow Canvas Flow Canvas Signal Driven Complete spatial node graph with reactive fine-grained proxies Shift Drag Marquee Del Delete Arrows Nudge Nodes Edges Zoom Fit Add Node In Out Pos Fit View Live Reactive Store ZCZS 60fps Viewport Pan Canvas Studio Grid Snapping Grid Spacing Snap to Grid Show Minimap Wire Routing Engine Default Routing Style SmoothStep Rounded Orthogonal Bezier Cubic Directional Step Sharp 90 Angles Straight Direct Linear Animate All Stop Wires Active Connectors No active connections. Drag between node handles to create wires. Graph Schema IO Export Graph JSON Import Graph JSON Clear Canvas xyFlow Spatial Engine Nexus-UX ZCZS Tune spatial coordinates ports subflow nesting and schema Visual Studio JSON Schema Node Identifier Display Label Node Kind Standard Action Card Input Trigger Green Accent Output Sink Warning Accent Subflow Group Container Parent Subflow Group None Root Canvas Pos X Pos Y Width Height Connection Ports Edge Points No connection ports attached. Click below to add an edge point. Source Output Port Target Input Port Right Side Left Side Top Side Bottom Side Add Port Direct Schema JSON Definition Real-time synchronization Cancel Save Changes close Configure Wire Connector Spatial curve routing arrow markers animation and port attachments Visual Studio JSON Schema Wire ID Display Badge Label Routing Algorithm SmoothStep Rounded Orthogonal Bezier Cubic Directional Step Sharp 90 Angles Straight Direct Linear Arrowhead Marker None Bare Wire Ch",
+    "icon": "material-symbols-light:flowchart-outline"
+  },
+  {
+    "id": "_right-panel",
+    "route": "/builder/_right-panel",
+    "path": "/_pages/builder/_right-panel.html",
+    "title": "_right-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "lab-attr-effect",
+    "route": "/labs/attributes/effect",
+    "path": "/_pages/labs/attributes/effect.html",
+    "title": "data-effect",
+    "category": "Labs",
+    "keywords": [
+      "data-effect",
+      "expr"
+    ],
+    "content": "data-effect Executes an automatic reactive side-effect loop tied directly to element lifecycle via code elementBoundEffect /code auto-tracking dependencies and preventing recursive cascades. div data-effect console.log Volume updated volume /div n div data-effect if level 90 alertThreshold /div data-effect expr p class opacity-80 leading-relaxed Located in code src/modules/attributes/effect.ts /code the effect directive establishes reactive side-effects bound to DOM nodes. The engine tracks whatever reactive properties are read during execution and re-evaluates the expression whenever any tracked value mutates. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Automatic Dependency Tracking /strong No explicit dependency arrays signals are captured at runtime via Proxy getters /li li strong Re-entrancy Protection /strong Internal loop guards code isEvaluating /code prevent runaway cascade loops /li li strong Deterministic Disposal /strong Automatically unsubscribes and cleans up runner memory when the hosting element is removed /li /ul",
+    "icon": "material-symbols-light:bolt"
+  },
+  {
+    "id": "lab-attr-mask",
+    "route": "/labs/attributes/mask",
+    "path": "/_pages/labs/attributes/mask.html",
+    "title": "data-mask",
+    "category": "Labs",
+    "keywords": [
+      "data-mask",
+      "template"
+    ],
+    "content": "data-mask Applies real-time input formatting masks to text fields phone numbers currency dates credit cards while preserving caret position. input data-mask 999 999-9999 / n input data-mask 9999-9999-9999-9999 / data-mask template p class opacity-80 leading-relaxed Located in code src/modules/attributes/mask.ts /code the mask directive intercepts keystrokes on code input /code elements and formats the typed string using pattern tokens. It pairs seamlessly with code data-bind-value /code to store clean or formatted values in state. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Dynamic Token Matching /strong Supports digit tokens code 9 /code alphabetic tokens code a /code and literal punctuation /li li strong Caret Position Memory /strong Smart cursor handling allows smooth forward typing and backspacing /li li strong Zero-Dependency /strong Built-in string format parser with zero external libraries /li /ul",
+    "icon": "material-symbols-light:badge"
+  },
+  {
+    "id": "lab-sprite-mask",
+    "route": "/labs/sprites/mask",
+    "path": "/_pages/labs/sprites/mask.html",
+    "title": "$mask",
+    "category": "Labs",
+    "keywords": [
+      "mask",
+      "format",
+      "value",
+      "pattern"
+    ],
+    "content": "mask String formatting utility sprite mask.format that transforms raw strings into formatted mask representations on demand directly in templates. mask.format rawDigits 999 999-9999 mask.format value pattern p class opacity-80 leading-relaxed Located in code src/modules/sprites/mask.ts /code this sprite provides string masking logic that can be invoked inside computed properties signal transforms or display templates. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Pure Function Execution /strong Zero DOM side-effects returns purely formatted strings /li li strong Display Transformations /strong Format unformatted database values directly in HTML expressions /li /ul",
+    "icon": "material-symbols-light:format-shapes"
+  }
+]

@@ -1,0 +1,1054 @@
+[
+  {
+    "id": "builder",
+    "route": "/builder",
+    "path": "/_pages/builder.html",
+    "title": "Visual Builder",
+    "icon": "material-symbols-light:dashboard-customize-outline",
+    "category": "Apps",
+    "keywords": [
+      "builder",
+      "visual",
+      "editor",
+      "page",
+      "builder",
+      "vvvebjs",
+      "drag",
+      "and",
+      "drop",
+      "daisyui",
+      "tailwind"
+    ]
+  },
+  {
+    "id": "drag",
+    "route": "/drag",
+    "path": "/_pages/drag.html",
+    "title": "Drag and Drop",
+    "icon": "material-symbols-light:move-selection-down-outline",
+    "category": "Apps",
+    "keywords": []
+  },
+  {
+    "id": "flow",
+    "route": "/flow",
+    "path": "/_pages/flow.html",
+    "title": "Flow Canvas",
+    "icon": "material-symbols-light:flowchart-outline",
+    "category": "Apps",
+    "keywords": []
+  },
+  {
+    "id": "home",
+    "route": "/",
+    "path": "/_pages/home.html",
+    "title": "Home",
+    "icon": "material-symbols-light:home-outline",
+    "category": "General",
+    "keywords": []
+  },
+  {
+    "id": "todo",
+    "route": "/todo",
+    "path": "/_pages/todo.html",
+    "title": "Todo List",
+    "icon": "material-symbols-light:checklist",
+    "category": "Apps",
+    "keywords": []
+  },
+  {
+    "id": "_bottom-panel",
+    "route": "/builder/_bottom-panel",
+    "path": "/_pages/builder/_bottom-panel.html",
+    "title": "_bottom-panel",
+    "icon": "material-symbols-light:description-outline",
+    "category": "General",
+    "keywords": []
+  },
+  {
+    "id": "_canvas",
+    "route": "/builder/_canvas",
+    "path": "/_pages/builder/_canvas.html",
+    "title": "_canvas",
+    "icon": "material-symbols-light:description-outline",
+    "category": "General",
+    "keywords": []
+  },
+  {
+    "id": "_left-panel",
+    "route": "/builder/_left-panel",
+    "path": "/_pages/builder/_left-panel.html",
+    "title": "_left-panel",
+    "icon": "material-symbols-light:description-outline",
+    "category": "General",
+    "keywords": []
+  },
+  {
+    "id": "_modals",
+    "route": "/builder/_modals",
+    "path": "/_pages/builder/_modals.html",
+    "title": "_modals",
+    "icon": "material-symbols-light:description-outline",
+    "category": "General",
+    "keywords": []
+  },
+  {
+    "id": "_right-panel",
+    "route": "/builder/_right-panel",
+    "path": "/_pages/builder/_right-panel.html",
+    "title": "_right-panel",
+    "icon": "material-symbols-light:description-outline",
+    "category": "General",
+    "keywords": []
+  },
+  {
+    "id": "_top-panel",
+    "route": "/builder/_top-panel",
+    "path": "/_pages/builder/_top-panel.html",
+    "title": "_top-panel",
+    "icon": "material-symbols-light:description-outline",
+    "category": "General",
+    "keywords": []
+  },
+  {
+    "id": "landing",
+    "route": "/landing",
+    "path": "/_pages/builder/templates/landing.html",
+    "title": "landing",
+    "icon": "material-symbols-light:description-outline",
+    "category": "General",
+    "keywords": []
+  },
+  {
+    "id": "doc-changelog",
+    "route": "/docs/changelog",
+    "path": "/_pages/docs/changelog.md",
+    "title": "Changelog",
+    "icon": "material-symbols-light:history",
+    "category": "Docs",
+    "keywords": []
+  },
+  {
+    "id": "doc-license",
+    "route": "/docs/license",
+    "path": "/_pages/docs/license.md",
+    "title": "License",
+    "icon": "material-symbols-light:verified-user-outline",
+    "category": "Docs",
+    "keywords": []
+  },
+  {
+    "id": "doc-readme",
+    "route": "/docs/readme",
+    "path": "/_pages/docs/readme.md",
+    "title": "README",
+    "icon": "material-symbols-light:info-outline",
+    "category": "Docs",
+    "keywords": []
+  },
+  {
+    "id": "doc-reference",
+    "route": "/docs/reference",
+    "path": "/_pages/docs/reference.md",
+    "title": "Technical Reference",
+    "icon": "material-symbols-light:menu-book-outline",
+    "category": "Docs",
+    "keywords": []
+  },
+  {
+    "id": "doc-spec",
+    "route": "/docs/spec",
+    "path": "/_pages/docs/spec.md",
+    "title": "Architecture Spec",
+    "icon": "material-symbols-light:architecture",
+    "category": "Docs",
+    "keywords": []
+  },
+  {
+    "id": "labs-attributes",
+    "route": "/labs/attributes",
+    "path": "/_pages/labs/attributes.html",
+    "title": "Attributes",
+    "icon": "material-symbols-light:code",
+    "category": "Labs",
+    "keywords": []
+  },
+  {
+    "id": "labs-modifiers",
+    "route": "/labs/modifiers",
+    "path": "/_pages/labs/modifiers.html",
+    "title": "Modifiers",
+    "icon": "material-symbols-light:remove",
+    "category": "Labs",
+    "keywords": []
+  },
+  {
+    "id": "labs-scopes",
+    "route": "/labs/scopes",
+    "path": "/_pages/labs/scopes.html",
+    "title": "Scopes",
+    "icon": "material-symbols-light:alternate-email",
+    "category": "Labs",
+    "keywords": []
+  },
+  {
+    "id": "labs-sprites",
+    "route": "/labs/sprites",
+    "path": "/_pages/labs/sprites.html",
+    "title": "Sprites",
+    "icon": "material-symbols-light:attach-money",
+    "category": "Labs",
+    "keywords": []
+  },
+  {
+    "id": "lab-attr-assert",
+    "route": "/labs/attributes/assert",
+    "path": "/_pages/labs/attributes/assert.html",
+    "title": "data-assert",
+    "icon": "material-symbols-light:fact-check",
+    "category": "Labs",
+    "keywords": [
+      "data-assert",
+      "expr"
+    ]
+  },
+  {
+    "id": "lab-attr-bind",
+    "route": "/labs/attributes/bind",
+    "path": "/_pages/labs/attributes/bind.html",
+    "title": "data-bind",
+    "icon": "material-symbols-light:link",
+    "category": "Labs",
+    "keywords": [
+      "data-bind",
+      "expr",
+      "data-bind-value",
+      "data-bind-",
+      "attr",
+      "data-bind_lazy"
+    ]
+  },
+  {
+    "id": "lab-attr-build",
+    "route": "/labs/attributes/build",
+    "path": "/_pages/labs/attributes/build.html",
+    "title": "data-build",
+    "icon": "material-symbols-light:build",
+    "category": "Labs",
+    "keywords": [
+      "data-build",
+      "target"
+    ]
+  },
+  {
+    "id": "lab-attr-class",
+    "route": "/labs/attributes/class",
+    "path": "/_pages/labs/attributes/class.html",
+    "title": "data-class",
+    "icon": "material-symbols-light:palette",
+    "category": "Labs",
+    "keywords": [
+      "data-class",
+      "data-class-",
+      "name",
+      "expr"
+    ]
+  },
+  {
+    "id": "lab-attr-component",
+    "route": "/labs/attributes/component",
+    "path": "/_pages/labs/attributes/component.html",
+    "title": "data-component",
+    "icon": "material-symbols-light:extension",
+    "category": "Labs",
+    "keywords": [
+      "data-component",
+      "path",
+      "shadowrootmode",
+      "open",
+      "lazy",
+      "true"
+    ]
+  },
+  {
+    "id": "lab-attr-computed",
+    "route": "/labs/attributes/computed",
+    "path": "/_pages/labs/attributes/computed.html",
+    "title": "data-computed",
+    "icon": "material-symbols-light:calculate",
+    "category": "Labs",
+    "keywords": [
+      "data-computed",
+      "data-computed-",
+      "prop",
+      "expr",
+      "data-computed_global"
+    ]
+  },
+  {
+    "id": "lab-attr-debug",
+    "route": "/labs/attributes/debug",
+    "path": "/_pages/labs/attributes/debug.html",
+    "title": "data-debug",
+    "icon": "material-symbols-light:bug-report",
+    "category": "Labs",
+    "keywords": [
+      "data-debug"
+    ]
+  },
+  {
+    "id": "lab-attr-drag",
+    "route": "/labs/attributes/drag",
+    "path": "/_pages/labs/attributes/drag.html",
+    "title": "data-drag",
+    "icon": "material-symbols-light:drag-pan",
+    "category": "Labs",
+    "keywords": [
+      "data-drag",
+      "items",
+      "list",
+      "data-drag-item",
+      "data-drag-handle",
+      "data-drag-nodrag"
+    ]
+  },
+  {
+    "id": "lab-attr-effect",
+    "route": "/labs/attributes/effect",
+    "path": "/_pages/labs/attributes/effect.html",
+    "title": "data-effect",
+    "icon": "material-symbols-light:bolt",
+    "category": "Labs",
+    "keywords": [
+      "data-effect",
+      "expr"
+    ]
+  },
+  {
+    "id": "lab-attr-flow",
+    "route": "/labs/attributes/flow",
+    "path": "/_pages/labs/attributes/flow.html",
+    "title": "data-flow",
+    "icon": "material-symbols-light:account-tree",
+    "category": "Labs",
+    "keywords": [
+      "data-flow",
+      "data-flow-viewport",
+      "data-flow-node",
+      "node",
+      "data-flow-edges",
+      "data-flow-minimap",
+      "data-flow-resizer",
+      "data-flow-handle",
+      "type",
+      "data-flow-side",
+      "side",
+      "data-flow-nodrag"
+    ]
+  },
+  {
+    "id": "lab-attr-for",
+    "route": "/labs/attributes/for",
+    "path": "/_pages/labs/attributes/for.html",
+    "title": "data-for",
+    "icon": "material-symbols-light:repeat",
+    "category": "Labs",
+    "keywords": [
+      "data-for",
+      "item",
+      "items",
+      "index"
+    ]
+  },
+  {
+    "id": "lab-attr-html",
+    "route": "/labs/attributes/html",
+    "path": "/_pages/labs/attributes/html.html",
+    "title": "data-html",
+    "icon": "material-symbols-light:html",
+    "category": "Labs",
+    "keywords": [
+      "data-html",
+      "expr"
+    ]
+  },
+  {
+    "id": "lab-attr-if",
+    "route": "/labs/attributes/if",
+    "path": "/_pages/labs/attributes/if.html",
+    "title": "data-if",
+    "icon": "material-symbols-light:splitscreen-top",
+    "category": "Labs",
+    "keywords": [
+      "data-if",
+      "condition"
+    ]
+  },
+  {
+    "id": "lab-attr-import",
+    "route": "/labs/attributes/import",
+    "path": "/_pages/labs/attributes/import.html",
+    "title": "data-import",
+    "icon": "material-symbols-light:cloud-download",
+    "category": "Labs",
+    "keywords": [
+      "script",
+      "link",
+      "module",
+      "adopt"
+    ]
+  },
+  {
+    "id": "lab-attr-markdown",
+    "route": "/labs/attributes/markdown",
+    "path": "/_pages/labs/attributes/markdown.html",
+    "title": "data-markdown",
+    "icon": "material-symbols-light:markdown",
+    "category": "Labs",
+    "keywords": [
+      "data-markdown",
+      "expr"
+    ]
+  },
+  {
+    "id": "lab-attr-mask",
+    "route": "/labs/attributes/mask",
+    "path": "/_pages/labs/attributes/mask.html",
+    "title": "data-mask",
+    "icon": "material-symbols-light:badge",
+    "category": "Labs",
+    "keywords": [
+      "data-mask",
+      "template"
+    ]
+  },
+  {
+    "id": "lab-attr-on",
+    "route": "/labs/attributes/on",
+    "path": "/_pages/labs/attributes/on.html",
+    "title": "data-on",
+    "icon": "material-symbols-light:touch-app",
+    "category": "Labs",
+    "keywords": [
+      "data-on-",
+      "event",
+      "expr",
+      "_prevent",
+      "_stop",
+      "_debounce",
+      "_throttle",
+      "_outside",
+      "_window",
+      "_document"
+    ]
+  },
+  {
+    "id": "lab-attr-preserve",
+    "route": "/labs/attributes/preserve",
+    "path": "/_pages/labs/attributes/preserve.html",
+    "title": "data-preserve",
+    "icon": "material-symbols-light:shield",
+    "category": "Labs",
+    "keywords": [
+      "data-preserve"
+    ]
+  },
+  {
+    "id": "lab-attr-pwa",
+    "route": "/labs/attributes/pwa",
+    "path": "/_pages/labs/attributes/pwa.html",
+    "title": "data-pwa",
+    "icon": "material-symbols-light:install-mobile",
+    "category": "Labs",
+    "keywords": [
+      "data-pwa",
+      "pwa",
+      "isonline",
+      "caninstall",
+      "install"
+    ]
+  },
+  {
+    "id": "lab-attr-raf",
+    "route": "/labs/attributes/raf",
+    "path": "/_pages/labs/attributes/raf.html",
+    "title": "data-raf",
+    "icon": "material-symbols-light:speed",
+    "category": "Labs",
+    "keywords": [
+      "data-on-raf",
+      "expr",
+      "time",
+      "delta"
+    ]
+  },
+  {
+    "id": "lab-attr-route",
+    "route": "/labs/attributes/route",
+    "path": "/_pages/labs/attributes/route.html",
+    "title": "data-route",
+    "icon": "material-symbols-light:signpost",
+    "category": "Labs",
+    "keywords": [
+      "data-route",
+      "path",
+      "data-route-before-enter",
+      "data-route-name"
+    ]
+  },
+  {
+    "id": "lab-attr-router",
+    "route": "/labs/attributes/router",
+    "path": "/_pages/labs/attributes/router.html",
+    "title": "data-router",
+    "icon": "material-symbols-light:alt-route",
+    "category": "Labs",
+    "keywords": [
+      "data-router",
+      "router",
+      "pages",
+      "createpagetab",
+      "path"
+    ]
+  },
+  {
+    "id": "lab-attr-scrollbar",
+    "route": "/labs/attributes/scrollbar",
+    "path": "/_pages/labs/attributes/scrollbar.html",
+    "title": "data-scrollbar",
+    "icon": "material-symbols-light:view-stream",
+    "category": "Labs",
+    "keywords": [
+      "data-scrollbar",
+      "autohide"
+    ]
+  },
+  {
+    "id": "lab-attr-show",
+    "route": "/labs/attributes/show",
+    "path": "/_pages/labs/attributes/show.html",
+    "title": "data-show",
+    "icon": "material-symbols-light:visibility",
+    "category": "Labs",
+    "keywords": [
+      "data-show",
+      "condition"
+    ]
+  },
+  {
+    "id": "lab-attr-signal",
+    "route": "/labs/attributes/signal",
+    "path": "/_pages/labs/attributes/signal.html",
+    "title": "data-signal",
+    "icon": "material-symbols-light:data-object",
+    "category": "Labs",
+    "keywords": [
+      "data-signal",
+      "data-signal_global",
+      "data-signal_deep"
+    ]
+  },
+  {
+    "id": "lab-attr-style",
+    "route": "/labs/attributes/style",
+    "path": "/_pages/labs/attributes/style.html",
+    "title": "data-style",
+    "icon": "material-symbols-light:format-paint",
+    "category": "Labs",
+    "keywords": [
+      "data-style"
+    ]
+  },
+  {
+    "id": "lab-attr-stylesheet",
+    "route": "/labs/attributes/stylesheet",
+    "path": "/_pages/labs/attributes/stylesheet.html",
+    "title": "data-stylesheet",
+    "icon": "material-symbols-light:css",
+    "category": "Labs",
+    "keywords": [
+      "data-stylesheet"
+    ]
+  },
+  {
+    "id": "lab-attr-switcher",
+    "route": "/labs/attributes/switcher",
+    "path": "/_pages/labs/attributes/switcher.html",
+    "title": "data-switcher",
+    "icon": "material-symbols-light:swap-calls",
+    "category": "Labs",
+    "keywords": [
+      "data-switcher",
+      "signal",
+      "data-switcher-options",
+      "switch",
+      "isactive",
+      "item"
+    ]
+  },
+  {
+    "id": "lab-attr-teleport",
+    "route": "/labs/attributes/teleport",
+    "path": "/_pages/labs/attributes/teleport.html",
+    "title": "data-teleport",
+    "icon": "material-symbols-light:move-item",
+    "category": "Labs",
+    "keywords": [
+      "data-teleport",
+      "selector",
+      "data-teleport_drop",
+      "list",
+      "data-teleport-mode"
+    ]
+  },
+  {
+    "id": "lab-attr-theme",
+    "route": "/labs/attributes/theme",
+    "path": "/_pages/labs/attributes/theme.html",
+    "title": "data-theme",
+    "icon": "material-symbols-light:dark-mode",
+    "category": "Labs",
+    "keywords": [
+      "data-theme",
+      "theme",
+      "switchtheme",
+      "settheme",
+      "name"
+    ]
+  },
+  {
+    "id": "lab-mod-debounce",
+    "route": "/labs/modifiers/debounce",
+    "path": "/_pages/labs/modifiers/debounce.html",
+    "title": "_debounce",
+    "icon": "material-symbols-light:hourglass-empty",
+    "category": "Labs",
+    "keywords": [
+      "_debounce"
+    ]
+  },
+  {
+    "id": "lab-mod-delay",
+    "route": "/labs/modifiers/delay",
+    "path": "/_pages/labs/modifiers/delay.html",
+    "title": "_delay",
+    "icon": "material-symbols-light:schedule",
+    "category": "Labs",
+    "keywords": [
+      "_delay"
+    ]
+  },
+  {
+    "id": "lab-mod-document",
+    "route": "/labs/modifiers/document",
+    "path": "/_pages/labs/modifiers/document.html",
+    "title": "_document",
+    "icon": "material-symbols-light:description",
+    "category": "Labs",
+    "keywords": [
+      "_document"
+    ]
+  },
+  {
+    "id": "lab-mod-drag",
+    "route": "/labs/modifiers/drag",
+    "path": "/_pages/labs/modifiers/drag.html",
+    "title": "_drag",
+    "icon": "material-symbols-light:drag-click",
+    "category": "Labs",
+    "keywords": [
+      "_drag"
+    ]
+  },
+  {
+    "id": "lab-mod-hold",
+    "route": "/labs/modifiers/hold",
+    "path": "/_pages/labs/modifiers/hold.html",
+    "title": "_hold",
+    "icon": "material-symbols-light:touch-long",
+    "category": "Labs",
+    "keywords": [
+      "_hold"
+    ]
+  },
+  {
+    "id": "lab-mod-keys",
+    "route": "/labs/modifiers/keys",
+    "path": "/_pages/labs/modifiers/keys.html",
+    "title": "_keys",
+    "icon": "material-symbols-light:keyboard",
+    "category": "Labs",
+    "keywords": [
+      "_enter",
+      "_escape",
+      "_space",
+      "ctrl",
+      "meta",
+      "alt",
+      "shift"
+    ]
+  },
+  {
+    "id": "lab-mod-morph",
+    "route": "/labs/modifiers/morph",
+    "path": "/_pages/labs/modifiers/morph.html",
+    "title": "_morph",
+    "icon": "material-symbols-light:transform",
+    "category": "Labs",
+    "keywords": [
+      "_morph"
+    ]
+  },
+  {
+    "id": "lab-mod-once",
+    "route": "/labs/modifiers/once",
+    "path": "/_pages/labs/modifiers/once.html",
+    "title": "_once",
+    "icon": "material-symbols-light:looks-one",
+    "category": "Labs",
+    "keywords": [
+      "_once"
+    ]
+  },
+  {
+    "id": "lab-mod-outside",
+    "route": "/labs/modifiers/outside",
+    "path": "/_pages/labs/modifiers/outside.html",
+    "title": "_outside",
+    "icon": "material-symbols-light:tab-close",
+    "category": "Labs",
+    "keywords": [
+      "_outside"
+    ]
+  },
+  {
+    "id": "lab-mod-prevent",
+    "route": "/labs/modifiers/prevent",
+    "path": "/_pages/labs/modifiers/prevent.html",
+    "title": "_prevent",
+    "icon": "material-symbols-light:block",
+    "category": "Labs",
+    "keywords": [
+      "_prevent"
+    ]
+  },
+  {
+    "id": "lab-mod-self",
+    "route": "/labs/modifiers/self",
+    "path": "/_pages/labs/modifiers/self.html",
+    "title": "_self",
+    "icon": "material-symbols-light:target",
+    "category": "Labs",
+    "keywords": [
+      "_self"
+    ]
+  },
+  {
+    "id": "lab-mod-stop",
+    "route": "/labs/modifiers/stop",
+    "path": "/_pages/labs/modifiers/stop.html",
+    "title": "_stop",
+    "icon": "material-symbols-light:pan-tool",
+    "category": "Labs",
+    "keywords": [
+      "_stop"
+    ]
+  },
+  {
+    "id": "lab-mod-throttle",
+    "route": "/labs/modifiers/throttle",
+    "path": "/_pages/labs/modifiers/throttle.html",
+    "title": "_throttle",
+    "icon": "material-symbols-light:timer",
+    "category": "Labs",
+    "keywords": [
+      "_throttle"
+    ]
+  },
+  {
+    "id": "lab-mod-window",
+    "route": "/labs/modifiers/window",
+    "path": "/_pages/labs/modifiers/window.html",
+    "title": "_window",
+    "icon": "material-symbols-light:web-asset",
+    "category": "Labs",
+    "keywords": [
+      "_window"
+    ]
+  },
+  {
+    "id": "lab-mod-zoom",
+    "route": "/labs/modifiers/zoom",
+    "path": "/_pages/labs/modifiers/zoom.html",
+    "title": "_zoom",
+    "icon": "material-symbols-light:zoom-in",
+    "category": "Labs",
+    "keywords": [
+      "_zoom"
+    ]
+  },
+  {
+    "id": "lab-scope-auth",
+    "route": "/labs/scopes/auth",
+    "path": "/_pages/labs/scopes/auth.html",
+    "title": "@auth",
+    "icon": "material-symbols-light:lock",
+    "category": "Labs",
+    "keywords": [
+      "auth"
+    ]
+  },
+  {
+    "id": "lab-scope-container",
+    "route": "/labs/scopes/container",
+    "path": "/_pages/labs/scopes/container.html",
+    "title": "@container",
+    "icon": "material-symbols-light:aspect-ratio",
+    "category": "Labs",
+    "keywords": [
+      "container"
+    ]
+  },
+  {
+    "id": "lab-scope-media",
+    "route": "/labs/scopes/media",
+    "path": "/_pages/labs/scopes/media.html",
+    "title": "@media",
+    "icon": "material-symbols-light:devices",
+    "category": "Labs",
+    "keywords": [
+      "media"
+    ]
+  },
+  {
+    "id": "lab-scope-native",
+    "route": "/labs/scopes/native",
+    "path": "/_pages/labs/scopes/native.html",
+    "title": "@native",
+    "icon": "material-symbols-light:phone-android",
+    "category": "Labs",
+    "keywords": [
+      "native"
+    ]
+  },
+  {
+    "id": "lab-scope-os",
+    "route": "/labs/scopes/os",
+    "path": "/_pages/labs/scopes/os.html",
+    "title": "@os",
+    "icon": "material-symbols-light:desktop-windows",
+    "category": "Labs",
+    "keywords": []
+  },
+  {
+    "id": "lab-scope-view",
+    "route": "/labs/scopes/view",
+    "path": "/_pages/labs/scopes/view.html",
+    "title": "@view",
+    "icon": "material-symbols-light:screen-search-desktop",
+    "category": "Labs",
+    "keywords": [
+      "view",
+      "width",
+      "height",
+      "isportrait",
+      "islandscape"
+    ]
+  },
+  {
+    "id": "lab-sprite-animate",
+    "route": "/labs/sprites/animate",
+    "path": "/_pages/labs/sprites/animate.html",
+    "title": "$animate",
+    "icon": "material-symbols-light:animation",
+    "category": "Labs",
+    "keywords": [
+      "animate",
+      "keyframes",
+      "options",
+      "flip",
+      "element"
+    ]
+  },
+  {
+    "id": "lab-sprite-bgfetch",
+    "route": "/labs/sprites/bgfetch",
+    "path": "/_pages/labs/sprites/bgfetch.html",
+    "title": "$bgFetch",
+    "icon": "material-symbols-light:cloud-sync",
+    "category": "Labs",
+    "keywords": [
+      "bgfetch",
+      "fetch",
+      "requests",
+      "options"
+    ]
+  },
+  {
+    "id": "lab-sprite-bgsync",
+    "route": "/labs/sprites/bgsync",
+    "path": "/_pages/labs/sprites/bgsync.html",
+    "title": "$bgSync",
+    "icon": "material-symbols-light:sync",
+    "category": "Labs",
+    "keywords": [
+      "bgsync",
+      "register",
+      "tag"
+    ]
+  },
+  {
+    "id": "lab-sprite-flow",
+    "route": "/labs/sprites/flow",
+    "path": "/_pages/labs/sprites/flow.html",
+    "title": "$flow",
+    "icon": "material-symbols-light:schema",
+    "category": "Labs",
+    "keywords": [
+      "flow",
+      "zoomin",
+      "fitview"
+    ]
+  },
+  {
+    "id": "lab-sprite-gql",
+    "route": "/labs/sprites/gql",
+    "path": "/_pages/labs/sprites/gql.html",
+    "title": "$gql",
+    "icon": "mdi:graphql",
+    "category": "Labs",
+    "keywords": [
+      "gql",
+      "query",
+      "variables",
+      "mutate",
+      "mutation"
+    ]
+  },
+  {
+    "id": "lab-sprite-mask",
+    "route": "/labs/sprites/mask",
+    "path": "/_pages/labs/sprites/mask.html",
+    "title": "$mask",
+    "icon": "material-symbols-light:format-shapes",
+    "category": "Labs",
+    "keywords": [
+      "mask",
+      "format",
+      "value",
+      "pattern"
+    ]
+  },
+  {
+    "id": "lab-sprite-mcp",
+    "route": "/labs/sprites/mcp",
+    "path": "/_pages/labs/sprites/mcp.html",
+    "title": "$mcp",
+    "icon": "material-symbols-light:neurology",
+    "category": "Labs",
+    "keywords": [
+      "mcp",
+      "sample",
+      "payload",
+      "tools"
+    ]
+  },
+  {
+    "id": "lab-sprite-periodicsync",
+    "route": "/labs/sprites/periodicsync",
+    "path": "/_pages/labs/sprites/periodicsync.html",
+    "title": "$periodicSync",
+    "icon": "material-symbols-light:update",
+    "category": "Labs",
+    "keywords": [
+      "periodicsync",
+      "register",
+      "tag",
+      "options"
+    ]
+  },
+  {
+    "id": "lab-sprite-predictive",
+    "route": "/labs/sprites/predictive",
+    "path": "/_pages/labs/sprites/predictive.html",
+    "title": "$predictive",
+    "icon": "material-symbols-light:psychology",
+    "category": "Labs",
+    "keywords": [
+      "predictive",
+      "warmup",
+      "url",
+      "metrics"
+    ]
+  },
+  {
+    "id": "lab-sprite-push",
+    "route": "/labs/sprites/push",
+    "path": "/_pages/labs/sprites/push.html",
+    "title": "$push",
+    "icon": "material-symbols-light:notifications-active",
+    "category": "Labs",
+    "keywords": [
+      "push",
+      "subscribe",
+      "options",
+      "permission"
+    ]
+  },
+  {
+    "id": "lab-sprite-selector",
+    "route": "/labs/sprites/selector",
+    "path": "/_pages/labs/sprites/selector.html",
+    "title": "$(...)",
+    "icon": "material-symbols-light:travel-explore",
+    "category": "Labs",
+    "keywords": [
+      "selector"
+    ]
+  },
+  {
+    "id": "lab-sprite-sql",
+    "route": "/labs/sprites/sql",
+    "path": "/_pages/labs/sprites/sql.html",
+    "title": "$sql",
+    "icon": "material-symbols-light:database",
+    "category": "Labs",
+    "keywords": [
+      "sql",
+      "query",
+      "params",
+      "live",
+      "table",
+      "callback"
+    ]
+  },
+  {
+    "id": "lab-sprite-svg",
+    "route": "/labs/sprites/svg",
+    "path": "/_pages/labs/sprites/svg.html",
+    "title": "$svg",
+    "icon": "material-symbols-light:gesture",
+    "category": "Labs",
+    "keywords": [
+      "svg",
+      "bezier",
+      "from",
+      "options",
+      "smooth",
+      "points"
+    ]
+  },
+  {
+    "id": "lab-sprite-sw",
+    "route": "/labs/sprites/sw",
+    "path": "/_pages/labs/sprites/sw.html",
+    "title": "$sw",
+    "icon": "material-symbols-light:cloud",
+    "category": "Labs",
+    "keywords": [
+      "register",
+      "scripturl",
+      "state"
+    ]
+  }
+]

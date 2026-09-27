@@ -1,0 +1,584 @@
+[
+  {
+    "id": "flow",
+    "route": "/flow",
+    "path": "/_pages/flow.html",
+    "title": "Flow Canvas",
+    "category": "Apps",
+    "keywords": [],
+    "content": "Flow Canvas Flow Canvas Signal Driven Complete spatial node graph with reactive fine-grained proxies Shift Drag Marquee Del Delete Arrows Nudge Nodes Edges Zoom Fit Add Node In Out Pos Fit View Live Reactive Store ZCZS 60fps Viewport Pan Canvas Studio Grid Snapping Grid Spacing Snap to Grid Show Minimap Wire Routing Engine Default Routing Style SmoothStep Rounded Orthogonal Bezier Cubic Directional Step Sharp 90 Angles Straight Direct Linear Animate All Stop Wires Active Connectors No active connections. Drag between node handles to create wires. Graph Schema IO Export Graph JSON Import Graph JSON Clear Canvas xyFlow Spatial Engine Nexus-UX ZCZS Tune spatial coordinates ports subflow nesting and schema Visual Studio JSON Schema Node Identifier Display Label Node Kind Standard Action Card Input Trigger Green Accent Output Sink Warning Accent Subflow Group Container Parent Subflow Group None Root Canvas Pos X Pos Y Width Height Connection Ports Edge Points No connection ports attached. Click below to add an edge point. Source Output Port Target Input Port Right Side Left Side Top Side Bottom Side Add Port Direct Schema JSON Definition Real-time synchronization Cancel Save Changes close Configure Wire Connector Spatial curve routing arrow markers animation and port attachments Visual Studio JSON Schema Wire ID Display Badge Label Routing Algorithm SmoothStep Rounded Orthogonal Bezier Cubic Directional Step Sharp 90 Angles Straight Direct Linear Arrowhead Marker None Bare Wire Ch",
+    "icon": "material-symbols-light:flowchart-outline"
+  },
+  {
+    "id": "home",
+    "route": "/",
+    "path": "/_pages/home.html",
+    "title": "Home",
+    "category": "General",
+    "keywords": [],
+    "content": "Home Nexus-UX Engine 2.0 Public Beta Ready Modern HTML-First Reactive Architecture A high-performance reactive user experience framework coordinating declarative HTML directives with web-native browser APIs. Built for Zero-Copy Zero-Serialization ZCZS execution directly across the DOM namespace. Explore Interactive Labs Visual Node Graph Specification Docs Live Runtime Engine 60 FPS Reactive Signal Binding Count 1 Count -1 Zero serialization Zero-copy live proxy heap Core Architectural Pillars Engineered from the ground up for maximum browser performance zero memory churn and pure HTML-first expressiveness. Declarative HTML-First DOM-as-State composition without imperative scripting Application logic state bindings dynamic templates and animations are expressed directly in HTML markup. No build step required to run templates parse natively in the browser s DOM parser. Implementation Features 30 Native Attribute Directives data-signal data-bind data-for data-if data-show data-on data-flow and more. Constructable CSSStyleSheets Direct CSSOM integration via document.adoptedStyleSheets and data-stylesheet . Single Observer Context Exactly one universal MutationObserver orchestrating all DOM insertions diffing and deterministic teardowns. Zero-Copy Zero-Serialization Strictly eliminates JSON serialization and memory copy overhead State is held in shared memory references and typed heaps. Web Workers and main thread communicate via SharedArrayBuffer completely avoiding expensive JS",
+    "icon": "material-symbols-light:home-outline"
+  },
+  {
+    "id": "_modals",
+    "route": "/builder/_modals",
+    "path": "/_pages/builder/_modals.html",
+    "title": "_modals",
+    "category": "General",
+    "keywords": [],
+    "content": "Export Standalone HTML Production-ready self-contained HTML with Tailwind CSS DaisyUI and Nexus-UX scripts. Zero build step required. Works in any standard web server or browser. Download .html Choose Starter Template Select a pre-designed layout or start from a blank canvas. Blank Canvas An empty canvas with a drop zone. Perfect for building custom layouts from scratch. Select Modern Landing Page Complete high-converting page with Navbar Hero CTA Stats Feature cards and Footer. Select",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "_right-panel",
+    "route": "/builder/_right-panel",
+    "path": "/_pages/builder/_right-panel.html",
+    "title": "_right-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "landing",
+    "route": "/landing",
+    "path": "/_pages/builder/templates/landing.html",
+    "title": "landing",
+    "category": "General",
+    "keywords": [],
+    "content": "Overview Components Templates Pricing N Nexus Studio Overview Components Templates Pricing Sign In Get Started New DaisyUI 5 Native Components Tokens Next-Generation Visual Website Builder Assemble lightning-fast reactive web interfaces directly in the browser with declarative HTML bindings zero compilation lag and deep component inspection. Start Building Free Explore Templates Components 87 DaisyUI 5 Web Native Themes 32 Instant Canvas Sync Overhead 0 kb Zero-Serialization Heap Architecture Engineered for Velocity Everything you need to craft production web applications with zero friction. Dynamic Component Inspectors Click any element heading button or section to instantly inspect and modify variants layouts and responsive breakpoints. Learn More rarr Theme-Adaptive Styling Switch themes live on the canvas. High-contrast dark modes vibrant synthwave palettes and clean business layouts update instantly. Learn More rarr Zero-Serialization Pipeline DOM morphing reconcilers diff elements in-place while keeping user focus and input states completely intact. Learn More rarr N Nexus-UX Studio Copyright copy 2026 - All rights reserved Documentation Components Changelog GitHub",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "doc-changelog",
+    "route": "/docs/changelog",
+    "path": "/_pages/docs/changelog.md",
+    "title": "Changelog",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-changelog title Changelog route /docs/changelog icon material-symbols-light history order 3 category Docs --- Nexus-UX Changelog Codebase Alignment Analysis Latest Alignment Date 2026-09-13 --- Recent Major Release 2026-09-13 Native API Reflect Proxy Engine Scope Resolution Unification and ZCZS Storage Compliance Native Web API Reflect Proxy Engine src/engine/reflect.ts - Authoritative Reflect Factory createReflectProxy Implemented authoritative factory wrapping native browser APIs window localStorage sessionStorage document screen navigator fetch indexedDB in Proxy/Reflect traps with zero regex scanning overhead and zero intermediate serialization. Proxies are cached via WeakMap for zero-allocation reuse. - Dual-Compatibility Web Storage Supports both standard Web API methods getItem setItem removeItem clear key length and direct property reads/writes localStorage.collapsed false with reactive track storage key and trigger storage key hooks and automatic cross-tab synchronization via native storage events. - Callable fetch Proxy Provides a transparent proxy for fetch url options returning native Promise fully supporting .then .catch etc. while ensuring fetch is never shadowed by internal engine utility objects. - Reactive indexedDB Operations Exposes structured store operations createStoreOperations getIndexedDBProxy for zero-overhead persistence without transaction boilerplate. Scope Resolution Unification src/engine/scope.ts src/engine/evaluator.ts - Single Auth",
+    "icon": "material-symbols-light:history"
+  },
+  {
+    "id": "doc-readme",
+    "route": "/docs/readme",
+    "path": "/_pages/docs/readme.md",
+    "title": "README",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-readme title README route /docs/readme icon material-symbols-light info-outline order 4 category Docs --- Nexus-UX Signal-Driven Universal Reactivity. High-Fidelity Tailwind JIT. Omni-State DOM-as-State Framework. Nexus-UX is a reactive framework designed for developers who demand absolute performance granular control and a zero-build experience. It collapses the traditional frontend stack by treating the DOM as a queryable reactive state graph while achieving 100 functional parity with Tailwind v4 . --- The Five Pillars 1. Omni-State DOM-as-State We assert that the DOM _is_ the primary state graph. No phantom Virtual DOM. No reconciliation tax. The HTML attributes are the declaration source while the binary signal heap is the runtime truth. 2. Native JIT Engine Tailwind v4 Nexus-UX achieves 1 1 bit-for-bit parity with the official Tailwind v4 CDN. It compiles utility classes into a high-performance Unified Adopted StyleSheets Registry in real-time. 3. Zero-DOM Pollution Using CSSStyleSheet.replaceSync Nexus-UX eliminates all legacy and tag pollution. Styles automatically penetrate Shadow DOM boundaries without duplicative parsing. 4. ZCZS Zero-Copy Zero-Serialization A value-pooling reactive core designed for 120fps animations. Data flows from kernel to DOM via binary signal heaps bypassing JSON serialization. 5. Agentic Readiness Built for Machine Reasoning Efficiency . Built-in Resolution Beacons report missing selectors and failed expressions back to Agentic Ho",
+    "icon": "material-symbols-light:info-outline"
+  },
+  {
+    "id": "doc-reference",
+    "route": "/docs/reference",
+    "path": "/_pages/docs/reference.md",
+    "title": "Technical Reference",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-reference title Technical Reference route /docs/reference icon material-symbols-light menu-book-outline order 1 category Docs --- Nexus-UX The Exhaustive Technical Reference The Practical Manual From Syntax to Practice Theory is knowing how it works. Practice is making it work. This document bridges both. This guide is the definitive practical reference for developers and AI agents building with Nexus-UX. It is the core Toolkit for rapid development focused on outcomes and practical implementation patterns. Built on the Omni-State DOM-as-State philosophy it demonstrates how to use Nexus-UX as the Functional Soul for modern web components. IMPORTANT Contributing Compliance All development on Nexus-UX by human contributors and AI agents alike must adhere to the workspace directives defined in .agent/rules/directives.md . This includes the ZCZS mandate ownership tracking patterns the engine-vs-module architectural contract MutationObserver policy DDD workflow and granular version control. See Spec 1B nexus-ux-spec.md chapter-1b-architecture-contract--development-compliance for the full contract. --- Table of Contents 1. Preface Quick Start preface-quick-start 2. Chapter 1 The Language NEG Grammar Fundamentals chapter-1-the-language-neg-grammar--fundamentals 3. Chapter 2 Essential Directives State Binding chapter-2-essential-directives-state--binding 4. Chapter 3 Control Flow Rendering chapter-3-control-flow--rendering 5. Chapter 4 Events Behavioral Pipelines chapter-4",
+    "icon": "material-symbols-light:menu-book-outline"
+  },
+  {
+    "id": "labs-attributes",
+    "route": "/labs/attributes",
+    "path": "/_pages/labs/attributes.html",
+    "title": "Attributes",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Attributes Labs Category 30 Active Directives Reactive Attributes Directives Declarative HTML directives governing state initialization two-way bindings physical and visual rendering keyed loops and lifecycle hooks. data-signal State Declares local or global fine-grained reactive state blocks directly in the DOM namespace. Open Lab rarr data-bind Binding Two-way native browser API binding and HTML attribute synchronization. Open Lab rarr data-for Loop Zero-allocation keyed list rendering with in-place DOM morphing. Open Lab rarr data-if Conditional Physical conditional DOM mounting with anchor comments and deterministic teardown. Open Lab rarr data-show Toggle Visual visibility toggle via display styles without structural DOM teardown. Open Lab rarr data-on Events Declarative event handling with modifiers evt and pipeline execution. Open Lab rarr data-class Styling Reconciles dynamic Tailwind / DaisyUI class lists or boolean toggles. Open Lab rarr data-style Styling Reconciles dynamic inline styles with unit formatting and camelCase support. Open Lab rarr data-effect Reactivity Continuous reactive side-effect runner tracking dependencies automatically. Open Lab rarr data-computed Computed Memoized derived getters caching reactive computations with lazy evaluation. Open Lab rarr data-drag Interaction Zero-configuration drag-and-drop list reordering with FLIP animations. Open Lab rarr data-flow Canvas Interactive node-graph canvas supporting zoom pan and SVG edge connections. O",
+    "icon": "material-symbols-light:code"
+  },
+  {
+    "id": "labs-sprites",
+    "route": "/labs/sprites",
+    "path": "/_pages/labs/sprites.html",
+    "title": "Sprites",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Sprites Labs Category 14 Injected Sprites Injected Sprites Utilities Built-in framework utilities and native runtime clients accessible directly inside any HTML expression without imports or boilerplate. animate Animation Web Animations API runner with spring physics and zero-layout-shift FLIP list transitions. Open Lab rarr bgFetch Offline Background Fetch API wrapper executing large persistent file downloads across tab closures. Open Lab rarr bgSync Sync Background Sync API for deferred requests guaranteeing delivery when network recovers. Open Lab rarr flow Canvas Spatial canvas node link coordinator and Bezier connector engine for node graphs. Open Lab rarr gql GraphQL Zero-dependency GraphQL query and mutation client returning fine-grained reactive refs. Open Lab rarr mask Utility Programmatic string formatting and pattern masking utility for non-input expressions. Open Lab rarr mcp AI Agent Model Context Protocol AI assistant client for direct LLM sampling and runtime diagnostics. Open Lab rarr periodicSync Sync Periodic Background Sync manager for background data polling and silent cache updates. Open Lab rarr predictive Predictive Quadtree predictive engine forecasting user pointer trajectories and pre-fetching assets. Open Lab rarr push Notifications Web Push notification subscription manager and permission controller. Open Lab rarr ... Selector Contextual DOM selector engine with directional combinators closest child next - prev . Open Lab rarr sql Database SurrealD",
+    "icon": "material-symbols-light:attach-money"
+  },
+  {
+    "id": "lab-attr-bind",
+    "route": "/labs/attributes/bind",
+    "path": "/_pages/labs/attributes/bind.html",
+    "title": "data-bind",
+    "category": "Labs",
+    "keywords": [
+      "data-bind",
+      "expr",
+      "data-bind-value",
+      "data-bind-",
+      "attr",
+      "data-bind_lazy"
+    ],
+    "content": "data-bind Enables two-way native Web API binding code localStorage /code code sessionStorage /code code window /code and seamless HTML form attribute synchronization via Reflect Proxy traps. input data-bind-value username / n div data-bind username /div n button data-bind-disabled isSubmitting Submit /button n input data-bind-value localStorage.userTheme / data-bind expr data-bind-value expr data-bind- attr expr data-bind_lazy p class opacity-80 leading-relaxed Located in code src/modules/attributes/bind.ts /code the bind directive establishes bidirectional bridges between DOM elements and reactive signals. Reads and writes against native browser APIs like code window.innerWidth /code or code localStorage /code are intercepted via Reflect traps to trigger automatic push-based updates. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Auto-detection /strong Automatically detects form controls value/checked vs standard DOM textContent /li li strong Sub-directives /strong code data-bind-disabled /code code data-bind-href /code code data-bind-class /code target exact attributes /li li strong Native API Interceptors /strong Transparently synchronizes with code localStorage /code code sessionStorage /code and code window /code /li li strong Zero-Serialization /strong Values mutate in-place without JSON cloning or string conversions /li /ul",
+    "icon": "material-symbols-light:link"
+  },
+  {
+    "id": "lab-attr-build",
+    "route": "/labs/attributes/build",
+    "path": "/_pages/labs/attributes/build.html",
+    "title": "data-build",
+    "category": "Labs",
+    "keywords": [
+      "data-build",
+      "target"
+    ],
+    "content": "data-build In-browser compilation and bundling directive that serializes live DOM subtrees stylesheets and assets directly into IndexedDB or client-side bundles. div data-build idb //artifacts/bundle.html /div data-build target p class opacity-80 leading-relaxed Located in code src/modules/attributes/build.ts /code the build directive powers in-browser packaging workflows. It allows dynamic sites to snapshot their current DOM state and write production-ready bundles directly into IndexedDB without a Node or server build process. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong In-Browser Bundling /strong Zero terminal toolchain required to compile and save templates /li li strong IndexedDB Persistence /strong Directly integrates with code cacheEngine /code and local storage /li li strong Offline Distribution /strong Exports self-contained single-file HTML applications /li /ul",
+    "icon": "material-symbols-light:build"
+  },
+  {
+    "id": "lab-attr-class",
+    "route": "/labs/attributes/class",
+    "path": "/_pages/labs/attributes/class.html",
+    "title": "data-class",
+    "category": "Labs",
+    "keywords": [
+      "data-class",
+      "data-class-",
+      "name",
+      "expr"
+    ],
+    "content": "data-class Reconciles reactive CSS classes dynamically via standard object maps code active isActive /code or suffixed attribute toggles code data-class-active isActive /code . div data-class border-primary shadow-lg isHighlighted opacity-50 isDisabled /div n button data-class-btn-active isSelected /button data-class ... data-class- name expr p class opacity-80 leading-relaxed Located in code src/modules/attributes/class.ts /code the class directive reconciles dynamic class mutations with the CSSOM. It integrates with code stylesheet.ts /code to ensure dynamically evaluated utility tokens are compiled into adopted stylesheets on demand. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Dual-Mode Binding /strong Supports multi-token class maps code data-class ... /code and direct suffixed toggles code data-class-active isActive /code /li li strong Static Class Preservation /strong Base classes declared in HTML markup are untouched only managed tokens are reconciled /li li strong Zero-Copy Mutations /strong Directly alters code classList /code using Set comparisons to minimize paint churn /li /ul",
+    "icon": "material-symbols-light:palette"
+  },
+  {
+    "id": "lab-attr-computed",
+    "route": "/labs/attributes/computed",
+    "path": "/_pages/labs/attributes/computed.html",
+    "title": "data-computed",
+    "category": "Labs",
+    "keywords": [
+      "data-computed",
+      "data-computed-",
+      "prop",
+      "expr",
+      "data-computed_global"
+    ],
+    "content": "data-computed Declares cached fine-grained reactive computed values with zero serialization via code unifiedComputed /code and ghost key memory pre-allocation. div data-computed total price qty formatted total.toFixed 2 /div n div data-computed-double count 2 /div data-computed ... data-computed- prop expr data-computed_global p class opacity-80 leading-relaxed Located in code src/modules/attributes/computed.ts /code computed directives cache derived values using code unifiedComputed /code . Unlike raw effect loops computed values evaluate lazily upon read and remain cached until one of their upstream dependencies changes. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Ghost Key Pre-Allocation /strong Parses property keys ahead of execution to pre-allocate typed slots in the SignalHeap /li li strong Zero-Copy Derivations /strong Returns typed reactive references without cloning underlying objects /li li strong Dual Usage Modes /strong Supports object literal dictionaries code data-computed ... /code and per-attribute declarations code data-computed-subtotal ... /code /li /ul",
+    "icon": "material-symbols-light:calculate"
+  },
+  {
+    "id": "lab-attr-drag",
+    "route": "/labs/attributes/drag",
+    "path": "/_pages/labs/attributes/drag.html",
+    "title": "data-drag",
+    "category": "Labs",
+    "keywords": [
+      "data-drag",
+      "items",
+      "list",
+      "data-drag-item",
+      "data-drag-handle",
+      "data-drag-nodrag"
+    ],
+    "content": "data-drag Zero-configuration direct manipulation drag-and-drop engine with FLIP animations spatial collision detection and reactive array synchronization. div data-drag list items group kanban n template data-for item in items n div data-drag-item class item /div n /template n /div data-drag items list ... data-drag-item data-drag-handle data-drag-nodrag p class opacity-80 leading-relaxed Located in code src/modules/attributes/drag.ts /code the drag directive pairs direct user pointer interactions with automatic reactive array mutations. Using FLIP First Last Invert Play geometry caching elements glide smoothly to their new positions with zero layout jank. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Direct Array Mutation /strong Automatically calls code splice /code on the backing signal array upon drop /li li strong Hardware Accelerated FLIP /strong Smooth 60fps card settling using transform transitions /li li strong Cross-List Teleportation /strong Seamlessly drag items between containers sharing a code group /code /li li strong Adopted Stylesheet /strong Automatic ghost chosen and active CSS without manual styling attributes /li /ul",
+    "icon": "material-symbols-light:drag-pan"
+  },
+  {
+    "id": "lab-attr-flow",
+    "route": "/labs/attributes/flow",
+    "path": "/_pages/labs/attributes/flow.html",
+    "title": "data-flow",
+    "category": "Labs",
+    "keywords": [
+      "data-flow",
+      "data-flow-viewport",
+      "data-flow-node",
+      "node",
+      "data-flow-edges",
+      "data-flow-minimap",
+      "data-flow-resizer",
+      "data-flow-handle",
+      "type",
+      "data-flow-side",
+      "side",
+      "data-flow-nodrag"
+    ],
+    "content": "data-flow Reactive node-graph and workflow canvas directive with hardware-accelerated pan zoom grid snapping orthogonal SmoothStep/Bezier routing minimap 8-point node resizer and marquee selection. div data-flow grid 20 n div data-flow-viewport n svg data-flow-edges class text-primary /svg n div data-flow-node node n div data-flow-resizer /div n span data-flow-handle source data-flow-side right /span n span data-flow-handle target data-flow-side left /span n /div n /div n div data-flow-minimap class absolute bottom-3 right-3 /div n /div data-flow data-flow-viewport data-flow-node node data-flow-edges data-flow-minimap data-flow-resizer data-flow-handle type data-flow-side side data-flow-nodrag p class opacity-80 leading-relaxed Located in code src/modules/attributes/flow.ts /code and code src/modules/sprites/flow.ts /code the flow suite implements complete xyFlow parity within Nexus-UX s zero-serialization reactive engine. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Infinite Canvas amp Viewport /strong Smooth wheel zoom 0.2x to 4x and pan with grid snapping /li li strong Orthogonal Edge Routing /strong SmoothStep with rounded corner bends Step and Bezier routes with SVG arrowheads and labels /li li strong Marquee Multi-Selection /strong Shift drag draws an SVG selection bounding box selecting multiple nodes for group translation /li li strong Hierarchical Sub-flows /strong Declaring code parentId /code links child nodes to a parent container for re",
+    "icon": "material-symbols-light:account-tree"
+  },
+  {
+    "id": "lab-attr-for",
+    "route": "/labs/attributes/for",
+    "path": "/_pages/labs/attributes/for.html",
+    "title": "data-for",
+    "category": "Labs",
+    "keywords": [
+      "data-for",
+      "item",
+      "items",
+      "index"
+    ],
+    "content": "data-for Renders high-performance dynamic lists directly from reactive arrays via zero-allocation DOM cloning supporting tuple destructuring code item index in items /code and SVG/HTML nodes. template data-for item in items n div data-bind item.title /div n /template n template data-for item idx in items n span data-bind idx item.name /span n /template data-for item in items data-for item index in items p class opacity-80 leading-relaxed Located in code src/modules/attributes/for.ts /code the for directive coordinates template cloning with the DOM data stack. Each iteration is wrapped in an isolated scope proxy referencing the item without copying memory. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Zero-Allocation Cloning /strong Clones template nodes via code cloneNode true /code the original blueprint is never mutated /li li strong Tuple Destructuring /strong Supports code item index /code or code item i /code syntax natively /li li strong Flow-Aware /strong Clones HTML and SVG elements seamlessly preserving CSSOM metadata across clone boundaries /li li strong Deterministic Disposal /strong Invokes cleanup hooks automatically when items are removed from reactive arrays /li /ul",
+    "icon": "material-symbols-light:repeat"
+  },
+  {
+    "id": "lab-attr-if",
+    "route": "/labs/attributes/if",
+    "path": "/_pages/labs/attributes/if.html",
+    "title": "data-if",
+    "category": "Labs",
+    "keywords": [
+      "data-if",
+      "condition"
+    ],
+    "content": "data-if Controls physical conditional rendering using code template data-if condition /code completely inserting or removing DOM subtrees with deterministic teardown. template data-if isLoggedIn n div class dashboard Welcome back /div n /template n template data-if isLoggedIn n button Please Sign In /button n /template data-if condition p class opacity-80 leading-relaxed Located in code src/modules/attributes/if.ts /code the if directive manages physical DOM lifecycle. Unlike code data-show /code which merely toggles CSS display styles code data-if /code constructs nodes on demand and deterministically tears down subtrees when conditions become falsy. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Physical Lifecycle /strong Nodes exist in the DOM only when the expression evaluates to truthy /li li strong Anchor Markers /strong Uses lightweight comment markers in the DOM to remember insertion positions /li li strong Recursive Teardown /strong Cleans up all child signal effects event listeners and timers before removal /li li strong Zero Ghost Listeners /strong Eradicates memory leaks by disconnecting listeners bound to destroyed nodes /li /ul",
+    "icon": "material-symbols-light:splitscreen-top"
+  },
+  {
+    "id": "lab-attr-import",
+    "route": "/labs/attributes/import",
+    "path": "/_pages/labs/attributes/import.html",
+    "title": "data-import",
+    "category": "Labs",
+    "keywords": [
+      "script",
+      "link",
+      "module",
+      "adopt"
+    ],
+    "content": "data-import Declarative external dependency loader for scripts stylesheets ESM modules HTML patterns and theme assets with automated deduplication. div data-import script https //cdn.jsdelivr.net/npm/canvas-confetti 1.6.0/dist/confetti.browser.js /div script link module adopt p class opacity-80 leading-relaxed Located in code src/modules/attributes/import.ts /code the import directive eliminates imperative code script /code tags from template files. Dependencies load asynchronously deduplicate automatically and fire readiness callbacks. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Automatic Deduplication /strong Simultaneous requests for identical libraries resolve to a single network fetch /li li strong Constructable Adoption /strong The code adopt /code key compiles remote CSS into code adoptedStyleSheets /code /li li strong Pure HTML Declarative /strong Zero imperative loader scripts required anywhere in page markup /li /ul",
+    "icon": "material-symbols-light:cloud-download"
+  },
+  {
+    "id": "lab-attr-markdown",
+    "route": "/labs/attributes/markdown",
+    "path": "/_pages/labs/attributes/markdown.html",
+    "title": "data-markdown",
+    "category": "Labs",
+    "keywords": [
+      "data-markdown",
+      "expr"
+    ],
+    "content": "data-markdown Native zero-dependency GitHub Flavored Markdown GFM compiler transpiling markdown text directly into Tailwind-styled DOM structures with tables callout alerts task lists and syntax blocks. div data-markdown docContent /div data-markdown expr p class opacity-80 leading-relaxed Located in code src/modules/attributes/markdown.ts /code this module compiles raw GitHub Flavored Markdown without external library dependencies. Output markup directly utilizes DaisyUI and Tailwind CSS utility classes. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong GFM Callout Alerts /strong Supports code NOTE /code code TIP /code code WARNING /code code IMPORTANT /code code CAUTION /code /li li strong GFM Tables Task Lists /strong Formatted responsive data tables and interactive checkbox lists /li li strong Code Copy Header /strong Auto-generates language badge and interactive clipboard copy button /li /ul",
+    "icon": "material-symbols-light:markdown"
+  },
+  {
+    "id": "lab-attr-mask",
+    "route": "/labs/attributes/mask",
+    "path": "/_pages/labs/attributes/mask.html",
+    "title": "data-mask",
+    "category": "Labs",
+    "keywords": [
+      "data-mask",
+      "template"
+    ],
+    "content": "data-mask Applies real-time input formatting masks to text fields phone numbers currency dates credit cards while preserving caret position. input data-mask 999 999-9999 / n input data-mask 9999-9999-9999-9999 / data-mask template p class opacity-80 leading-relaxed Located in code src/modules/attributes/mask.ts /code the mask directive intercepts keystrokes on code input /code elements and formats the typed string using pattern tokens. It pairs seamlessly with code data-bind-value /code to store clean or formatted values in state. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Dynamic Token Matching /strong Supports digit tokens code 9 /code alphabetic tokens code a /code and literal punctuation /li li strong Caret Position Memory /strong Smart cursor handling allows smooth forward typing and backspacing /li li strong Zero-Dependency /strong Built-in string format parser with zero external libraries /li /ul",
+    "icon": "material-symbols-light:badge"
+  },
+  {
+    "id": "lab-attr-on",
+    "route": "/labs/attributes/on",
+    "path": "/_pages/labs/attributes/on.html",
+    "title": "data-on",
+    "category": "Labs",
+    "keywords": [
+      "data-on-",
+      "event",
+      "expr",
+      "_prevent",
+      "_stop",
+      "_debounce",
+      "_throttle",
+      "_outside",
+      "_window",
+      "_document"
+    ],
+    "content": "data-on Attaches reactive event listeners with pipeline modifiers code _prevent /code code _stop /code code _debounce.300 /code code _outside /code injecting code evt /code code detail /code and code newValue /code directly into evaluation scope. button data-on-click count Increment /button n input data-on-input_debounce.250 searchQuery newValue / n div data-on-click_outside menuOpen false /div data-on- event expr _prevent _stop _debounce. ms _throttle. ms _outside _window _document p class opacity-80 leading-relaxed Located in code src/modules/attributes/on.ts /code the on directive delivers Alpine-grade ergonomics with Web-Native performance. It avoids duplicate handler registrations across attributes automatically disposes listeners when elements leave the DOM and exposes native event context seamlessly. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Injected Context Variables /strong Access code evt /code native Event code detail /code CustomEvent data and code newValue /code /li li strong Pipeline Modifiers /strong Chain code _debounce.300 /code code _prevent /code and code _outside /code directly in attribute names /li li strong Window amp Document Binders /strong Listen globally using code data-on-keydown_window /code or code data-on-scroll_document /code /li li strong Zero Memory Churn /strong Listeners are registered directly on native EventTargets and safely unbound on element destruction /li /ul",
+    "icon": "material-symbols-light:touch-app"
+  },
+  {
+    "id": "lab-attr-preserve",
+    "route": "/labs/attributes/preserve",
+    "path": "/_pages/labs/attributes/preserve.html",
+    "title": "data-preserve",
+    "category": "Labs",
+    "keywords": [
+      "data-preserve"
+    ],
+    "content": "data-preserve Shields DOM subtrees input states video playback buffers and third-party Web Components from being overwritten or diffed during runtime DOM morphing reconciliations. div data-preserve canvas id glCanvas /canvas /div data-preserve p class opacity-80 leading-relaxed Located in code src/modules/attributes/preserve.ts /code this directive guards complex elements against reconciliation replacement. It is essential when embedding WebGL canvases third-party chart libraries video streams or rich text editors into reactive templates. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Zero Morph Destruction /strong The reconciler skips diffing child nodes entirely /li li strong Audio amp Video Continuity /strong Media players continue playback without stutters during route or signal updates /li li strong WebGL amp Canvas Preservation /strong Preserves GPU contexts without context loss /li /ul",
+    "icon": "material-symbols-light:shield"
+  },
+  {
+    "id": "lab-attr-pwa",
+    "route": "/labs/attributes/pwa",
+    "path": "/_pages/labs/attributes/pwa.html",
+    "title": "data-pwa",
+    "category": "Labs",
+    "keywords": [
+      "data-pwa",
+      "pwa",
+      "isonline",
+      "caninstall",
+      "install"
+    ],
+    "content": "data-pwa Injects the code pwa /code reactive global signal for Progressive Web App lifecycle management offline readiness detection service worker updates and install prompts. html data-pwa sw /sw.js /html n button data-show pwa.canInstall data-on-click pwa.install Install App /button data-pwa pwa.isOnline pwa.canInstall pwa.install p class opacity-80 leading-relaxed Located in code src/modules/attributes/pwa.ts /code this module captures Service Worker registrations and browser code beforeinstallprompt /code events. It publishes state into the reactive graph so that install buttons and offline warning banners toggle declaratively. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Offline Detection /strong Automatically syncs with code window.navigator.onLine /code /li li strong Zero-Boilerplate Installation /strong Replaces complex PWA event handling with a single code pwa.install /code call /li li strong Update Banners /strong Flags when a new service worker version is waiting to activate /li /ul",
+    "icon": "material-symbols-light:install-mobile"
+  },
+  {
+    "id": "lab-attr-router",
+    "route": "/labs/attributes/router",
+    "path": "/_pages/labs/attributes/router.html",
+    "title": "data-router",
+    "category": "Labs",
+    "keywords": [
+      "data-router",
+      "router",
+      "pages",
+      "createpagetab",
+      "path"
+    ],
+    "content": "data-router Single Page Application SPA routing engine managing route matching browser history pushState tab sessions and published code router /code global signals. div data-router mode history root /_pages /div data-router router.pages router.createPageTab path p class opacity-80 leading-relaxed Located in code src/modules/attributes/router.ts /code this module provides browser history orchestration. It intercepts anchor clicks via code linkRewriter /code handles browser back/forward buttons via code history /code listener and maintains multi-tab sessions in live signals. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Multi-Tab Workspace /strong Supports desktop-grade tab bars via code router.pageTabs /code /li li strong Instant Navigation /strong Zero full-page reloads switches views via cached DOM morphing /li li strong Global Reactive State /strong Accessible in any expression via code router /code /li /ul",
+    "icon": "material-symbols-light:alt-route"
+  },
+  {
+    "id": "lab-attr-scrollbar",
+    "route": "/labs/attributes/scrollbar",
+    "path": "/_pages/labs/attributes/scrollbar.html",
+    "title": "data-scrollbar",
+    "category": "Labs",
+    "keywords": [
+      "data-scrollbar",
+      "autohide"
+    ],
+    "content": "data-scrollbar GPU-accelerated overlay scrollbar engine providing cross-platform scroll behavior auto-hide fading track thumb styling and custom scroll metrics. div data-scrollbar mode overlay autoHide true /div data-scrollbar autoHide p class opacity-80 leading-relaxed Located in code src/modules/attributes/scrollbar.ts /code this module overrides default OS scrollbars with GPU-composited overlay bars. It maintains consistent thumb aesthetics across Windows macOS and Linux browsers without altering document layout flow. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Zero Layout Shift /strong Overlays floating thumbs above content without consuming layout width /li li strong Idle Fadeout /strong Smoothly dissolves thumbs during inactivity for clean UI presentation /li li strong Hardware Compositing /strong Thumbs transform via GPU transforms for 120fps smoothness /li /ul",
+    "icon": "material-symbols-light:view-stream"
+  },
+  {
+    "id": "lab-attr-show",
+    "route": "/labs/attributes/show",
+    "path": "/_pages/labs/attributes/show.html",
+    "title": "data-show",
+    "category": "Labs",
+    "keywords": [
+      "data-show",
+      "condition"
+    ],
+    "content": "data-show Toggles element visual visibility using CSS code display none /code while preserving complete DOM structure internal component state and form input values. div data-show isOpen Modal Content /div n span data-show hasErrors Validation failed /span data-show condition p class opacity-80 leading-relaxed Located in code src/modules/attributes/show.ts /code the show directive modulates visibility directly on the CSSOM. It caches the element s computed or inline display property upon initialization so that revealing an element perfectly restores code flex /code code grid /code or code inline-block /code layout rules. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Instant CSS Toggling /strong Zero DOM thrashing toggles solely between code display none /code and original layout /li li strong State Preservation /strong Form inputs iframe contents canvas states and scroll offsets remain intact while hidden /li li strong High-Frequency Performance /strong Ideal for dropdown menus tab panels tooltips and flyout sidebars /li /ul",
+    "icon": "material-symbols-light:visibility"
+  },
+  {
+    "id": "lab-attr-signal",
+    "route": "/labs/attributes/signal",
+    "path": "/_pages/labs/attributes/signal.html",
+    "title": "data-signal",
+    "category": "Labs",
+    "keywords": [
+      "data-signal",
+      "data-signal_global",
+      "data-signal_deep"
+    ],
+    "content": "data-signal Declares isolated reactive state scopes directly in the DOM namespace mapping JSON literals to the AST Memory Engine via code data-signal /code . div data-signal count 0 active true /div n div data-signal_global user null /div data-signal ... data-signal_global ... data-signal_deep ... p class opacity-80 leading-relaxed Located in code src/modules/attributes/signal.ts /code the signal directive parses JSON object literals and creates reactive state scopes. Signals cascade from parent to child nodes via the DOM data stack enabling true DOM-as-State composition. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Local signals /strong Scoped to the element and its descendants /li li strong Global signals /strong Use code data-signal_global /code for app-wide state /li li strong Nested inheritance /strong Child signals inherit parent scope automatically through the DOM hierarchy /li li strong Zero-Copy Zero-Serialization /strong Proxy wraps live objects values are shared strictly by reference /li /ul",
+    "icon": "material-symbols-light:data-object"
+  },
+  {
+    "id": "lab-attr-style",
+    "route": "/labs/attributes/style",
+    "path": "/_pages/labs/attributes/style.html",
+    "title": "data-style",
+    "category": "Labs",
+    "keywords": [
+      "data-style"
+    ],
+    "content": "data-style Directly reconciles dynamic inline CSS style properties from reactive objects code transform scale zoom opacity alpha /code via code reconcileStyle /code . div data-style transform translateX x px opacity isVisible 1 0 /div data-style ... p class opacity-80 leading-relaxed Located in code src/modules/attributes/style.ts /code the style directive coordinates fine-grained CSS property updates without requiring stylesheet compilation. It uses code reconcileStyle /code to diff existing properties against newly evaluated states. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Surgical Property Diffs /strong Only properties whose values actually changed are assigned to code el.style /code /li li strong Automatic Cleanup /strong Removed or undefined keys are cleaned up using code removeProperty /code /li li strong Transforms amp GPU Acceleration /strong Ideal for coordinate translation scale rotation and dynamic CSS custom properties /li /ul",
+    "icon": "material-symbols-light:format-paint"
+  },
+  {
+    "id": "lab-attr-stylesheet",
+    "route": "/labs/attributes/stylesheet",
+    "path": "/_pages/labs/attributes/stylesheet.html",
+    "title": "data-stylesheet",
+    "category": "Labs",
+    "keywords": [
+      "data-stylesheet"
+    ],
+    "content": "data-stylesheet Manages constructable stylesheets via CSSOM code document.adoptedStyleSheets /code scoped Tailwind v4 JIT compilation and native code import /code inlining. style data-stylesheet .custom-card backdrop-filter blur 12px /style data-stylesheet p class opacity-80 leading-relaxed Located in code src/modules/attributes/stylesheet.ts /code this module bypasses traditional code style /code tag injection by creating reusable code CSSStyleSheet /code objects shared across Shadow DOM boundaries and document roots. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Constructable CSSStyleSheet /strong Inlines rules into code adoptedStyleSheets /code for zero DOM bloat /li li strong Native import Resolver /strong Inlines external stylesheets recursively ahead of browser adoption /li li strong Scoped Tailwind JIT /strong Dynamically evaluates Tailwind utility classes on the fly /li li strong Zero Re-Parsing /strong Compiled stylesheets are cached in memory by content hash /li /ul",
+    "icon": "material-symbols-light:css"
+  },
+  {
+    "id": "lab-attr-switcher",
+    "route": "/labs/attributes/switcher",
+    "path": "/_pages/labs/attributes/switcher.html",
+    "title": "data-switcher",
+    "category": "Labs",
+    "keywords": [
+      "data-switcher",
+      "signal",
+      "data-switcher-options",
+      "switch",
+      "isactive",
+      "item"
+    ],
+    "content": "data-switcher State-cycling and option-selection helper exposing scoped utilities code switch /code code isActive /code code activeItem /code for segmented controls tabs and multi-state switches. div data-switcher activeTab data-switcher-options Day Week Month n button data-on-click switch Next /button n /div data-switcher signal data-switcher-options ... switch isActive item p class opacity-80 leading-relaxed Located in code src/modules/attributes/switcher.ts /code the switcher directive abstracts tab bars segmented controls and carousel state machines. It automatically resolves active index position bounds checking and circular wraparounds. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Circular Stepping /strong code switch /code seamlessly advances through items with zero index-boundary bugs /li li strong Clean Scoped Helpers /strong Injects code switch /code code isActive /code and code activeItem /code into template scope /li li strong Object or Primitive Lists /strong Matches items either by reference identity or by matching code item.id /code /li /ul",
+    "icon": "material-symbols-light:swap-calls"
+  },
+  {
+    "id": "lab-attr-teleport",
+    "route": "/labs/attributes/teleport",
+    "path": "/_pages/labs/attributes/teleport.html",
+    "title": "data-teleport",
+    "category": "Labs",
+    "keywords": [
+      "data-teleport",
+      "selector",
+      "data-teleport_drop",
+      "list",
+      "data-teleport-mode"
+    ],
+    "content": "data-teleport Dual-mode DOM and data teleportation directive for moving subtrees to external target selectors or establishing HTML5 drag-and-drop drop zones with code data-teleport_drop /code . template data-teleport body div class modal /div /template n div data-teleport_drop archiveList data-teleport-mode move /div data-teleport selector data-teleport_drop list data-teleport-mode p class opacity-80 leading-relaxed Located in code src/modules/attributes/teleport.ts /code teleportation operates in two distinct modes. In DOM mode it mounts templates to body/dialog targets while retaining full reactive signal scope. In Drop mode it turns containers into drag destinations. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Scope Preservation /strong Teleported elements retain their original lexical data stack context /li li strong Drag amp Drop Targets /strong code data-teleport_drop /code handles drag payload receipt and array mutations /li li strong Clean Disposal /strong When the source template unmounts teleported target elements are cleanly cleaned up /li /ul",
+    "icon": "material-symbols-light:move-item"
+  },
+  {
+    "id": "lab-attr-theme",
+    "route": "/labs/attributes/theme",
+    "path": "/_pages/labs/attributes/theme.html",
+    "title": "data-theme",
+    "category": "Labs",
+    "keywords": [
+      "data-theme",
+      "theme",
+      "switchtheme",
+      "settheme",
+      "name"
+    ],
+    "content": "data-theme Declarative DaisyUI and Tailwind CSS theme orchestration with auto-detection of system dark mode local storage persistence and injected helpers code theme /code code switchTheme /code . html data-theme default dark /html n button data-on-click switchTheme span data-bind themeIcon /span /button data-theme ... theme switchTheme setTheme name p class opacity-80 leading-relaxed Located in code src/modules/attributes/theme.ts /code the theme directive handles color scheme transitions across light dark and system preference profiles. It manages the DOM code data-theme /code attribute directly without triggering expensive CSS re-parsing. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong 3-State Orchestration /strong Smoothly alternates between Light Dark and System auto-detection /li li strong DaisyUI amp Tailwind Bridge /strong Instantly applies OKLCH color palettes to CSS variables /li li strong Zero-Boilerplate Helpers /strong Injects code theme /code code themeIcon /code and code switchTheme /code into scope /li li strong Automatic Persistence /strong Stores user preferences in code localStorage /code across sessions /li /ul",
+    "icon": "material-symbols-light:dark-mode"
+  },
+  {
+    "id": "lab-mod-document",
+    "route": "/labs/modifiers/document",
+    "path": "/_pages/labs/modifiers/document.html",
+    "title": "_document",
+    "category": "Labs",
+    "keywords": [
+      "_document"
+    ],
+    "content": "_document Redirects the event listener from the host element to the global document target enabling document-wide event listening with automatic element lifecycle cleanup. div data-on-click_document dismissAll /div n div data-on-visibilitychange_document checkStatus /div _document p class opacity-80 leading-relaxed Located in code src/modules/modifiers/document.ts /code this modifier allows elements to listen for document-level events without manually managing code document.addEventListener /code and code removeEventListener /code pairs. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Global Document Interception /strong Catch clicks visibility changes and pointer events anywhere in the page /li li strong Zero Memory Leaks /strong The engine automatically removes the document listener when the element is destroyed /li /ul",
+    "icon": "material-symbols-light:description"
+  },
+  {
+    "id": "lab-mod-outside",
+    "route": "/labs/modifiers/outside",
+    "path": "/_pages/labs/modifiers/outside.html",
+    "title": "_outside",
+    "category": "Labs",
+    "keywords": [
+      "_outside"
+    ],
+    "content": "_outside Listens for clicks or pointerdown events occurring strictly outside the host element boundary providing declarative outside-click dismissal for dropdowns popovers and modals. div data-on-click_outside isOpen false /div _outside p class opacity-80 leading-relaxed Located in code src/modules/modifiers/outside.ts /code this modifier intercepts document clicks and uses code el.contains e.target /code to determine spatial boundary intersection. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Zero-Boilerplate Modals /strong Dismiss floating menus without global document listeners /li li strong Shadow DOM Aware /strong Uses composedPath to support web components and slotted elements /li /ul",
+    "icon": "material-symbols-light:tab-close"
+  },
+  {
+    "id": "lab-mod-self",
+    "route": "/labs/modifiers/self",
+    "path": "/_pages/labs/modifiers/self.html",
+    "title": "_self",
+    "category": "Labs",
+    "keywords": [
+      "_self"
+    ],
+    "content": "_self Restricts handler evaluation to instances where code e.target el /code completely ignoring events dispatched from child elements. div data-on-click_self closeBackdrop div class modal-box /div /div _self p class opacity-80 leading-relaxed Located in code src/modules/modifiers/self.ts /code the self modifier compares code event.target /code to the listener element. This provides foolproof modal backdrop dismissal without closing when the modal contents are clicked. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Backdrop Click Safety /strong Click on overlay closes modal clicks inside inner cards do not /li li strong Zero Delegation Pollution /strong Child event bubbling does not trigger parent logic /li /ul",
+    "icon": "material-symbols-light:target"
+  },
+  {
+    "id": "lab-mod-zoom",
+    "route": "/labs/modifiers/zoom",
+    "path": "/_pages/labs/modifiers/zoom.html",
+    "title": "_zoom",
+    "category": "Labs",
+    "keywords": [
+      "_zoom"
+    ],
+    "content": "_zoom Normalizes mouse wheel deltas and pinch gestures into smooth zoom multipliers code zoom.delta /code code zoom.scale /code with boundary clamping. div data-on-wheel_zoom canvasScale Math.min 3 Math.max 0.5 canvasScale zoom.delta /div _zoom p class opacity-80 leading-relaxed Located in code src/modules/modifiers/zoom.ts /code this modifier intercepts wheel events prevents page-level scrolling when zooming canvases and normalizes wheel delta factors across trackpads and mouse wheels. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Normalized Scale Delta /strong Smooth consistent zooming factor regardless of input hardware /li li strong Canvas amp Map Panes /strong Powers interactive node graphs and image viewers /li /ul",
+    "icon": "material-symbols-light:zoom-in"
+  },
+  {
+    "id": "lab-scope-container",
+    "route": "/labs/scopes/container",
+    "path": "/_pages/labs/scopes/container.html",
+    "title": "@container",
+    "category": "Labs",
+    "keywords": [
+      "container"
+    ],
+    "content": "container Evaluates component-level container queries reactively via ResizeObserver allowing components to adapt based on their parent container width rather than full viewport width. div data-show container min-width 400px /div container p class opacity-80 leading-relaxed Located in code src/modules/scopes/container.ts /code container queries decouple responsive component layout from the global browser window enabling truly modular design. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong ResizeObserver Backed /strong Monitors container element dimensions with zero polling overhead /li li strong True Component Isolation /strong Adapts layout whether embedded in a narrow sidebar or a wide main pane /li /ul",
+    "icon": "material-symbols-light:aspect-ratio"
+  },
+  {
+    "id": "lab-scope-media",
+    "route": "/labs/scopes/media",
+    "path": "/_pages/labs/scopes/media.html",
+    "title": "@media",
+    "category": "Labs",
+    "keywords": [
+      "media"
+    ],
+    "content": "media Scoped reactive media query rule evaluating code window.matchMedia /code directly in NEG expressions updating dynamically as viewport dimensions cross CSS breakpoints. media min-width 768px isDesktop true n div data-show media min-width 1024px /div media p class opacity-80 leading-relaxed Located in code src/modules/scopes/media.ts /code the media scope provider links code window.matchMedia /code change listeners directly into the reactive dependency graph. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Native MediaQueryList /strong Backed directly by browser native C matchMedia implementation /li li strong Zero Polling /strong Updates trigger strictly on change events when breakpoint thresholds cross /li li strong Universal Scope Rule /strong Usable in any NEG attribute expression /li /ul",
+    "icon": "material-symbols-light:devices"
+  },
+  {
+    "id": "lab-sprite-flow",
+    "route": "/labs/sprites/flow",
+    "path": "/_pages/labs/sprites/flow.html",
+    "title": "$flow",
+    "category": "Labs",
+    "keywords": [
+      "flow",
+      "zoomin",
+      "fitview"
+    ],
+    "content": "flow Exposes reactive node-graph canvas manipulation methods and viewport query access flow.zoomIn flow.zoomOut flow.fitView flow.centerNode directly in expressions. flow.zoomIn n flow.fitView padding 20 flow.zoomIn flow.fitView p class opacity-80 leading-relaxed Located in code src/modules/sprites/flow.ts /code the flow sprite exposes programmatic navigation controls for xyflow canvas containers. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Camera Navigation /strong Pan zoom and center operations with smooth easing /li li strong Live Viewport Metrics /strong Access active scale and offset coordinates from any child element /li /ul",
+    "icon": "material-symbols-light:schema"
+  },
+  {
+    "id": "lab-sprite-gql",
+    "route": "/labs/sprites/gql",
+    "path": "/_pages/labs/sprites/gql.html",
+    "title": "$gql",
+    "category": "Labs",
+    "keywords": [
+      "gql",
+      "query",
+      "variables",
+      "mutate",
+      "mutation"
+    ],
+    "content": "gql Zero-dependency GraphQL query and mutation client with automated cacheEngine response caching and live WebSocket subscription bindings. gql.query user id 1 name email gql.query query variables gql.mutate mutation variables p class opacity-80 leading-relaxed Located in code src/modules/sprites/gql.ts /code this sprite provides GraphQL capabilities without heavy Apollo or Relay bundles. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Zero-Dependency Client /strong Lightweight fetch-based client under 2KB /li li strong CacheEngine Integration /strong Automatically persists query snapshots in IndexedDB /li /ul",
+    "icon": "mdi:graphql"
+  },
+  {
+    "id": "lab-sprite-mask",
+    "route": "/labs/sprites/mask",
+    "path": "/_pages/labs/sprites/mask.html",
+    "title": "$mask",
+    "category": "Labs",
+    "keywords": [
+      "mask",
+      "format",
+      "value",
+      "pattern"
+    ],
+    "content": "mask String formatting utility sprite mask.format that transforms raw strings into formatted mask representations on demand directly in templates. mask.format rawDigits 999 999-9999 mask.format value pattern p class opacity-80 leading-relaxed Located in code src/modules/sprites/mask.ts /code this sprite provides string masking logic that can be invoked inside computed properties signal transforms or display templates. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Pure Function Execution /strong Zero DOM side-effects returns purely formatted strings /li li strong Display Transformations /strong Format unformatted database values directly in HTML expressions /li /ul",
+    "icon": "material-symbols-light:format-shapes"
+  },
+  {
+    "id": "lab-sprite-sql",
+    "route": "/labs/sprites/sql",
+    "path": "/_pages/labs/sprites/sql.html",
+    "title": "$sql",
+    "category": "Labs",
+    "keywords": [
+      "sql",
+      "query",
+      "params",
+      "live",
+      "table",
+      "callback"
+    ],
+    "content": "sql SurrealDB and SQL WebSocket live query runner providing real-time data subscriptions query parameterization and zero-serialization table streams. sql.query SELECT FROM user WHERE active true n sql.live telemetry data handleTelemetry data sql.query sql params sql.live table callback p class opacity-80 leading-relaxed Located in code src/modules/sprites/sql.ts /code the sql sprite pairs SurrealDB WebSocket connections directly with reactive signal scopes for true database-to-DOM synchronization. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Live Push Queries /strong Database record mutations stream straight to UI templates /li li strong Zero Serialization Overhead /strong Streamed JSON records bind directly into the reactive graph /li /ul",
+    "icon": "material-symbols-light:database"
+  }
+]

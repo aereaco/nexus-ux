@@ -1,0 +1,124 @@
+[
+  {
+    "id": "flow",
+    "route": "/flow",
+    "path": "/_pages/flow.html",
+    "title": "Flow Canvas",
+    "category": "Apps",
+    "keywords": [],
+    "content": "Flow Canvas Flow Canvas Signal Driven Complete spatial node graph with reactive fine-grained proxies Shift Drag Marquee Del Delete Arrows Nudge Nodes Edges Zoom Fit Add Node In Out Pos Fit View Live Reactive Store ZCZS 60fps Viewport Pan Canvas Studio Grid Snapping Grid Spacing Snap to Grid Show Minimap Wire Routing Engine Default Routing Style SmoothStep Rounded Orthogonal Bezier Cubic Directional Step Sharp 90 Angles Straight Direct Linear Animate All Stop Wires Active Connectors No active connections. Drag between node handles to create wires. Graph Schema IO Export Graph JSON Import Graph JSON Clear Canvas xyFlow Spatial Engine Nexus-UX ZCZS Tune spatial coordinates ports subflow nesting and schema Visual Studio JSON Schema Node Identifier Display Label Node Kind Standard Action Card Input Trigger Green Accent Output Sink Warning Accent Subflow Group Container Parent Subflow Group None Root Canvas Pos X Pos Y Width Height Connection Ports Edge Points No connection ports attached. Click below to add an edge point. Source Output Port Target Input Port Right Side Left Side Top Side Bottom Side Add Port Direct Schema JSON Definition Real-time synchronization Cancel Save Changes close Configure Wire Connector Spatial curve routing arrow markers animation and port attachments Visual Studio JSON Schema Wire ID Display Badge Label Routing Algorithm SmoothStep Rounded Orthogonal Bezier Cubic Directional Step Sharp 90 Angles Straight Direct Linear Arrowhead Marker None Bare Wire Ch",
+    "icon": "material-symbols-light:flowchart-outline"
+  },
+  {
+    "id": "home",
+    "route": "/",
+    "path": "/_pages/home.html",
+    "title": "Home",
+    "category": "General",
+    "keywords": [],
+    "content": "Home Nexus-UX Engine 2.0 Public Beta Ready Modern HTML-First Reactive Architecture A high-performance reactive user experience framework coordinating declarative HTML directives with web-native browser APIs. Built for Zero-Copy Zero-Serialization ZCZS execution directly across the DOM namespace. Explore Interactive Labs Visual Node Graph Specification Docs Live Runtime Engine 60 FPS Reactive Signal Binding Count 1 Count -1 Zero serialization Zero-copy live proxy heap Core Architectural Pillars Engineered from the ground up for maximum browser performance zero memory churn and pure HTML-first expressiveness. Declarative HTML-First DOM-as-State composition without imperative scripting Application logic state bindings dynamic templates and animations are expressed directly in HTML markup. No build step required to run templates parse natively in the browser s DOM parser. Implementation Features 30 Native Attribute Directives data-signal data-bind data-for data-if data-show data-on data-flow and more. Constructable CSSStyleSheets Direct CSSOM integration via document.adoptedStyleSheets and data-stylesheet . Single Observer Context Exactly one universal MutationObserver orchestrating all DOM insertions diffing and deterministic teardowns. Zero-Copy Zero-Serialization Strictly eliminates JSON serialization and memory copy overhead State is held in shared memory references and typed heaps. Web Workers and main thread communicate via SharedArrayBuffer completely avoiding expensive JS",
+    "icon": "material-symbols-light:home-outline"
+  },
+  {
+    "id": "_right-panel",
+    "route": "/builder/_right-panel",
+    "path": "/_pages/builder/_right-panel.html",
+    "title": "_right-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "lab-attr-drag",
+    "route": "/labs/attributes/drag",
+    "path": "/_pages/labs/attributes/drag.html",
+    "title": "data-drag",
+    "category": "Labs",
+    "keywords": [
+      "data-drag",
+      "items",
+      "list",
+      "data-drag-item",
+      "data-drag-handle",
+      "data-drag-nodrag"
+    ],
+    "content": "data-drag Zero-configuration direct manipulation drag-and-drop engine with FLIP animations spatial collision detection and reactive array synchronization. div data-drag list items group kanban n template data-for item in items n div data-drag-item class item /div n /template n /div data-drag items list ... data-drag-item data-drag-handle data-drag-nodrag p class opacity-80 leading-relaxed Located in code src/modules/attributes/drag.ts /code the drag directive pairs direct user pointer interactions with automatic reactive array mutations. Using FLIP First Last Invert Play geometry caching elements glide smoothly to their new positions with zero layout jank. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Direct Array Mutation /strong Automatically calls code splice /code on the backing signal array upon drop /li li strong Hardware Accelerated FLIP /strong Smooth 60fps card settling using transform transitions /li li strong Cross-List Teleportation /strong Seamlessly drag items between containers sharing a code group /code /li li strong Adopted Stylesheet /strong Automatic ghost chosen and active CSS without manual styling attributes /li /ul",
+    "icon": "material-symbols-light:drag-pan"
+  },
+  {
+    "id": "lab-attr-raf",
+    "route": "/labs/attributes/raf",
+    "path": "/_pages/labs/attributes/raf.html",
+    "title": "data-raf",
+    "category": "Labs",
+    "keywords": [
+      "data-on-raf",
+      "expr",
+      "time",
+      "delta"
+    ],
+    "content": "data-raf Synchronizes element execution loops directly with the browser s 60fps/120fps display refresh rate via code requestAnimationFrame /code injecting code time /code and code delta /code into scope. div data-on-raf pulse Math.sin time / 500 /div data-on-raf expr time delta p class opacity-80 leading-relaxed Located in code src/modules/attributes/raf.ts /code this module binds continuous game loops canvas rendering cycles and procedural animations directly to browser V-Sync. It automatically cancels animation frames when elements are removed from the DOM. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong V-Sync Synced /strong Smooth 60Hz/120Hz/144Hz screen refresh synchronization /li li strong Battery amp Background Optimization /strong Browser halts RAF loops when inactive or minimized /li li strong Injected Delta Metrics /strong Exposes frame duration code delta /code for frame-rate-independent physics /li /ul",
+    "icon": "material-symbols-light:speed"
+  },
+  {
+    "id": "lab-mod-throttle",
+    "route": "/labs/modifiers/throttle",
+    "path": "/_pages/labs/modifiers/throttle.html",
+    "title": "_throttle",
+    "category": "Labs",
+    "keywords": [
+      "_throttle"
+    ],
+    "content": "_throttle Throttles event execution so that the expression handler fires at most once per specified millisecond window guaranteeing predictable 60fps sampling during continuous scroll or resize events. div data-on-scroll_throttle.250 trackScroll /div _throttle. ms p class opacity-80 leading-relaxed Located in code src/modules/modifiers/throttle.ts /code throttling limits the rate of high-frequency DOM event firing without completely stalling live updates. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Steady Execution Cadence /strong Emits events on regular intervals during uninterrupted user action /li li strong Scroll amp Resize Optimization /strong Prevents main thread lockup during scroll-heavy page layouts /li /ul",
+    "icon": "material-symbols-light:timer"
+  },
+  {
+    "id": "lab-sprite-animate",
+    "route": "/labs/sprites/animate",
+    "path": "/_pages/labs/sprites/animate.html",
+    "title": "$animate",
+    "category": "Labs",
+    "keywords": [
+      "animate",
+      "keyframes",
+      "options",
+      "flip",
+      "element"
+    ],
+    "content": "animate Web Animations API wrapper and FLIP transition coordinator animate flip for 60fps hardware-accelerated element morphing and layout settling. animate el transform scale 1 transform scale 1.2 duration 300 animate el keyframes options flip element fn p class opacity-80 leading-relaxed Registered in code src/modules/sprites/animate.ts /code with core FLIP coordination in code src/engine/animation.ts /code the animate sprite orchestrates smooth physical layout settling without layout reflow thrashing. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Hardware Accelerated /strong Driven directly by the browser compositor thread /li li strong FLIP Layout Geometry /strong Seamlessly animates items entering leaving and swapping positions in lists via code flip /code /li /ul",
+    "icon": "material-symbols-light:animation"
+  },
+  {
+    "id": "lab-sprite-periodicsync",
+    "route": "/labs/sprites/periodicsync",
+    "path": "/_pages/labs/sprites/periodicsync.html",
+    "title": "$periodicSync",
+    "category": "Labs",
+    "keywords": [
+      "periodicsync",
+      "register",
+      "tag",
+      "options"
+    ],
+    "content": "periodicSync Periodic Background Sync API client registering recurring background tasks with the Service Worker to fetch fresh content periodically even when the app is closed. periodicSync.register update-news minInterval 24 60 60 1000 periodicSync.register tag options p class opacity-80 leading-relaxed Located in code src/modules/sprites/periodicSync.ts /code this sprite provides recurring background synchronization for news feeds telemetry updates and local database syncs. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Periodic Execution /strong Keeps cached data fresh before the user opens the application /li li strong Native OS Management /strong Browser schedules sync according to device battery and network state /li /ul",
+    "icon": "material-symbols-light:update"
+  },
+  {
+    "id": "lab-sprite-svg",
+    "route": "/labs/sprites/svg",
+    "path": "/_pages/labs/sprites/svg.html",
+    "title": "$svg",
+    "category": "Labs",
+    "keywords": [
+      "svg",
+      "bezier",
+      "from",
+      "options",
+      "smooth",
+      "points"
+    ],
+    "content": "svg Reactive SVG path and bezier spline generator svg.bezier svg.smooth svg.orthogonal designed for dynamic wire routing in node graphs and canvas flows. path data-bind-d svg.bezier sourceNode targetNode / svg.bezier from to options svg.smooth points p class opacity-80 leading-relaxed Located in code src/modules/sprites/svg.ts /code the svg sprite eliminates imperative canvas drawing code by compiling SVG bezier curves directly into reactive path strings. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong 60fps Wire Re-routing /strong Path calculations run in sub-millisecond time on coordinate updates /li li strong Flow Integration /strong Pairs natively with code data-flow /code nodes /li /ul",
+    "icon": "material-symbols-light:gesture"
+  }
+]

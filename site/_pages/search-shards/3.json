@@ -1,0 +1,127 @@
+[
+  {
+    "id": "home",
+    "route": "/",
+    "path": "/_pages/home.html",
+    "title": "Home",
+    "category": "General",
+    "keywords": [],
+    "content": "Home Nexus-UX Engine 2.0 Public Beta Ready Modern HTML-First Reactive Architecture A high-performance reactive user experience framework coordinating declarative HTML directives with web-native browser APIs. Built for Zero-Copy Zero-Serialization ZCZS execution directly across the DOM namespace. Explore Interactive Labs Visual Node Graph Specification Docs Live Runtime Engine 60 FPS Reactive Signal Binding Count 1 Count -1 Zero serialization Zero-copy live proxy heap Core Architectural Pillars Engineered from the ground up for maximum browser performance zero memory churn and pure HTML-first expressiveness. Declarative HTML-First DOM-as-State composition without imperative scripting Application logic state bindings dynamic templates and animations are expressed directly in HTML markup. No build step required to run templates parse natively in the browser s DOM parser. Implementation Features 30 Native Attribute Directives data-signal data-bind data-for data-if data-show data-on data-flow and more. Constructable CSSStyleSheets Direct CSSOM integration via document.adoptedStyleSheets and data-stylesheet . Single Observer Context Exactly one universal MutationObserver orchestrating all DOM insertions diffing and deterministic teardowns. Zero-Copy Zero-Serialization Strictly eliminates JSON serialization and memory copy overhead State is held in shared memory references and typed heaps. Web Workers and main thread communicate via SharedArrayBuffer completely avoiding expensive JS",
+    "icon": "material-symbols-light:home-outline"
+  },
+  {
+    "id": "_canvas",
+    "route": "/builder/_canvas",
+    "path": "/_pages/builder/_canvas.html",
+    "title": "_canvas",
+    "category": "General",
+    "keywords": [],
+    "content": "Left Center Right Justify Size 12px 14px 16px 18px 20px 24px 32px 48px Add Component / Section After Inside Hero Section Features Grid Pricing Table CTA Banner",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "_right-panel",
+    "route": "/builder/_right-panel",
+    "path": "/_pages/builder/_right-panel.html",
+    "title": "_right-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "_top-panel",
+    "route": "/builder/_top-panel",
+    "path": "/_pages/builder/_top-panel.html",
+    "title": "_top-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Nexus Builder Desktop Tablet 768 Mobile 375 Design Preview 50 75 100 125 Save Save Draft Ctrl S Export HTML Download File Code Editor Templates Clear Canvas",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "landing",
+    "route": "/landing",
+    "path": "/_pages/builder/templates/landing.html",
+    "title": "landing",
+    "category": "General",
+    "keywords": [],
+    "content": "Overview Components Templates Pricing N Nexus Studio Overview Components Templates Pricing Sign In Get Started New DaisyUI 5 Native Components Tokens Next-Generation Visual Website Builder Assemble lightning-fast reactive web interfaces directly in the browser with declarative HTML bindings zero compilation lag and deep component inspection. Start Building Free Explore Templates Components 87 DaisyUI 5 Web Native Themes 32 Instant Canvas Sync Overhead 0 kb Zero-Serialization Heap Architecture Engineered for Velocity Everything you need to craft production web applications with zero friction. Dynamic Component Inspectors Click any element heading button or section to instantly inspect and modify variants layouts and responsive breakpoints. Learn More rarr Theme-Adaptive Styling Switch themes live on the canvas. High-contrast dark modes vibrant synthwave palettes and clean business layouts update instantly. Learn More rarr Zero-Serialization Pipeline DOM morphing reconcilers diff elements in-place while keeping user focus and input states completely intact. Learn More rarr N Nexus-UX Studio Copyright copy 2026 - All rights reserved Documentation Components Changelog GitHub",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "labs-attributes",
+    "route": "/labs/attributes",
+    "path": "/_pages/labs/attributes.html",
+    "title": "Attributes",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Attributes Labs Category 30 Active Directives Reactive Attributes Directives Declarative HTML directives governing state initialization two-way bindings physical and visual rendering keyed loops and lifecycle hooks. data-signal State Declares local or global fine-grained reactive state blocks directly in the DOM namespace. Open Lab rarr data-bind Binding Two-way native browser API binding and HTML attribute synchronization. Open Lab rarr data-for Loop Zero-allocation keyed list rendering with in-place DOM morphing. Open Lab rarr data-if Conditional Physical conditional DOM mounting with anchor comments and deterministic teardown. Open Lab rarr data-show Toggle Visual visibility toggle via display styles without structural DOM teardown. Open Lab rarr data-on Events Declarative event handling with modifiers evt and pipeline execution. Open Lab rarr data-class Styling Reconciles dynamic Tailwind / DaisyUI class lists or boolean toggles. Open Lab rarr data-style Styling Reconciles dynamic inline styles with unit formatting and camelCase support. Open Lab rarr data-effect Reactivity Continuous reactive side-effect runner tracking dependencies automatically. Open Lab rarr data-computed Computed Memoized derived getters caching reactive computations with lazy evaluation. Open Lab rarr data-drag Interaction Zero-configuration drag-and-drop list reordering with FLIP animations. Open Lab rarr data-flow Canvas Interactive node-graph canvas supporting zoom pan and SVG edge connections. O",
+    "icon": "material-symbols-light:code"
+  },
+  {
+    "id": "lab-attr-on",
+    "route": "/labs/attributes/on",
+    "path": "/_pages/labs/attributes/on.html",
+    "title": "data-on",
+    "category": "Labs",
+    "keywords": [
+      "data-on-",
+      "event",
+      "expr",
+      "_prevent",
+      "_stop",
+      "_debounce",
+      "_throttle",
+      "_outside",
+      "_window",
+      "_document"
+    ],
+    "content": "data-on Attaches reactive event listeners with pipeline modifiers code _prevent /code code _stop /code code _debounce.300 /code code _outside /code injecting code evt /code code detail /code and code newValue /code directly into evaluation scope. button data-on-click count Increment /button n input data-on-input_debounce.250 searchQuery newValue / n div data-on-click_outside menuOpen false /div data-on- event expr _prevent _stop _debounce. ms _throttle. ms _outside _window _document p class opacity-80 leading-relaxed Located in code src/modules/attributes/on.ts /code the on directive delivers Alpine-grade ergonomics with Web-Native performance. It avoids duplicate handler registrations across attributes automatically disposes listeners when elements leave the DOM and exposes native event context seamlessly. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Injected Context Variables /strong Access code evt /code native Event code detail /code CustomEvent data and code newValue /code /li li strong Pipeline Modifiers /strong Chain code _debounce.300 /code code _prevent /code and code _outside /code directly in attribute names /li li strong Window amp Document Binders /strong Listen globally using code data-on-keydown_window /code or code data-on-scroll_document /code /li li strong Zero Memory Churn /strong Listeners are registered directly on native EventTargets and safely unbound on element destruction /li /ul",
+    "icon": "material-symbols-light:touch-app"
+  },
+  {
+    "id": "lab-attr-theme",
+    "route": "/labs/attributes/theme",
+    "path": "/_pages/labs/attributes/theme.html",
+    "title": "data-theme",
+    "category": "Labs",
+    "keywords": [
+      "data-theme",
+      "theme",
+      "switchtheme",
+      "settheme",
+      "name"
+    ],
+    "content": "data-theme Declarative DaisyUI and Tailwind CSS theme orchestration with auto-detection of system dark mode local storage persistence and injected helpers code theme /code code switchTheme /code . html data-theme default dark /html n button data-on-click switchTheme span data-bind themeIcon /span /button data-theme ... theme switchTheme setTheme name p class opacity-80 leading-relaxed Located in code src/modules/attributes/theme.ts /code the theme directive handles color scheme transitions across light dark and system preference profiles. It manages the DOM code data-theme /code attribute directly without triggering expensive CSS re-parsing. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong 3-State Orchestration /strong Smoothly alternates between Light Dark and System auto-detection /li li strong DaisyUI amp Tailwind Bridge /strong Instantly applies OKLCH color palettes to CSS variables /li li strong Zero-Boilerplate Helpers /strong Injects code theme /code code themeIcon /code and code switchTheme /code into scope /li li strong Automatic Persistence /strong Stores user preferences in code localStorage /code across sessions /li /ul",
+    "icon": "material-symbols-light:dark-mode"
+  },
+  {
+    "id": "lab-mod-debounce",
+    "route": "/labs/modifiers/debounce",
+    "path": "/_pages/labs/modifiers/debounce.html",
+    "title": "_debounce",
+    "category": "Labs",
+    "keywords": [
+      "_debounce"
+    ],
+    "content": "_debounce Pipes an event listener through an auto-clearing timer delaying execution until the specified milliseconds have elapsed since the user last triggered the event. input data-on-input_debounce.300 query newValue / n input data-on-input_debounce.500 searchDatabase / _debounce. ms p class opacity-80 leading-relaxed Located in code src/modules/modifiers/debounce.ts /code this modifier manages timer handles directly on the hosting element. Each incoming event cancels any existing pending timeout and restarts the timer preventing network spam on rapid keystrokes. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Micro-Timer Management /strong Automatically cancels previous timer IDs without memory leaks /li li strong Customizable Latency /strong Specify any millisecond integer suffix e.g. code _debounce.150 /code code _debounce.750 /code /li li strong Injected Values /strong Passes the latest code newValue /code and code evt /code to the deferred handler /li /ul",
+    "icon": "material-symbols-light:hourglass-empty"
+  },
+  {
+    "id": "lab-sprite-animate",
+    "route": "/labs/sprites/animate",
+    "path": "/_pages/labs/sprites/animate.html",
+    "title": "$animate",
+    "category": "Labs",
+    "keywords": [
+      "animate",
+      "keyframes",
+      "options",
+      "flip",
+      "element"
+    ],
+    "content": "animate Web Animations API wrapper and FLIP transition coordinator animate flip for 60fps hardware-accelerated element morphing and layout settling. animate el transform scale 1 transform scale 1.2 duration 300 animate el keyframes options flip element fn p class opacity-80 leading-relaxed Registered in code src/modules/sprites/animate.ts /code with core FLIP coordination in code src/engine/animation.ts /code the animate sprite orchestrates smooth physical layout settling without layout reflow thrashing. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Hardware Accelerated /strong Driven directly by the browser compositor thread /li li strong FLIP Layout Geometry /strong Seamlessly animates items entering leaving and swapping positions in lists via code flip /code /li /ul",
+    "icon": "material-symbols-light:animation"
+  }
+]

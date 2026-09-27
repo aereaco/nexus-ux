@@ -1,0 +1,414 @@
+[
+  {
+    "id": "home",
+    "route": "/",
+    "path": "/_pages/home.html",
+    "title": "Home",
+    "category": "General",
+    "keywords": [],
+    "content": "Home Nexus-UX Engine 2.0 Public Beta Ready Modern HTML-First Reactive Architecture A high-performance reactive user experience framework coordinating declarative HTML directives with web-native browser APIs. Built for Zero-Copy Zero-Serialization ZCZS execution directly across the DOM namespace. Explore Interactive Labs Visual Node Graph Specification Docs Live Runtime Engine 60 FPS Reactive Signal Binding Count 1 Count -1 Zero serialization Zero-copy live proxy heap Core Architectural Pillars Engineered from the ground up for maximum browser performance zero memory churn and pure HTML-first expressiveness. Declarative HTML-First DOM-as-State composition without imperative scripting Application logic state bindings dynamic templates and animations are expressed directly in HTML markup. No build step required to run templates parse natively in the browser s DOM parser. Implementation Features 30 Native Attribute Directives data-signal data-bind data-for data-if data-show data-on data-flow and more. Constructable CSSStyleSheets Direct CSSOM integration via document.adoptedStyleSheets and data-stylesheet . Single Observer Context Exactly one universal MutationObserver orchestrating all DOM insertions diffing and deterministic teardowns. Zero-Copy Zero-Serialization Strictly eliminates JSON serialization and memory copy overhead State is held in shared memory references and typed heaps. Web Workers and main thread communicate via SharedArrayBuffer completely avoiding expensive JS",
+    "icon": "material-symbols-light:home-outline"
+  },
+  {
+    "id": "_bottom-panel",
+    "route": "/builder/_bottom-panel",
+    "path": "/_pages/builder/_bottom-panel.html",
+    "title": "_bottom-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Select an element to view DOM hierarchy / Code editor Html Css -- / Html Css Run JS on edit Apply 1 2 3 4 5 6 7 8 9 10 11 12 13 14 1 2 3 4 5 6 7 8 9 10",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "_canvas",
+    "route": "/builder/_canvas",
+    "path": "/_pages/builder/_canvas.html",
+    "title": "_canvas",
+    "category": "General",
+    "keywords": [],
+    "content": "Left Center Right Justify Size 12px 14px 16px 18px 20px 24px 32px 48px Add Component / Section After Inside Hero Section Features Grid Pricing Table CTA Banner",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "_left-panel",
+    "route": "/builder/_left-panel",
+    "path": "/_pages/builder/_left-panel.html",
+    "title": "_left-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "1. Files Add Landing Page Active Blank Canvas Empty Scratchpad 2. Navigation Page Sections Click refresh to inspect DOM hierarchy No landmark sections detected. 3. Components Blocks Sections All Actions Display Nav Feedback Inputs Layout Actions Button btn btn-primary Join Buttons Segmented group Dropdown Menu flyout Modal Dialog popup Swap Rotate state icon Theme Switch theme-controller Data Display Card card card-body Collapse collapse-arrow Alert alert-info/warning Badge Status pill Avatar Rounded profile Stats KPI card Table table-zebra Chat Bubble chat-start/end Countdown countdown Diff Side-by-side Timeline Step sequence Kbd Key chip Navigation Navbar Responsive header Tabs tabs-bordered Breadcrumbs Path navigation Menu Sidebar menu list Pagination Numbered pager Steps Multi-step flow Feedback Loading Spinner / dots Progress Horizontal bar Radial Gauge Circular progress Skeleton Shimmer placeholder Tooltip Hover hint Toast Corner popup Data Inputs Input Field input-bordered Select select-bordered Textarea textarea-bordered Checkbox checkbox-primary Radio radio-primary Toggle toggle-primary Range range-primary Rating mask-star File Input file-input-bordered Fieldset fieldset-legend Input Group join input btn Button Group join-item btn Contact Form Container form with inputs and submit Layout Hero Banner hero hero-content Divider divider Indicator Corner badge Footer Multi-column Stack Layered pile Mask mask-squircle Container container mx-auto Header Sticky header Drawer",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "_modals",
+    "route": "/builder/_modals",
+    "path": "/_pages/builder/_modals.html",
+    "title": "_modals",
+    "category": "General",
+    "keywords": [],
+    "content": "Export Standalone HTML Production-ready self-contained HTML with Tailwind CSS DaisyUI and Nexus-UX scripts. Zero build step required. Works in any standard web server or browser. Download .html Choose Starter Template Select a pre-designed layout or start from a blank canvas. Blank Canvas An empty canvas with a drop zone. Perfect for building custom layouts from scratch. Select Modern Landing Page Complete high-converting page with Navbar Hero CTA Stats Feature cards and Footer. Select",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "_right-panel",
+    "route": "/builder/_right-panel",
+    "path": "/_pages/builder/_right-panel.html",
+    "title": "_right-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "_top-panel",
+    "route": "/builder/_top-panel",
+    "path": "/_pages/builder/_top-panel.html",
+    "title": "_top-panel",
+    "category": "General",
+    "keywords": [],
+    "content": "Nexus Builder Desktop Tablet 768 Mobile 375 Design Preview 50 75 100 125 Save Save Draft Ctrl S Export HTML Download File Code Editor Templates Clear Canvas",
+    "icon": "material-symbols-light:description-outline"
+  },
+  {
+    "id": "doc-changelog",
+    "route": "/docs/changelog",
+    "path": "/_pages/docs/changelog.md",
+    "title": "Changelog",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-changelog title Changelog route /docs/changelog icon material-symbols-light history order 3 category Docs --- Nexus-UX Changelog Codebase Alignment Analysis Latest Alignment Date 2026-09-13 --- Recent Major Release 2026-09-13 Native API Reflect Proxy Engine Scope Resolution Unification and ZCZS Storage Compliance Native Web API Reflect Proxy Engine src/engine/reflect.ts - Authoritative Reflect Factory createReflectProxy Implemented authoritative factory wrapping native browser APIs window localStorage sessionStorage document screen navigator fetch indexedDB in Proxy/Reflect traps with zero regex scanning overhead and zero intermediate serialization. Proxies are cached via WeakMap for zero-allocation reuse. - Dual-Compatibility Web Storage Supports both standard Web API methods getItem setItem removeItem clear key length and direct property reads/writes localStorage.collapsed false with reactive track storage key and trigger storage key hooks and automatic cross-tab synchronization via native storage events. - Callable fetch Proxy Provides a transparent proxy for fetch url options returning native Promise fully supporting .then .catch etc. while ensuring fetch is never shadowed by internal engine utility objects. - Reactive indexedDB Operations Exposes structured store operations createStoreOperations getIndexedDBProxy for zero-overhead persistence without transaction boilerplate. Scope Resolution Unification src/engine/scope.ts src/engine/evaluator.ts - Single Auth",
+    "icon": "material-symbols-light:history"
+  },
+  {
+    "id": "doc-license",
+    "route": "/docs/license",
+    "path": "/_pages/docs/license.md",
+    "title": "License",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-license title License route /docs/license icon material-symbols-light verified-user-outline order 5 category Docs --- MIT License Copyright c 2026 Nexus-UX Authors Permission is hereby granted free of charge to any person obtaining a copy of this software and associated documentation files the Software to deal in the Software without restriction including without limitation the rights to use copy modify merge publish distribute sublicense and/or sell copies of the Software and to permit persons to whom the Software is furnished to do so subject to the following conditions The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND EXPRESS OR IMPLIED INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM DAMAGES OR OTHER LIABILITY WHETHER IN AN ACTION OF CONTRACT TORT OR OTHERWISE ARISING FROM OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
+    "icon": "material-symbols-light:verified-user-outline"
+  },
+  {
+    "id": "doc-readme",
+    "route": "/docs/readme",
+    "path": "/_pages/docs/readme.md",
+    "title": "README",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-readme title README route /docs/readme icon material-symbols-light info-outline order 4 category Docs --- Nexus-UX Signal-Driven Universal Reactivity. High-Fidelity Tailwind JIT. Omni-State DOM-as-State Framework. Nexus-UX is a reactive framework designed for developers who demand absolute performance granular control and a zero-build experience. It collapses the traditional frontend stack by treating the DOM as a queryable reactive state graph while achieving 100 functional parity with Tailwind v4 . --- The Five Pillars 1. Omni-State DOM-as-State We assert that the DOM _is_ the primary state graph. No phantom Virtual DOM. No reconciliation tax. The HTML attributes are the declaration source while the binary signal heap is the runtime truth. 2. Native JIT Engine Tailwind v4 Nexus-UX achieves 1 1 bit-for-bit parity with the official Tailwind v4 CDN. It compiles utility classes into a high-performance Unified Adopted StyleSheets Registry in real-time. 3. Zero-DOM Pollution Using CSSStyleSheet.replaceSync Nexus-UX eliminates all legacy and tag pollution. Styles automatically penetrate Shadow DOM boundaries without duplicative parsing. 4. ZCZS Zero-Copy Zero-Serialization A value-pooling reactive core designed for 120fps animations. Data flows from kernel to DOM via binary signal heaps bypassing JSON serialization. 5. Agentic Readiness Built for Machine Reasoning Efficiency . Built-in Resolution Beacons report missing selectors and failed expressions back to Agentic Ho",
+    "icon": "material-symbols-light:info-outline"
+  },
+  {
+    "id": "doc-reference",
+    "route": "/docs/reference",
+    "path": "/_pages/docs/reference.md",
+    "title": "Technical Reference",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-reference title Technical Reference route /docs/reference icon material-symbols-light menu-book-outline order 1 category Docs --- Nexus-UX The Exhaustive Technical Reference The Practical Manual From Syntax to Practice Theory is knowing how it works. Practice is making it work. This document bridges both. This guide is the definitive practical reference for developers and AI agents building with Nexus-UX. It is the core Toolkit for rapid development focused on outcomes and practical implementation patterns. Built on the Omni-State DOM-as-State philosophy it demonstrates how to use Nexus-UX as the Functional Soul for modern web components. IMPORTANT Contributing Compliance All development on Nexus-UX by human contributors and AI agents alike must adhere to the workspace directives defined in .agent/rules/directives.md . This includes the ZCZS mandate ownership tracking patterns the engine-vs-module architectural contract MutationObserver policy DDD workflow and granular version control. See Spec 1B nexus-ux-spec.md chapter-1b-architecture-contract--development-compliance for the full contract. --- Table of Contents 1. Preface Quick Start preface-quick-start 2. Chapter 1 The Language NEG Grammar Fundamentals chapter-1-the-language-neg-grammar--fundamentals 3. Chapter 2 Essential Directives State Binding chapter-2-essential-directives-state--binding 4. Chapter 3 Control Flow Rendering chapter-3-control-flow--rendering 5. Chapter 4 Events Behavioral Pipelines chapter-4",
+    "icon": "material-symbols-light:menu-book-outline"
+  },
+  {
+    "id": "doc-spec",
+    "route": "/docs/spec",
+    "path": "/_pages/docs/spec.md",
+    "title": "Architecture Spec",
+    "category": "Docs",
+    "keywords": [],
+    "content": "--- id doc-spec title Architecture Spec route /docs/spec icon material-symbols-light architecture order 2 category Docs --- Nexus-UX The Definitive Technical Specification Signal-Driven Universal Reactivity The Unified Signal Graph The best state management is Universal Reactivity. --- Table of Contents 1. Chapter 1 Philosophy Vision chapter-1-philosophy--vision 2. Chapter 2 The Language NEG Grammar Selectors chapter-2-the-language-neg-grammar--selectors 3. Chapter 3 Unified Architecture ESSL chapter-3-unified-architecture--essl 4. Chapter 4 Systemic Coordination The Handshake Logic chapter-4-systemic-coordination-the-handshake-logic 5. Chapter 5 The Engine Mechanics The Brain chapter-5-the-engine-mechanics-the-brain 6. Chapter 6 Security Persistence chapter-6-security--persistence 7. Chapter 7 Project Anatomy Ecosystem chapter-7-project-anatomy--ecosystem 8. Chapter 8 AI Strategy Agentic Support chapter-8-ai-strategy--agentic-support 9. Chapter 9 Validation Migration Real-World Proof chapter-9-validation-migration--real-world-proof 10. Chapter 10 Community Sponsorship chapter-10-community--sponsorship --- Chapter 1 Philosophy Vision Nexus-UX is more than a library it is a strategic response to the excessive abstraction of the modern web. This chapter outlines the philosophy of the Omni-State DOM-as-State and our vision for an AI-native web development experience. 1.1. The Call of the Nexus Reclaiming the Web s Soul The web is evolving. The era of monolithic JavaScript-heavy ",
+    "icon": "material-symbols-light:architecture"
+  },
+  {
+    "id": "labs-modifiers",
+    "route": "/labs/modifiers",
+    "path": "/_pages/labs/modifiers.html",
+    "title": "Modifiers",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Modifiers Labs Category 15 Event Modifiers Event Modifiers Filters Pipeline event modifiers that attach directly to event directives e.g. data-on-click_outside or input_debounce.250 to intercept throttle filter and coordinate interactions. _debounce Timing Delays execution until specified milliseconds have elapsed since the last invocation. Open Lab rarr _delay Timing Delays handler execution by a fixed millisecond timeout before firing. Open Lab rarr _document Target Attaches event listener to document root rather than the local HTMLElement. Open Lab rarr _drag Pointer Injects delta movement coordinates drag.dx drag.dy into pointer handlers. Open Lab rarr _hold Gesture Fires only when user presses and holds the pointer for the specified millisecond duration. Open Lab rarr _keys Keyboard Filters keyboard events by key code or combination enter escape space ctrl shift . Open Lab rarr _morph Morph Morphs return string from evaluation directly into the element using morphDOM diffing. Open Lab rarr _once Lifecycle Executes event listener exactly once automatically unbinding itself afterwards. Open Lab rarr _outside Outside Fires handler only when pointer click or tap occurs outside the element boundary bounds. Open Lab rarr _prevent Default Invokes event.preventDefault to halt native browser default submission and navigation. Open Lab rarr _self Target Executes handler only if event.target is the element itself ignoring child bubbled events. Open Lab rarr _stop Propagation Calls ",
+    "icon": "material-symbols-light:remove"
+  },
+  {
+    "id": "lab-attr-component",
+    "route": "/labs/attributes/component",
+    "path": "/_pages/labs/attributes/component.html",
+    "title": "data-component",
+    "category": "Labs",
+    "keywords": [
+      "data-component",
+      "path",
+      "shadowrootmode",
+      "open",
+      "lazy",
+      "true"
+    ],
+    "content": "data-component Dynamically fetches compiles and embeds reusable HTML templates into Light DOM or Shadow DOM with isolated CSS/JS and cacheEngine acceleration. div data-component _components/navbar.html /div n div data-component path _components/card.html shadowrootmode open /div data-component path shadowrootmode open lazy true p class opacity-80 leading-relaxed Located in code src/modules/attributes/component.ts /code components are pure HTML templates. When mounted the runtime fetches the file parses its styles and template body and links it into the parent DOM data stack without framework compilation overhead. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong CacheEngine Integration /strong Fetched templates are cached in memory and IndexedDB for instantaneous reuse /li li strong Light or Shadow DOM /strong Optional code shadowrootmode open /code provides CSS isolation /li li strong Scoped State Inheritance /strong Injected components automatically inherit parent signals via the DOM data stack /li /ul",
+    "icon": "material-symbols-light:extension"
+  },
+  {
+    "id": "lab-attr-on",
+    "route": "/labs/attributes/on",
+    "path": "/_pages/labs/attributes/on.html",
+    "title": "data-on",
+    "category": "Labs",
+    "keywords": [
+      "data-on-",
+      "event",
+      "expr",
+      "_prevent",
+      "_stop",
+      "_debounce",
+      "_throttle",
+      "_outside",
+      "_window",
+      "_document"
+    ],
+    "content": "data-on Attaches reactive event listeners with pipeline modifiers code _prevent /code code _stop /code code _debounce.300 /code code _outside /code injecting code evt /code code detail /code and code newValue /code directly into evaluation scope. button data-on-click count Increment /button n input data-on-input_debounce.250 searchQuery newValue / n div data-on-click_outside menuOpen false /div data-on- event expr _prevent _stop _debounce. ms _throttle. ms _outside _window _document p class opacity-80 leading-relaxed Located in code src/modules/attributes/on.ts /code the on directive delivers Alpine-grade ergonomics with Web-Native performance. It avoids duplicate handler registrations across attributes automatically disposes listeners when elements leave the DOM and exposes native event context seamlessly. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Injected Context Variables /strong Access code evt /code native Event code detail /code CustomEvent data and code newValue /code /li li strong Pipeline Modifiers /strong Chain code _debounce.300 /code code _prevent /code and code _outside /code directly in attribute names /li li strong Window amp Document Binders /strong Listen globally using code data-on-keydown_window /code or code data-on-scroll_document /code /li li strong Zero Memory Churn /strong Listeners are registered directly on native EventTargets and safely unbound on element destruction /li /ul",
+    "icon": "material-symbols-light:touch-app"
+  },
+  {
+    "id": "lab-attr-route",
+    "route": "/labs/attributes/route",
+    "path": "/_pages/labs/attributes/route.html",
+    "title": "data-route",
+    "category": "Labs",
+    "keywords": [
+      "data-route",
+      "path",
+      "data-route-before-enter",
+      "data-route-name"
+    ],
+    "content": "data-route Declaratively registers a route record and component association directly in HTML markup supporting route guards and lifecycle hooks. div data-route /dashboard data-component _pages/dashboard.html /div data-route /path data-route-before-enter data-route-name p class opacity-80 leading-relaxed Located in code src/modules/attributes/route.ts /code route directives register navigation paths directly in HTML templates. When parsed they register into code router.routes /code and disconnect automatically if the defining element is detached. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Declarative Markup /strong Define routes directly in the DOM alongside components /li li strong Navigation Guards /strong Hook code data-route-before-enter /code into auth and role checks /li li strong Dynamic Parameters /strong Seamlessly parses named tokens like code id /code /li /ul",
+    "icon": "material-symbols-light:signpost"
+  },
+  {
+    "id": "lab-attr-router",
+    "route": "/labs/attributes/router",
+    "path": "/_pages/labs/attributes/router.html",
+    "title": "data-router",
+    "category": "Labs",
+    "keywords": [
+      "data-router",
+      "router",
+      "pages",
+      "createpagetab",
+      "path"
+    ],
+    "content": "data-router Single Page Application SPA routing engine managing route matching browser history pushState tab sessions and published code router /code global signals. div data-router mode history root /_pages /div data-router router.pages router.createPageTab path p class opacity-80 leading-relaxed Located in code src/modules/attributes/router.ts /code this module provides browser history orchestration. It intercepts anchor clicks via code linkRewriter /code handles browser back/forward buttons via code history /code listener and maintains multi-tab sessions in live signals. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Multi-Tab Workspace /strong Supports desktop-grade tab bars via code router.pageTabs /code /li li strong Instant Navigation /strong Zero full-page reloads switches views via cached DOM morphing /li li strong Global Reactive State /strong Accessible in any expression via code router /code /li /ul",
+    "icon": "material-symbols-light:alt-route"
+  },
+  {
+    "id": "lab-mod-debounce",
+    "route": "/labs/modifiers/debounce",
+    "path": "/_pages/labs/modifiers/debounce.html",
+    "title": "_debounce",
+    "category": "Labs",
+    "keywords": [
+      "_debounce"
+    ],
+    "content": "_debounce Pipes an event listener through an auto-clearing timer delaying execution until the specified milliseconds have elapsed since the user last triggered the event. input data-on-input_debounce.300 query newValue / n input data-on-input_debounce.500 searchDatabase / _debounce. ms p class opacity-80 leading-relaxed Located in code src/modules/modifiers/debounce.ts /code this modifier manages timer handles directly on the hosting element. Each incoming event cancels any existing pending timeout and restarts the timer preventing network spam on rapid keystrokes. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Micro-Timer Management /strong Automatically cancels previous timer IDs without memory leaks /li li strong Customizable Latency /strong Specify any millisecond integer suffix e.g. code _debounce.150 /code code _debounce.750 /code /li li strong Injected Values /strong Passes the latest code newValue /code and code evt /code to the deferred handler /li /ul",
+    "icon": "material-symbols-light:hourglass-empty"
+  },
+  {
+    "id": "lab-mod-delay",
+    "route": "/labs/modifiers/delay",
+    "path": "/_pages/labs/modifiers/delay.html",
+    "title": "_delay",
+    "category": "Labs",
+    "keywords": [
+      "_delay"
+    ],
+    "content": "_delay Pauses event execution by a specified millisecond duration before triggering the expression callback ideal for sequenced UI animations and delayed confirmations. button data-on-click_delay.500 completeAction Delayed Action /button _delay. ms p class opacity-80 leading-relaxed Located in code src/modules/modifiers/delay.ts /code this modifier delays handler execution without preventing default browser interactions unless combined with code _prevent /code . /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Micro-Sequencing /strong Delay feedback sounds toast dismissals and page transition triggers /li li strong Chainable /strong Pairs with code _prevent /code or code _stop /code /li /ul",
+    "icon": "material-symbols-light:schedule"
+  },
+  {
+    "id": "lab-mod-document",
+    "route": "/labs/modifiers/document",
+    "path": "/_pages/labs/modifiers/document.html",
+    "title": "_document",
+    "category": "Labs",
+    "keywords": [
+      "_document"
+    ],
+    "content": "_document Redirects the event listener from the host element to the global document target enabling document-wide event listening with automatic element lifecycle cleanup. div data-on-click_document dismissAll /div n div data-on-visibilitychange_document checkStatus /div _document p class opacity-80 leading-relaxed Located in code src/modules/modifiers/document.ts /code this modifier allows elements to listen for document-level events without manually managing code document.addEventListener /code and code removeEventListener /code pairs. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Global Document Interception /strong Catch clicks visibility changes and pointer events anywhere in the page /li li strong Zero Memory Leaks /strong The engine automatically removes the document listener when the element is destroyed /li /ul",
+    "icon": "material-symbols-light:description"
+  },
+  {
+    "id": "lab-mod-drag",
+    "route": "/labs/modifiers/drag",
+    "path": "/_pages/labs/modifiers/drag.html",
+    "title": "_drag",
+    "category": "Labs",
+    "keywords": [
+      "_drag"
+    ],
+    "content": "_drag Enriches pointer handlers with real-time drag delta coordinates code drag.dx /code code drag.dy /code code drag.x /code code drag.y /code during pointermove. div data-on-pointermove_drag posX drag.dx posY drag.dy /div _drag p class opacity-80 leading-relaxed Located in code src/modules/modifiers/drag.ts /code this event modifier tracks mouse and touch movement deltas across pointer frames. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Injected Deltas /strong Provides code drag.dx /code and code drag.dy /code for smooth coordinate manipulation /li li strong Pointer Capture /strong Keeps tracking movement even when pointer leaves element bounds /li /ul",
+    "icon": "material-symbols-light:drag-click"
+  },
+  {
+    "id": "lab-mod-hold",
+    "route": "/labs/modifiers/hold",
+    "path": "/_pages/labs/modifiers/hold.html",
+    "title": "_hold",
+    "category": "Labs",
+    "keywords": [
+      "_hold"
+    ],
+    "content": "_hold Requires continuous pointer or key depression for the specified millisecond duration before triggering the event handler press-and-hold confirmation . button data-on-pointerdown_hold.800 confirmErase Hold to Erase 800ms /button _hold. ms p class opacity-80 leading-relaxed Located in code src/modules/modifiers/hold.ts /code this modifier manages pointer down and release listeners. If the user lifts or moves pointer beyond threshold before duration expires the timer cancels automatically. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Destructive Confirmations /strong Prevent accidental clicks on delete reboot or wipe actions /li li strong Auto-Cancel on Early Release /strong Aborts immediately if pointerup occurs prematurely /li /ul",
+    "icon": "material-symbols-light:touch-long"
+  },
+  {
+    "id": "lab-mod-keys",
+    "route": "/labs/modifiers/keys",
+    "path": "/_pages/labs/modifiers/keys.html",
+    "title": "_keys",
+    "category": "Labs",
+    "keywords": [
+      "_enter",
+      "_escape",
+      "_space",
+      "ctrl",
+      "meta",
+      "alt",
+      "shift"
+    ],
+    "content": "_keys Filters keyboard events to specific keystroke matches _enter _escape _space _tab _up _down _delete and modifier key chords _ctrl _alt _shift _meta . input data-on-keydown_enter submit / n div data-on-keydown_escape closeModal /div n input data-on-keydown_ctrl_enter sendDraft / _enter _escape _space ctrl meta alt shift p class opacity-80 leading-relaxed Located in code src/modules/modifiers/keys.ts /code keyboard modifiers compare code e.key /code names case-insensitively and inspect boolean modifier flags without cumbersome switch-case logic in JavaScript. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Keyboard Ergonomics /strong Clean declarative handling for forms and modal dismissals /li li strong Compound Chords /strong Chain code ctrl enter /code or code shift tab /code seamlessly /li /ul",
+    "icon": "material-symbols-light:keyboard"
+  },
+  {
+    "id": "lab-mod-morph",
+    "route": "/labs/modifiers/morph",
+    "path": "/_pages/labs/modifiers/morph.html",
+    "title": "_morph",
+    "category": "Labs",
+    "keywords": [
+      "_morph"
+    ],
+    "content": "_morph Pipes the return value of an event handler into morphDOM diffing and patching the element in-place with user focus preservation. button data-on-click_morph fetchUpdatedCardHtml Refresh Card /button _morph p class opacity-80 leading-relaxed Located in code src/modules/modifiers/morph.ts /code the morph modifier brings server-driven or function-driven HTML patches directly into the element without replacing the element wrapper itself. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Focus Preservation /strong Keeps active input focus and caret positions intact during morphing /li li strong In-Place Diffs /strong Mutates only the exact DOM attributes and child nodes that changed /li /ul",
+    "icon": "material-symbols-light:transform"
+  },
+  {
+    "id": "lab-mod-once",
+    "route": "/labs/modifiers/once",
+    "path": "/_pages/labs/modifiers/once.html",
+    "title": "_once",
+    "category": "Labs",
+    "keywords": [
+      "_once"
+    ],
+    "content": "_once Ensures the event listener evaluates exactly one time automatically removing itself from the element immediately following its first invocation. button data-on-click_once initializeEngine Initialize Once /button _once p class opacity-80 leading-relaxed Located in code src/modules/modifiers/once.ts /code the once modifier is ideal for one-time initialization triggers tutorial progression steps and non-repeatable state transitions. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Self-Disposing /strong Automatically calls removeEventListener after initial invocation /li li strong Clean Signal Transitions /strong Eliminates redundant guard flags in application code /li /ul",
+    "icon": "material-symbols-light:looks-one"
+  },
+  {
+    "id": "lab-mod-outside",
+    "route": "/labs/modifiers/outside",
+    "path": "/_pages/labs/modifiers/outside.html",
+    "title": "_outside",
+    "category": "Labs",
+    "keywords": [
+      "_outside"
+    ],
+    "content": "_outside Listens for clicks or pointerdown events occurring strictly outside the host element boundary providing declarative outside-click dismissal for dropdowns popovers and modals. div data-on-click_outside isOpen false /div _outside p class opacity-80 leading-relaxed Located in code src/modules/modifiers/outside.ts /code this modifier intercepts document clicks and uses code el.contains e.target /code to determine spatial boundary intersection. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Zero-Boilerplate Modals /strong Dismiss floating menus without global document listeners /li li strong Shadow DOM Aware /strong Uses composedPath to support web components and slotted elements /li /ul",
+    "icon": "material-symbols-light:tab-close"
+  },
+  {
+    "id": "lab-mod-prevent",
+    "route": "/labs/modifiers/prevent",
+    "path": "/_pages/labs/modifiers/prevent.html",
+    "title": "_prevent",
+    "category": "Labs",
+    "keywords": [
+      "_prevent"
+    ],
+    "content": "_prevent Automatically calls code event.preventDefault /code prior to evaluating the expression preventing browser default behaviors like form submissions or link navigation. form data-on-submit_prevent saveFormData /form n a href /destination data-on-click_prevent customAction Action /a _prevent p class opacity-80 leading-relaxed Located in code src/modules/modifiers/prevent.ts /code the prevent modifier guarantees that form reloads and default URL navigation are halted at the browser event level. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong No Imperative Boilerplate /strong Replaces manual code e.preventDefault /code calls in callbacks /li li strong Composable /strong Pairs seamlessly with other modifiers like code _stop /code and code _debounce /code /li /ul",
+    "icon": "material-symbols-light:block"
+  },
+  {
+    "id": "lab-mod-self",
+    "route": "/labs/modifiers/self",
+    "path": "/_pages/labs/modifiers/self.html",
+    "title": "_self",
+    "category": "Labs",
+    "keywords": [
+      "_self"
+    ],
+    "content": "_self Restricts handler evaluation to instances where code e.target el /code completely ignoring events dispatched from child elements. div data-on-click_self closeBackdrop div class modal-box /div /div _self p class opacity-80 leading-relaxed Located in code src/modules/modifiers/self.ts /code the self modifier compares code event.target /code to the listener element. This provides foolproof modal backdrop dismissal without closing when the modal contents are clicked. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Backdrop Click Safety /strong Click on overlay closes modal clicks inside inner cards do not /li li strong Zero Delegation Pollution /strong Child event bubbling does not trigger parent logic /li /ul",
+    "icon": "material-symbols-light:target"
+  },
+  {
+    "id": "lab-mod-stop",
+    "route": "/labs/modifiers/stop",
+    "path": "/_pages/labs/modifiers/stop.html",
+    "title": "_stop",
+    "category": "Labs",
+    "keywords": [
+      "_stop"
+    ],
+    "content": "_stop Automatically invokes code event.stopPropagation /code prior to evaluation halting the event from bubbling up to ancestor DOM containers. button data-on-click_stop deleteItem Delete /button _stop p class opacity-80 leading-relaxed Located in code src/modules/modifiers/stop.ts /code the stop modifier ensures that clicking on action buttons embedded inside rows or cards does not trigger the parent container s row selection handlers. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Clean Bubbling Control /strong Keeps child action events strictly isolated from parent card clicks /li li strong Declarative Syntax /strong Eliminates inline code e.stopPropagation /code code /li /ul",
+    "icon": "material-symbols-light:pan-tool"
+  },
+  {
+    "id": "lab-mod-throttle",
+    "route": "/labs/modifiers/throttle",
+    "path": "/_pages/labs/modifiers/throttle.html",
+    "title": "_throttle",
+    "category": "Labs",
+    "keywords": [
+      "_throttle"
+    ],
+    "content": "_throttle Throttles event execution so that the expression handler fires at most once per specified millisecond window guaranteeing predictable 60fps sampling during continuous scroll or resize events. div data-on-scroll_throttle.250 trackScroll /div _throttle. ms p class opacity-80 leading-relaxed Located in code src/modules/modifiers/throttle.ts /code throttling limits the rate of high-frequency DOM event firing without completely stalling live updates. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Steady Execution Cadence /strong Emits events on regular intervals during uninterrupted user action /li li strong Scroll amp Resize Optimization /strong Prevents main thread lockup during scroll-heavy page layouts /li /ul",
+    "icon": "material-symbols-light:timer"
+  },
+  {
+    "id": "lab-mod-window",
+    "route": "/labs/modifiers/window",
+    "path": "/_pages/labs/modifiers/window.html",
+    "title": "_window",
+    "category": "Labs",
+    "keywords": [
+      "_window"
+    ],
+    "content": "_window Redirects the event listener from the host element to the global window target supporting global resize keydown and scroll listeners with automatic element teardown. div data-on-resize_window updateDimensions /div n div data-on-keydown_window_escape close /div _window p class opacity-80 leading-relaxed Located in code src/modules/modifiers/window.ts /code this modifier binds directly to code window /code for global browser viewport events while scoping callback execution to the element. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Global Hotkeys /strong Listen for Escape or Ctrl K anywhere on the page /li li strong Automatic Cleanup /strong Never leaves orphan window listeners after unmounting /li /ul",
+    "icon": "material-symbols-light:web-asset"
+  },
+  {
+    "id": "lab-mod-zoom",
+    "route": "/labs/modifiers/zoom",
+    "path": "/_pages/labs/modifiers/zoom.html",
+    "title": "_zoom",
+    "category": "Labs",
+    "keywords": [
+      "_zoom"
+    ],
+    "content": "_zoom Normalizes mouse wheel deltas and pinch gestures into smooth zoom multipliers code zoom.delta /code code zoom.scale /code with boundary clamping. div data-on-wheel_zoom canvasScale Math.min 3 Math.max 0.5 canvasScale zoom.delta /div _zoom p class opacity-80 leading-relaxed Located in code src/modules/modifiers/zoom.ts /code this modifier intercepts wheel events prevents page-level scrolling when zooming canvases and normalizes wheel delta factors across trackpads and mouse wheels. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Normalized Scale Delta /strong Smooth consistent zooming factor regardless of input hardware /li li strong Canvas amp Map Panes /strong Powers interactive node graphs and image viewers /li /ul",
+    "icon": "material-symbols-light:zoom-in"
+  },
+  {
+    "id": "lab-scope-native",
+    "route": "/labs/scopes/native",
+    "path": "/_pages/labs/scopes/native.html",
+    "title": "@native",
+    "category": "Labs",
+    "keywords": [
+      "native"
+    ],
+    "content": "native Scoped environment check detecting whether the application is running inside a native desktop shell Cordova/Capacitor webview or standard browser window. div data-show native Native App Title Bar /div native p class opacity-80 leading-relaxed Located in code src/modules/scopes/native.ts /code this scope rule inspects host bridge objects code window.__TAURI__ /code code window.Capacitor /code code window.electron /code to tailor UI for hybrid native deployments. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Hybrid Shell Awareness /strong Conditionally render custom window drag bars and native file picker buttons /li li strong Adaptive Layouts /strong Adapt safe-area insets when running inside mobile webviews /li /ul",
+    "icon": "material-symbols-light:phone-android"
+  },
+  {
+    "id": "lab-sprite-predictive",
+    "route": "/labs/sprites/predictive",
+    "path": "/_pages/labs/sprites/predictive.html",
+    "title": "$predictive",
+    "category": "Labs",
+    "keywords": [
+      "predictive",
+      "warmup",
+      "url",
+      "metrics"
+    ],
+    "content": "predictive Predictive pre-fetching engine sprite that analyzes cursor velocity link hover vectors and navigation probability to pre-warm templates ahead of click events. predictive.warmup /_pages/dashboard.html predictive.warmup url predictive.metrics p class opacity-80 leading-relaxed Located in code src/modules/sprites/predictive.ts /code this sprite delegates to the core predictive engine in code src/engine/predictive.ts /code to achieve near-zero-millisecond route transitions. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Hover Vector Detection /strong Triggers pre-fetch when cursor vectors aim towards link targets /li li strong Speculative Execution /strong Pre-compiles constructable stylesheets ahead of navigation /li /ul",
+    "icon": "material-symbols-light:psychology"
+  }
+]
