@@ -42,7 +42,7 @@ import {
   DEFAULT_IDB_DATABASE,
   type IndexedDBStoreOperations
 } from './reflect.ts';
-import { getEvalFrame } from './evaluator.ts';
+import { getEvalFrame } from './scheduler.ts';
 
 export {
   createReflectProxy,

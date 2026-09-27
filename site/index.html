@@ -36,7 +36,7 @@
     const frameworkSrc = isLocal
       ? './dist/nexus-ux.js?t=' + Date.now()
       : 'https://cdn.jsdelivr.net/gh/aereaco/nexus-ux@main/dist/nexus-ux.min.js';
-    import(frameworkSrc);
+    import(frameworkSrc).catch(err => console.error('Framework import failed:', err));
   </script>
   <script src="./_assets/js/search-highlight.js"></script>
   <link rel="icon" type="image/svg+xml" href="./_assets/images/emblem.svg">

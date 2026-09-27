@@ -326,6 +326,13 @@ ${suggestion}`);
   init_debug();
 
   // src/engine/scheduler.ts
+  var currentEvalFrame = 0;
+  function getEvalFrame() {
+    return currentEvalFrame;
+  }
+  function advanceEvalFrame() {
+    return ++currentEvalFrame;
+  }
   var PHASE_CURRENT = 0;
   var PHASE_PENDING = 1;
   var CAPTURE_LEN = 2;
@@ -2270,961 +2277,6 @@ ${suggestion}`);
       defaultReflectProxy = proxy;
     }
     return proxy;
-  }
-
-  // src/engine/topology.ts
-  var TIER_CONFIGS = {
-    0: {
-      level: 0,
-      name: "Mono-Thread (Fallback)",
-      threads: 1,
-      usesSharedArrayBuffer: false,
-      usesWorkers: false,
-      predictiveEngineDedicated: false
-    },
-    1: {
-      level: 1,
-      name: "Dual-Thread (Standard)",
-      threads: 2,
-      usesSharedArrayBuffer: ZCZS_SUPPORTED,
-      usesWorkers: true,
-      predictiveEngineDedicated: false
-    },
-    2: {
-      level: 2,
-      name: "Tri-Thread (Performance)",
-      threads: 3,
-      usesSharedArrayBuffer: ZCZS_SUPPORTED,
-      usesWorkers: true,
-      predictiveEngineDedicated: false
-    },
-    3: {
-      level: 3,
-      name: "Quad-Thread (Sovereign)",
-      threads: 4,
-      usesSharedArrayBuffer: ZCZS_SUPPORTED,
-      usesWorkers: true,
-      predictiveEngineDedicated: true
-    }
-  };
-  var EngineTopology = class {
-    currentTier = 0;
-    workers = [];
-    sharedBuffer = null;
-    lagHistory = [];
-    LAG_SAMPLE_SIZE = 60;
-    LAG_THRESHOLD = 0.4;
-    // 40% of frame budget
-    FRAME_BUDGET = 16.67;
-    // 60fps = 16.67ms per frame
-    SCALE_COOLDOWN_MS = 5e3;
-    // ignore lag spikes within 5s of a tier change
-    MIN_SAMPLES_FOR_SCALE_UP = 5;
-    // require history before scaling up
-    autoScaleEnabled = true;
-    monitoringInterval = null;
-    lastScaleTime = 0;
-    constructor() {
-    }
-    start() {
-      this.boot();
-    }
-    /**
-     * Boot probe - determines optimal tier based on environment
-     * Spec 5.2.1: Auto-Adaptation Logic
-     */
-    boot() {
-      const isCrossOriginIsolated = typeof crossOriginIsolated !== "undefined" && crossOriginIsolated;
-      const cores = navigator.hardwareConcurrency || 2;
-      const hasNexusIO = typeof globalThis.__NEXUS_IO__ !== "undefined";
-      if (cores >= 4 && (isCrossOriginIsolated || hasNexusIO)) {
-        this.currentTier = 3;
-      } else if (cores >= 3 && (isCrossOriginIsolated || hasNexusIO)) {
-        this.currentTier = 2;
-      } else if (cores >= 2 && typeof Worker !== "undefined") {
-        this.currentTier = 1;
-      } else {
-        this.currentTier = 0;
-      }
-      console.log(`[Nexus Topology] Boot: Detected ${cores} cores, SAB: ${isCrossOriginIsolated}, NexusIO: ${hasNexusIO}`);
-      console.log(`[Nexus Topology] Selected Tier: ${this.currentTier} (${TIER_CONFIGS[this.currentTier].name})`);
-      this.initializeTier();
-    }
-    /**
-     * Initialize resources for the selected tier
-     */
-    async initializeTier() {
-      const config = TIER_CONFIGS[this.currentTier];
-      if (config.usesSharedArrayBuffer && ZCZS_SUPPORTED) {
-        try {
-          this.sharedBuffer = new SharedArrayBuffer(1024 * 1024);
-          if (heap) {
-            heap.attachSharedBuffer(this.sharedBuffer);
-          }
-          console.log("[Nexus Topology] SharedArrayBuffer initialized");
-        } catch (e) {
-          console.warn("[Nexus Topology] Failed to initialize SAB, falling back:", e);
-          this.currentTier = Math.max(0, this.currentTier - 1);
-          this.initializeTier();
-          return;
-        }
-      }
-      this.terminateWorkers();
-      if (this.autoScaleEnabled && this.currentTier > 0) {
-        this.startMonitoring();
-      } else {
-        this.stopMonitoring();
-      }
-    }
-    /**
-     * Lazily ensure workers are spawned for the current tier.
-     * Defers worker thread creation until runInWorker() or an off-thread task is invoked.
-     */
-    async ensureWorkers() {
-      const config = TIER_CONFIGS[this.currentTier];
-      if (config.usesWorkers && this.currentTier > 0 && this.workers.length === 0) {
-        await this.spawnWorkers(this.currentTier);
-      }
-    }
-    /**
-     * Spawn worker threads based on tier
-     */
-    async spawnWorkers(tier) {
-      const config = TIER_CONFIGS[tier];
-      const workerCount = config.threads - 1;
-      this.terminateWorkers();
-      for (let i = 0; i < workerCount; i++) {
-        try {
-          let scriptSrc = "/dist/logic.worker.js";
-          if (typeof document !== "undefined") {
-            let current = null;
-            if (document.currentScript instanceof HTMLScriptElement) {
-              current = document.currentScript.src;
-            } else {
-              const scriptEl = document.querySelector('script[src*="nexus-ux"]');
-              if (scriptEl instanceof HTMLScriptElement) {
-                current = scriptEl.src;
-              }
-            }
-            if (current) {
-              const isMin = current.includes(".min.js");
-              const base = current.substring(0, current.lastIndexOf("/"));
-              scriptSrc = `${base}/logic.worker.${isMin ? "min.js" : "js"}`;
-            }
-          }
-          const worker = new Worker(scriptSrc, { type: "module" });
-          worker.onmessage = (e) => {
-            const data = e.data;
-            if (data && typeof data === "object" && "id" in data) {
-              const pending = pendingWorkerTasks.get(data.id);
-              if (pending) {
-                pendingWorkerTasks.delete(data.id);
-                if (data.type === "RESULT" || data.type === "FN_RESULT") {
-                  pending.resolve(data.payload);
-                } else if (data.type === "ERROR" || data.type === "FN_ERROR") {
-                  pending.reject(new Error(data.error || "Worker task execution failed"));
-                }
-              }
-            }
-          };
-          if (this.sharedBuffer) {
-            worker.postMessage({ type: "INIT_HEAP", payload: this.sharedBuffer });
-          }
-          this.workers.push(worker);
-        } catch (e) {
-          console.warn(`[Nexus Topology] Failed to spawn worker ${i}:`, e);
-        }
-      }
-      console.log(`[Nexus Topology] Spawned ${this.workers.length} worker(s) for Tier ${tier}`);
-    }
-    /**
-     * Terminate all worker threads
-     */
-    terminateWorkers() {
-      this.workers.forEach((w) => w.terminate());
-      this.workers = [];
-      pendingWorkerTasks.forEach((p) => p.reject(new Error("Worker terminated")));
-      pendingWorkerTasks.clear();
-    }
-    /**
-     * Start lag variance monitoring for auto-scaling
-     * Spec 5.1.2: The Autoscale Mechanism
-     */
-    startMonitoring() {
-      if (this.monitoringInterval)
-        return;
-      this.monitoringInterval = setInterval(() => {
-        this.measureLag();
-      }, 1e3);
-    }
-    stopMonitoring() {
-      if (this.monitoringInterval) {
-        clearInterval(this.monitoringInterval);
-        this.monitoringInterval = null;
-      }
-    }
-    /**
-     * Measure frame lag and trigger scale up/down
-     */
-    measureLag() {
-      const frameStart = performance.now();
-      requestAnimationFrame(() => {
-        const frameEnd = performance.now();
-        const frameTime = frameEnd - frameStart;
-        const lagRatio = frameTime / this.FRAME_BUDGET;
-        this.lagHistory.push(lagRatio);
-        if (this.lagHistory.length > this.LAG_SAMPLE_SIZE) {
-          this.lagHistory.shift();
-        }
-        const avgLag = this.lagHistory.reduce((a, b) => a + b, 0) / this.lagHistory.length;
-        const now = performance.now();
-        if (now - this.lastScaleTime < this.SCALE_COOLDOWN_MS) {
-          return;
-        }
-        if (avgLag > this.LAG_THRESHOLD && this.currentTier < 3 && this.lagHistory.length >= this.MIN_SAMPLES_FOR_SCALE_UP) {
-          this.scaleUp();
-        } else if (avgLag < 0.1 && this.currentTier > 0 && this.lagHistory.length >= this.LAG_SAMPLE_SIZE) {
-          this.scaleDown();
-        }
-      });
-    }
-    /**
-     * Scale up to higher tier
-     */
-    async scaleUp() {
-      const newTier = this.currentTier + 1;
-      console.log(`[Nexus Topology] Scaling UP from Tier ${this.currentTier} to Tier ${newTier}`);
-      this.lagHistory = [];
-      this.lastScaleTime = performance.now();
-      this.currentTier = newTier;
-      await this.initializeTier();
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("nexus:topology-scale", {
-          detail: { tier: this.currentTier, direction: "up" }
-        }));
-      }
-    }
-    /**
-     * Scale down to lower tier
-     */
-    async scaleDown() {
-      const newTier = this.currentTier - 1;
-      if (newTier < 0)
-        return;
-      console.log(`[Nexus Topology] Scaling DOWN from Tier ${this.currentTier} to Tier ${newTier}`);
-      this.lagHistory = [];
-      this.currentTier = newTier;
-      await this.initializeTier();
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("nexus:topology-scale", {
-          detail: { tier: this.currentTier, direction: "down" }
-        }));
-      }
-    }
-    /**
-     * Get current tier configuration
-     */
-    getTier() {
-      return this.currentTier;
-    }
-    /**
-     * Get tier configuration
-     */
-    getTierConfig() {
-      return TIER_CONFIGS[this.currentTier];
-    }
-    /**
-     * Get number of active workers
-     */
-    getActiveWorkers() {
-      return this.workers.length;
-    }
-    /**
-     * Check if SAB is available
-     */
-    isSABAvailable() {
-      return !!this.sharedBuffer;
-    }
-    /**
-     * Get lag variance
-     */
-    getLagVariance() {
-      if (this.lagHistory.length === 0)
-        return 0;
-      return this.lagHistory.reduce((a, b) => a + b, 0) / this.lagHistory.length;
-    }
-    /**
-     * Get SharedArrayBuffer for cross-thread communication
-     */
-    getSharedBuffer() {
-      return this.sharedBuffer;
-    }
-    /**
-     * Enable/disable auto-scaling
-     */
-    setAutoScale(enabled) {
-      this.autoScaleEnabled = enabled;
-      if (enabled && this.currentTier > 0) {
-        this.startMonitoring();
-      } else if (this.monitoringInterval) {
-        clearInterval(this.monitoringInterval);
-        this.monitoringInterval = null;
-      }
-    }
-    /**
-     * Force specific tier (for testing or manual override)
-     */
-    async setTier(tier) {
-      if (tier === this.currentTier)
-        return;
-      console.log(`[Nexus Topology] Manual tier change: ${this.currentTier} -> ${tier}`);
-      this.currentTier = tier;
-      await this.initializeTier();
-    }
-    /**
-     * Get worker for task distribution
-     */
-    getWorker(index) {
-      return this.workers[index % this.workers.length] || null;
-    }
-    /**
-     * Get all active workers
-     */
-    getWorkers() {
-      return this.workers;
-    }
-    /**
-     * Cleanup resources
-     */
-    dispose() {
-      if (this.monitoringInterval) {
-        clearInterval(this.monitoringInterval);
-        this.monitoringInterval = null;
-      }
-      this.terminateWorkers();
-      this.sharedBuffer = null;
-    }
-  };
-  var topology = new EngineTopology();
-  var taskIdCounter = 0;
-  var pendingWorkerTasks = /* @__PURE__ */ new Map();
-  var workerRoundRobin = 0;
-  async function runInWorker(fn, args, transferable) {
-    const callArgs = args ? Array.from(args) : [];
-    await topology.ensureWorkers();
-    const workers = topology.getWorkers();
-    if (workers.length === 0) {
-      return await fn(...callArgs);
-    }
-    const id = ++taskIdCounter;
-    const worker = workers[workerRoundRobin % workers.length];
-    workerRoundRobin = (workerRoundRobin + 1) % workers.length;
-    return new Promise((resolve, reject) => {
-      pendingWorkerTasks.set(id, { resolve, reject });
-      try {
-        worker.postMessage({
-          type: "EXECUTE_FN",
-          id,
-          fn: fn.toString(),
-          args: callArgs
-        }, transferable || []);
-      } catch (err) {
-        pendingWorkerTasks.delete(id);
-        reject(err);
-      }
-    });
-  }
-
-  // src/engine/agent.ts
-  init_consts();
-  var DEFAULT_CONFIG = {
-    enabled: true,
-    captureHeap: true,
-    captureStack: true,
-    maxStackDepth: 20,
-    emitToConsole: true,
-    emitToPlatform: false
-    // Disabled by default - requires platform endpoint
-  };
-  var SelfHealAgent = class {
-    config;
-    beaconHistory = [];
-    maxHistorySize = 10;
-    heapSnapshot = null;
-    isCapturing = false;
-    globalErrorHandler = null;
-    globalRejectionHandler = null;
-    runtime = null;
-    constructor(runtime, config = {}) {
-      if (runtime) {
-        this.runtime = runtime;
-        this.runtime.agent = this;
-      }
-      this.config = { ...DEFAULT_CONFIG, ...config };
-      this.setupGlobalHandlers();
-    }
-    /**
-     * Setup global error handlers for automatic beacon capture
-     */
-    setupGlobalHandlers() {
-      if (typeof window === "undefined")
-        return;
-      this.globalErrorHandler = (error, context) => {
-        this.captureBeacon(error, "error", context);
-      };
-      globalThis.addEventListener("error", this.globalErrorHandler);
-      this.globalRejectionHandler = (reason, promise) => {
-        const error = reason instanceof Error ? reason : new Error(String(reason));
-        this.captureBeacon(error, "unhandledRejection", { promise });
-      };
-      globalThis.addEventListener("unhandledrejection", this.globalRejectionHandler);
-    }
-    /**
-     * Capture a crash beacon with full state snapshot
-     */
-    captureBeacon(error, type, context) {
-      if (this.isCapturing) {
-        return this.createMinimalBeacon(error, type);
-      }
-      this.isCapturing = true;
-      const _startTime = performance.now();
-      try {
-        const beacon = {
-          id: this.generateBeaconId(),
-          timestamp: Date.now(),
-          tier: topology.getTier(),
-          signalHeap: this.config.captureHeap ? this.captureSignalHeap() : this.createEmptyHeapSnapshot(),
-          callStack: this.config.captureStack ? this.captureCallStack(error) : [],
-          navigator: this.captureNavigator(),
-          memory: this.captureMemory()
-        };
-        this.beaconHistory.push(beacon);
-        if (this.beaconHistory.length > this.maxHistorySize) {
-          this.beaconHistory.shift();
-        }
-        if (this.config.emitToConsole) {
-          this.emitToConsole(beacon, type, context);
-        }
-        if (this.config.emitToPlatform && this.config.platformEndpoint) {
-          this.emitToPlatform(beacon);
-        }
-        return beacon;
-      } catch (e) {
-        return this.createMinimalBeacon(error, type);
-      } finally {
-        this.isCapturing = false;
-      }
-    }
-    /**
-     * Create a minimal beacon when full capture fails
-     */
-    createMinimalBeacon(error, type) {
-      return {
-        id: this.generateBeaconId(),
-        timestamp: Date.now(),
-        tier: topology.getTier(),
-        signalHeap: this.createEmptyHeapSnapshot(),
-        callStack: [{ function: error.message, file: error.stack?.split("\n")[0] || "unknown", line: 0, column: 0 }],
-        navigator: this.captureNavigator(),
-        memory: this.captureMemory()
-      };
-    }
-    /**
-     * Capture Signal Heap snapshot (Zero-Copy optimized)
-     */
-    captureSignalHeap() {
-      let numericSignals = null;
-      let booleanSignals = null;
-      let objectSignals = [];
-      let signalIndexMap = {};
-      try {
-        if (this.runtime) {
-          if (heap) {
-            const h = heap;
-            if (h._floatHeap instanceof Float64Array)
-              numericSignals = new Float64Array(h._floatHeap);
-            if (h._intHeap instanceof Int32Array)
-              booleanSignals = new Int32Array(h._intHeap);
-            signalIndexMap = { ...h._indexMap || {} };
-          }
-          const globalState = this.runtime.globalSignals();
-          if (globalState) {
-            objectSignals = [globalState];
-          }
-        }
-      } catch (e) {
-      }
-      const size = (numericSignals?.byteLength || 0) + (booleanSignals?.byteLength || 0);
-      return {
-        numericSignals,
-        booleanSignals,
-        objectSignals,
-        signalIndexMap,
-        size
-      };
-    }
-    /**
-     * Capture call stack from error
-     */
-    captureCallStack(error) {
-      const frames = [];
-      if (!error.stack)
-        return frames;
-      const stackLines = error.stack.split("\n").slice(1);
-      const maxDepth = Math.min(stackLines.length, this.config.maxStackDepth);
-      for (let i = 0; i < maxDepth; i++) {
-        const line = stackLines[i].trim();
-        if (!line)
-          continue;
-        let match = line.match(/at\s+(?:(.+?)\s+)?\(?(.+?):(\d+):(\d+)\)?/);
-        if (match) {
-          frames.push({
-            function: match[1] || "anonymous",
-            file: match[2],
-            line: parseInt(match[3], 10),
-            column: parseInt(match[4], 10)
-          });
-        } else {
-          match = line.match(/(?:(.+?)@)?(.+?):(\d+):(\d+)/);
-          if (match) {
-            frames.push({
-              function: match[1] || "anonymous",
-              file: match[2],
-              line: parseInt(match[3], 10),
-              column: parseInt(match[4], 10)
-            });
-          }
-        }
-      }
-      return frames;
-    }
-    /**
-     * Capture navigator info
-     */
-    captureNavigator() {
-      if (typeof navigator === "undefined") {
-        return { userAgent: "", language: "", hardwareConcurrency: 0 };
-      }
-      return {
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        hardwareConcurrency: navigator.hardwareConcurrency || 0,
-        deviceMemory: navigator.deviceMemory
-      };
-    }
-    /**
-     * Capture memory info if available
-     */
-    captureMemory() {
-      if (typeof performance.memory === "undefined") {
-        return void 0;
-      }
-      const mem = performance.memory;
-      return {
-        usedJSHeapSize: mem.usedJSHeapSize,
-        totalJSHeapSize: mem.totalJSHeapSize,
-        jsHeapSizeLimit: mem.jsHeapSizeLimit
-      };
-    }
-    /**
-     * Create empty heap snapshot
-     */
-    createEmptyHeapSnapshot() {
-      return {
-        numericSignals: null,
-        booleanSignals: null,
-        objectSignals: [],
-        signalIndexMap: {},
-        size: 0
-      };
-    }
-    /**
-     * Generate unique beacon ID
-     */
-    generateBeaconId() {
-      return `beacon_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
-    }
-    /**
-     * Emit beacon to console
-     */
-    emitToConsole(beacon, type, context) {
-      console.error("[Nexus Self-Heal] Crash Beacon captured", {
-        id: beacon.id,
-        type,
-        timestamp: new Date(beacon.timestamp).toISOString(),
-        tier: beacon.tier,
-        memory: beacon.memory,
-        error: beacon.callStack[0]?.function || "Unknown",
-        stack: beacon.callStack
-      });
-      if (context) {
-        console.error("[Nexus Self-Heal] Context:", context);
-      }
-    }
-    /**
-     * Emit beacon to Aerea platform for AI analysis
-     */
-    async emitToPlatform(beacon) {
-      if (!this.config.platformEndpoint)
-        return;
-      try {
-        await fetch(this.config.platformEndpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(beacon)
-        });
-      } catch (e) {
-      }
-    }
-    /**
-     * Get beacon history
-     */
-    getBeaconHistory() {
-      return [...this.beaconHistory];
-    }
-    /**
-     * Get latest beacon
-     */
-    getLatestBeacon() {
-      return this.beaconHistory[this.beaconHistory.length - 1] || null;
-    }
-    /**
-     * Get beacon by ID
-     */
-    getBeaconById(id) {
-      return this.beaconHistory.find((b) => b.id === id) || null;
-    }
-    /**
-     * Clear beacon history
-     */
-    clearHistory() {
-      this.beaconHistory = [];
-    }
-    /**
-     * Update configuration
-     */
-    updateConfig(config) {
-      this.config = { ...this.config, ...config };
-    }
-    /**
-     * Manually trigger a beacon capture
-     */
-    manualCapture(message, context) {
-      const error = new Error(message);
-      return this.captureBeacon(error, "manual", context);
-    }
-    /**
-     * Report a non-breaking resolution failure to the Agentic Host.
-     * This is used for missing selectors or failed expression evaluations
-     * that don't throw but impede framework functionality.
-     */
-    reportResolutionFailure(type, identifier, context) {
-      if (!this.config.enabled)
-        return;
-      const emitBeacon = () => {
-        const errMsg = context?.error ? ` (Error: ${context.error})` : "";
-        console.warn(`[Nexus Resolution Beacon] ${type.toUpperCase()} Failure: "${identifier}"${errMsg}`, {
-          context,
-          timestamp: (/* @__PURE__ */ new Date()).toISOString()
-        });
-        if (this.config.emitToPlatform && this.config.platformEndpoint) {
-          const resolutionBeacon = {
-            id: `res_${this.generateBeaconId()}`,
-            timestamp: Date.now(),
-            type: "resolution_failure",
-            failureType: type,
-            identifier,
-            context,
-            tier: topology.getTier(),
-            navigator: this.captureNavigator()
-          };
-          this.emitToPlatform(resolutionBeacon);
-        }
-      };
-      if (type === "expression" && context && context.node instanceof Element) {
-        const el = context.node;
-        requestAnimationFrame(() => {
-          if (el[IS_TEMPLATE_KEY])
-            return;
-          if (!el.isConnected)
-            return;
-          if (this.runtime) {
-            let resolved = false;
-            try {
-              const res = this.runtime.evaluate(el, identifier);
-              if (res !== void 0)
-                resolved = true;
-            } catch (_e) {
-              resolved = false;
-            }
-            if (resolved)
-              return;
-          }
-          emitBeacon();
-        });
-      } else {
-        emitBeacon();
-      }
-    }
-    /**
-     * Cleanup - remove global handlers
-     */
-    dispose() {
-      if (typeof globalThis === "undefined")
-        return;
-      if (this.globalErrorHandler) {
-        globalThis.removeEventListener("error", this.globalErrorHandler);
-      }
-      if (this.globalRejectionHandler) {
-        globalThis.removeEventListener("unhandledrejection", this.globalRejectionHandler);
-      }
-      this.beaconHistory = [];
-    }
-  };
-  var agentInstance = null;
-  function getSelfHealAgent(runtime, config) {
-    if (!agentInstance) {
-      agentInstance = new SelfHealAgent(runtime, config);
-    }
-    return agentInstance;
-  }
-  function initSelfHeal(runtime, config) {
-    if (agentInstance) {
-      agentInstance.updateConfig(config || {});
-      return agentInstance;
-    }
-    agentInstance = new SelfHealAgent(runtime, config);
-    return agentInstance;
-  }
-  function getBeaconHistory() {
-    return getSelfHealAgent().getBeaconHistory();
-  }
-
-  // src/engine/evaluator.ts
-  init_debug();
-  registerScopeProvider("__global", (_, runtime) => runtime.globalSignals());
-  var shouldAutoEvaluateFunctions = true;
-  var currentEvalDepth = 0;
-  var MAX_EVAL_DEPTH = 50;
-  function evaluate(el, expression, runtime, extras = {}) {
-    if (typeof expression !== "string" || !expression || expression.trim() === "")
-      return {};
-    const runner = evaluateLater(el, expression, runtime);
-    let res;
-    runner((v) => res = v, extras);
-    return res;
-  }
-  function preProcessExpression(expression) {
-    let processed = expression;
-    if (processed.includes("@")) {
-      processed = processed.replace(/@(\w+)\s*\((.*?)\)\s*\{([^}]*)\}/g, (_match, name, arg, body) => {
-        let safeArg = arg.trim();
-        if (safeArg.startsWith("'") && safeArg.endsWith("'") || safeArg.startsWith('"') && safeArg.endsWith('"')) {
-          safeArg = safeArg.slice(1, -1);
-        }
-        safeArg = safeArg.replace(/`/g, "\\`");
-        return `_scopes.${name}(\`${safeArg}\`, () => { return ${body.trim()} })`;
-      });
-    }
-    if (processed.includes("#")) {
-      processed = processed.replace(/(^|[^a-zA-Z0-9_$'"`])#([a-zA-Z_$][\w$]*)/g, "$1__global.$2");
-    }
-    return processed;
-  }
-  function checkBalanced(expr) {
-    const stack = [];
-    const pairs = { "{": "}", "[": "]", "(": ")" };
-    let inString = null;
-    let escape = false;
-    for (let i = 0; i < expr.length; i++) {
-      const char = expr[i];
-      if (escape) {
-        escape = false;
-        continue;
-      }
-      if (char === "\\") {
-        escape = true;
-        continue;
-      }
-      if (inString) {
-        if (char === inString)
-          inString = null;
-        continue;
-      }
-      if (char === '"' || char === "'" || char === "`") {
-        inString = char;
-        continue;
-      }
-      if (pairs[char]) {
-        stack.push({ char, pos: i });
-      } else if (char === "}" || char === "]" || char === ")") {
-        const last = stack.pop();
-        if (!last || pairs[last.char] !== char) {
-          return { type: "bracket", expected: last ? pairs[last.char] : "none", position: i };
-        }
-      }
-    }
-    if (inString) {
-      return { type: "quote", expected: inString, position: expr.length };
-    }
-    if (stack.length > 0) {
-      const last = stack[stack.length - 1];
-      return { type: "bracket", expected: pairs[last.char], position: last.pos };
-    }
-    return null;
-  }
-  function validateExpression(expression, el) {
-    const trimmed = expression.trim();
-    let attrName = "";
-    if (el instanceof Element) {
-      for (const attr of Array.from(el.attributes)) {
-        if (attr.value === expression) {
-          attrName = attr.name;
-          break;
-        }
-      }
-    }
-    if (attrName === "data-for") {
-      if (!trimmed.includes(" in ")) {
-        return {
-          severity: "error",
-          message: `Invalid data-for syntax: "${trimmed}". Expected "item in items".`,
-          suggestion: trimmed.includes(" of ") ? `Replace 'of' with 'in': "${trimmed.replace(" of ", " in ")}"` : `Use pattern: "(item, index) in list"`,
-          element: el,
-          expression: trimmed
-        };
-      }
-    }
-    const balanced = checkBalanced(trimmed);
-    if (balanced) {
-      return {
-        severity: "error",
-        message: `Unbalanced ${balanced.type} in expression: "${trimmed.substring(0, 60)}..."`,
-        suggestion: `Check for missing closing '${balanced.expected}' near position ${balanced.position}`,
-        element: el,
-        expression: trimmed
-      };
-    }
-    return null;
-  }
-  var evalFrameCounter = 0;
-  function getEvalFrame() {
-    return evalFrameCounter;
-  }
-  function advanceEvalFrame() {
-    return ++evalFrameCounter;
-  }
-  var MAX_COMPILED_CACHE_SIZE = 2048;
-  var compiledExpressionCache = /* @__PURE__ */ new Map();
-  function evaluateLater(el, expression, runtime, initialExtras = {}) {
-    const processedExpression = preProcessExpression(expression);
-    const scope = getElementScope(el, runtime, initialExtras);
-    let func = compiledExpressionCache.get(processedExpression);
-    if (func) {
-      compiledExpressionCache.delete(processedExpression);
-      compiledExpressionCache.set(processedExpression, func);
-    } else {
-      const diagnostic = validateExpression(expression, el);
-      if (diagnostic) {
-        syntaxError(
-          diagnostic.element ? diagnostic.element.tagName.toLowerCase() : "unknown",
-          expression,
-          `${diagnostic.message}
-\u{1F4A1} Suggestion: ${diagnostic.suggestion}`,
-          el instanceof HTMLElement ? el : void 0
-        );
-      }
-      try {
-        func = new Function("scope", `with (scope) { return (${processedExpression}) }`);
-      } catch (e) {
-        if (e instanceof SyntaxError) {
-          try {
-            func = new Function("scope", `with (scope) { ${processedExpression} }`);
-          } catch (e2) {
-            if (e2 instanceof SyntaxError) {
-              syntaxError("eval", expression, e2.message, el instanceof HTMLElement ? el : void 0);
-            }
-            throw e2;
-          }
-        } else {
-          throw e;
-        }
-      }
-      if (compiledExpressionCache.size >= MAX_COMPILED_CACHE_SIZE) {
-        const oldestKey = compiledExpressionCache.keys().next().value;
-        if (oldestKey !== void 0) {
-          compiledExpressionCache.delete(oldestKey);
-        }
-      }
-      compiledExpressionCache.set(processedExpression, func);
-    }
-    return (receiver, callExtras = {}) => {
-      if (currentEvalDepth > MAX_EVAL_DEPTH) {
-        console.warn(`[Nexus Loop Guard] Stopped runaway evaluation at depth ${currentEvalDepth} for expression: "${expression}"`);
-        receiver(void 0);
-        return;
-      }
-      currentEvalDepth++;
-      advanceEvalFrame();
-      try {
-        const currentScope = callExtras && Object.keys(callExtras).length > 0 ? new Proxy(callExtras, {
-          has(target, key) {
-            if (key === Symbol.unscopables)
-              return false;
-            if (typeof key === "string")
-              return key in target || key in scope;
-            return key in target;
-          },
-          get(target, key) {
-            if (key === Symbol.unscopables)
-              return void 0;
-            if (typeof key === "string") {
-              if (key in target)
-                return target[key];
-              return scope[key];
-            }
-            return void 0;
-          },
-          set(target, key, value) {
-            if (typeof key === "string") {
-              if (key in target) {
-                target[key] = value;
-                return true;
-              }
-              scope[key] = value;
-              return true;
-            }
-            return false;
-          }
-        }) : scope;
-        const result = func.call(el, currentScope);
-        if (shouldAutoEvaluateFunctions && typeof result === "function") {
-          receiver(result.call(el, currentScope));
-        } else {
-          receiver(result);
-        }
-      } catch (e) {
-        if (e instanceof Promise)
-          throw e;
-        if (e instanceof TypeError && e.message.includes("Cannot read properties of") || e instanceof ReferenceError) {
-          if (runtime.isDevMode) {
-            try {
-              getSelfHealAgent().reportResolutionFailure("expression", expression, {
-                error: e.message,
-                node: el
-              });
-            } catch (_err) {
-            }
-          }
-          receiver(void 0);
-        } else {
-          console.error(`[Evaluator Error] Expression "${expression}" failed:`, e);
-          evaluationError(expression, e instanceof Error ? e : new Error(String(e)), el);
-        }
-      } finally {
-        currentEvalDepth--;
-      }
-    };
   }
 
   // src/engine/scope.ts
@@ -13724,6 +12776,736 @@ ${match}</ul>
     resolveSelector: () => resolveSelector,
     resolveTargetElements: () => resolveTargetElements
   });
+
+  // src/engine/topology.ts
+  var TIER_CONFIGS = {
+    0: {
+      level: 0,
+      name: "Mono-Thread (Fallback)",
+      threads: 1,
+      usesSharedArrayBuffer: false,
+      usesWorkers: false,
+      predictiveEngineDedicated: false
+    },
+    1: {
+      level: 1,
+      name: "Dual-Thread (Standard)",
+      threads: 2,
+      usesSharedArrayBuffer: ZCZS_SUPPORTED,
+      usesWorkers: true,
+      predictiveEngineDedicated: false
+    },
+    2: {
+      level: 2,
+      name: "Tri-Thread (Performance)",
+      threads: 3,
+      usesSharedArrayBuffer: ZCZS_SUPPORTED,
+      usesWorkers: true,
+      predictiveEngineDedicated: false
+    },
+    3: {
+      level: 3,
+      name: "Quad-Thread (Sovereign)",
+      threads: 4,
+      usesSharedArrayBuffer: ZCZS_SUPPORTED,
+      usesWorkers: true,
+      predictiveEngineDedicated: true
+    }
+  };
+  var EngineTopology = class {
+    currentTier = 0;
+    workers = [];
+    sharedBuffer = null;
+    lagHistory = [];
+    LAG_SAMPLE_SIZE = 60;
+    LAG_THRESHOLD = 0.4;
+    // 40% of frame budget
+    FRAME_BUDGET = 16.67;
+    // 60fps = 16.67ms per frame
+    SCALE_COOLDOWN_MS = 5e3;
+    // ignore lag spikes within 5s of a tier change
+    MIN_SAMPLES_FOR_SCALE_UP = 5;
+    // require history before scaling up
+    autoScaleEnabled = true;
+    monitoringInterval = null;
+    lastScaleTime = 0;
+    constructor() {
+    }
+    start() {
+      this.boot();
+    }
+    /**
+     * Boot probe - determines optimal tier based on environment
+     * Spec 5.2.1: Auto-Adaptation Logic
+     */
+    boot() {
+      const isCrossOriginIsolated = typeof crossOriginIsolated !== "undefined" && crossOriginIsolated;
+      const cores = navigator.hardwareConcurrency || 2;
+      const hasNexusIO = typeof globalThis.__NEXUS_IO__ !== "undefined";
+      if (cores >= 4 && (isCrossOriginIsolated || hasNexusIO)) {
+        this.currentTier = 3;
+      } else if (cores >= 3 && (isCrossOriginIsolated || hasNexusIO)) {
+        this.currentTier = 2;
+      } else if (cores >= 2 && typeof Worker !== "undefined") {
+        this.currentTier = 1;
+      } else {
+        this.currentTier = 0;
+      }
+      console.log(`[Nexus Topology] Boot: Detected ${cores} cores, SAB: ${isCrossOriginIsolated}, NexusIO: ${hasNexusIO}`);
+      console.log(`[Nexus Topology] Selected Tier: ${this.currentTier} (${TIER_CONFIGS[this.currentTier].name})`);
+      this.initializeTier();
+    }
+    /**
+     * Initialize resources for the selected tier
+     */
+    async initializeTier() {
+      const config = TIER_CONFIGS[this.currentTier];
+      if (config.usesSharedArrayBuffer && ZCZS_SUPPORTED) {
+        try {
+          this.sharedBuffer = new SharedArrayBuffer(1024 * 1024);
+          if (heap) {
+            heap.attachSharedBuffer(this.sharedBuffer);
+          }
+          console.log("[Nexus Topology] SharedArrayBuffer initialized");
+        } catch (e) {
+          console.warn("[Nexus Topology] Failed to initialize SAB, falling back:", e);
+          this.currentTier = Math.max(0, this.currentTier - 1);
+          this.initializeTier();
+          return;
+        }
+      }
+      this.terminateWorkers();
+      if (this.autoScaleEnabled && this.currentTier > 0) {
+        this.startMonitoring();
+      } else {
+        this.stopMonitoring();
+      }
+    }
+    /**
+     * Lazily ensure workers are spawned for the current tier.
+     * Defers worker thread creation until runInWorker() or an off-thread task is invoked.
+     */
+    async ensureWorkers() {
+      const config = TIER_CONFIGS[this.currentTier];
+      if (config.usesWorkers && this.currentTier > 0 && this.workers.length === 0) {
+        await this.spawnWorkers(this.currentTier);
+      }
+    }
+    /**
+     * Spawn worker threads based on tier
+     */
+    async spawnWorkers(tier) {
+      const config = TIER_CONFIGS[tier];
+      const workerCount = config.threads - 1;
+      this.terminateWorkers();
+      for (let i = 0; i < workerCount; i++) {
+        try {
+          let scriptSrc = "/dist/logic.worker.js";
+          if (typeof document !== "undefined") {
+            let current = null;
+            if (document.currentScript instanceof HTMLScriptElement) {
+              current = document.currentScript.src;
+            } else {
+              const scriptEl = document.querySelector('script[src*="nexus-ux"]');
+              if (scriptEl instanceof HTMLScriptElement) {
+                current = scriptEl.src;
+              }
+            }
+            if (current) {
+              const isMin = current.includes(".min.js");
+              const base = current.substring(0, current.lastIndexOf("/"));
+              scriptSrc = `${base}/logic.worker.${isMin ? "min.js" : "js"}`;
+            }
+          }
+          const worker = new Worker(scriptSrc, { type: "module" });
+          worker.onmessage = (e) => {
+            const data = e.data;
+            if (data && typeof data === "object" && "id" in data) {
+              const pending = pendingWorkerTasks.get(data.id);
+              if (pending) {
+                pendingWorkerTasks.delete(data.id);
+                if (data.type === "RESULT" || data.type === "FN_RESULT") {
+                  pending.resolve(data.payload);
+                } else if (data.type === "ERROR" || data.type === "FN_ERROR") {
+                  pending.reject(new Error(data.error || "Worker task execution failed"));
+                }
+              }
+            }
+          };
+          if (this.sharedBuffer) {
+            worker.postMessage({ type: "INIT_HEAP", payload: this.sharedBuffer });
+          }
+          this.workers.push(worker);
+        } catch (e) {
+          console.warn(`[Nexus Topology] Failed to spawn worker ${i}:`, e);
+        }
+      }
+      console.log(`[Nexus Topology] Spawned ${this.workers.length} worker(s) for Tier ${tier}`);
+    }
+    /**
+     * Terminate all worker threads
+     */
+    terminateWorkers() {
+      this.workers.forEach((w) => w.terminate());
+      this.workers = [];
+      pendingWorkerTasks.forEach((p) => p.reject(new Error("Worker terminated")));
+      pendingWorkerTasks.clear();
+    }
+    /**
+     * Start lag variance monitoring for auto-scaling
+     * Spec 5.1.2: The Autoscale Mechanism
+     */
+    startMonitoring() {
+      if (this.monitoringInterval)
+        return;
+      this.monitoringInterval = setInterval(() => {
+        this.measureLag();
+      }, 1e3);
+    }
+    stopMonitoring() {
+      if (this.monitoringInterval) {
+        clearInterval(this.monitoringInterval);
+        this.monitoringInterval = null;
+      }
+    }
+    /**
+     * Measure frame lag and trigger scale up/down
+     */
+    measureLag() {
+      const frameStart = performance.now();
+      requestAnimationFrame(() => {
+        const frameEnd = performance.now();
+        const frameTime = frameEnd - frameStart;
+        const lagRatio = frameTime / this.FRAME_BUDGET;
+        this.lagHistory.push(lagRatio);
+        if (this.lagHistory.length > this.LAG_SAMPLE_SIZE) {
+          this.lagHistory.shift();
+        }
+        const avgLag = this.lagHistory.reduce((a, b) => a + b, 0) / this.lagHistory.length;
+        const now = performance.now();
+        if (now - this.lastScaleTime < this.SCALE_COOLDOWN_MS) {
+          return;
+        }
+        if (avgLag > this.LAG_THRESHOLD && this.currentTier < 3 && this.lagHistory.length >= this.MIN_SAMPLES_FOR_SCALE_UP) {
+          this.scaleUp();
+        } else if (avgLag < 0.1 && this.currentTier > 0 && this.lagHistory.length >= this.LAG_SAMPLE_SIZE) {
+          this.scaleDown();
+        }
+      });
+    }
+    /**
+     * Scale up to higher tier
+     */
+    async scaleUp() {
+      const newTier = this.currentTier + 1;
+      console.log(`[Nexus Topology] Scaling UP from Tier ${this.currentTier} to Tier ${newTier}`);
+      this.lagHistory = [];
+      this.lastScaleTime = performance.now();
+      this.currentTier = newTier;
+      await this.initializeTier();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("nexus:topology-scale", {
+          detail: { tier: this.currentTier, direction: "up" }
+        }));
+      }
+    }
+    /**
+     * Scale down to lower tier
+     */
+    async scaleDown() {
+      const newTier = this.currentTier - 1;
+      if (newTier < 0)
+        return;
+      console.log(`[Nexus Topology] Scaling DOWN from Tier ${this.currentTier} to Tier ${newTier}`);
+      this.lagHistory = [];
+      this.currentTier = newTier;
+      await this.initializeTier();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("nexus:topology-scale", {
+          detail: { tier: this.currentTier, direction: "down" }
+        }));
+      }
+    }
+    /**
+     * Get current tier configuration
+     */
+    getTier() {
+      return this.currentTier;
+    }
+    /**
+     * Get tier configuration
+     */
+    getTierConfig() {
+      return TIER_CONFIGS[this.currentTier];
+    }
+    /**
+     * Get number of active workers
+     */
+    getActiveWorkers() {
+      return this.workers.length;
+    }
+    /**
+     * Check if SAB is available
+     */
+    isSABAvailable() {
+      return !!this.sharedBuffer;
+    }
+    /**
+     * Get lag variance
+     */
+    getLagVariance() {
+      if (this.lagHistory.length === 0)
+        return 0;
+      return this.lagHistory.reduce((a, b) => a + b, 0) / this.lagHistory.length;
+    }
+    /**
+     * Get SharedArrayBuffer for cross-thread communication
+     */
+    getSharedBuffer() {
+      return this.sharedBuffer;
+    }
+    /**
+     * Enable/disable auto-scaling
+     */
+    setAutoScale(enabled) {
+      this.autoScaleEnabled = enabled;
+      if (enabled && this.currentTier > 0) {
+        this.startMonitoring();
+      } else if (this.monitoringInterval) {
+        clearInterval(this.monitoringInterval);
+        this.monitoringInterval = null;
+      }
+    }
+    /**
+     * Force specific tier (for testing or manual override)
+     */
+    async setTier(tier) {
+      if (tier === this.currentTier)
+        return;
+      console.log(`[Nexus Topology] Manual tier change: ${this.currentTier} -> ${tier}`);
+      this.currentTier = tier;
+      await this.initializeTier();
+    }
+    /**
+     * Get worker for task distribution
+     */
+    getWorker(index) {
+      return this.workers[index % this.workers.length] || null;
+    }
+    /**
+     * Get all active workers
+     */
+    getWorkers() {
+      return this.workers;
+    }
+    /**
+     * Cleanup resources
+     */
+    dispose() {
+      if (this.monitoringInterval) {
+        clearInterval(this.monitoringInterval);
+        this.monitoringInterval = null;
+      }
+      this.terminateWorkers();
+      this.sharedBuffer = null;
+    }
+  };
+  var topology = new EngineTopology();
+  var taskIdCounter = 0;
+  var pendingWorkerTasks = /* @__PURE__ */ new Map();
+  var workerRoundRobin = 0;
+  async function runInWorker(fn, args, transferable) {
+    const callArgs = args ? Array.from(args) : [];
+    await topology.ensureWorkers();
+    const workers = topology.getWorkers();
+    if (workers.length === 0) {
+      return await fn(...callArgs);
+    }
+    const id = ++taskIdCounter;
+    const worker = workers[workerRoundRobin % workers.length];
+    workerRoundRobin = (workerRoundRobin + 1) % workers.length;
+    return new Promise((resolve, reject) => {
+      pendingWorkerTasks.set(id, { resolve, reject });
+      try {
+        worker.postMessage({
+          type: "EXECUTE_FN",
+          id,
+          fn: fn.toString(),
+          args: callArgs
+        }, transferable || []);
+      } catch (err) {
+        pendingWorkerTasks.delete(id);
+        reject(err);
+      }
+    });
+  }
+
+  // src/engine/agent.ts
+  init_consts();
+  var DEFAULT_CONFIG = {
+    enabled: true,
+    captureHeap: true,
+    captureStack: true,
+    maxStackDepth: 20,
+    emitToConsole: true,
+    emitToPlatform: false
+    // Disabled by default - requires platform endpoint
+  };
+  var SelfHealAgent = class {
+    config;
+    beaconHistory = [];
+    maxHistorySize = 10;
+    heapSnapshot = null;
+    isCapturing = false;
+    globalErrorHandler = null;
+    globalRejectionHandler = null;
+    runtime = null;
+    constructor(runtime, config = {}) {
+      if (runtime) {
+        this.runtime = runtime;
+        this.runtime.agent = this;
+      }
+      this.config = { ...DEFAULT_CONFIG, ...config };
+      this.setupGlobalHandlers();
+    }
+    /**
+     * Setup global error handlers for automatic beacon capture
+     */
+    setupGlobalHandlers() {
+      if (typeof window === "undefined")
+        return;
+      this.globalErrorHandler = (error, context) => {
+        this.captureBeacon(error, "error", context);
+      };
+      globalThis.addEventListener("error", this.globalErrorHandler);
+      this.globalRejectionHandler = (reason, promise) => {
+        const error = reason instanceof Error ? reason : new Error(String(reason));
+        this.captureBeacon(error, "unhandledRejection", { promise });
+      };
+      globalThis.addEventListener("unhandledrejection", this.globalRejectionHandler);
+    }
+    /**
+     * Capture a crash beacon with full state snapshot
+     */
+    captureBeacon(error, type, context) {
+      if (this.isCapturing) {
+        return this.createMinimalBeacon(error, type);
+      }
+      this.isCapturing = true;
+      const _startTime = performance.now();
+      try {
+        const beacon = {
+          id: this.generateBeaconId(),
+          timestamp: Date.now(),
+          tier: topology.getTier(),
+          signalHeap: this.config.captureHeap ? this.captureSignalHeap() : this.createEmptyHeapSnapshot(),
+          callStack: this.config.captureStack ? this.captureCallStack(error) : [],
+          navigator: this.captureNavigator(),
+          memory: this.captureMemory()
+        };
+        this.beaconHistory.push(beacon);
+        if (this.beaconHistory.length > this.maxHistorySize) {
+          this.beaconHistory.shift();
+        }
+        if (this.config.emitToConsole) {
+          this.emitToConsole(beacon, type, context);
+        }
+        if (this.config.emitToPlatform && this.config.platformEndpoint) {
+          this.emitToPlatform(beacon);
+        }
+        return beacon;
+      } catch (e) {
+        return this.createMinimalBeacon(error, type);
+      } finally {
+        this.isCapturing = false;
+      }
+    }
+    /**
+     * Create a minimal beacon when full capture fails
+     */
+    createMinimalBeacon(error, type) {
+      return {
+        id: this.generateBeaconId(),
+        timestamp: Date.now(),
+        tier: topology.getTier(),
+        signalHeap: this.createEmptyHeapSnapshot(),
+        callStack: [{ function: error.message, file: error.stack?.split("\n")[0] || "unknown", line: 0, column: 0 }],
+        navigator: this.captureNavigator(),
+        memory: this.captureMemory()
+      };
+    }
+    /**
+     * Capture Signal Heap snapshot (Zero-Copy optimized)
+     */
+    captureSignalHeap() {
+      let numericSignals = null;
+      let booleanSignals = null;
+      let objectSignals = [];
+      let signalIndexMap = {};
+      try {
+        if (this.runtime) {
+          if (heap) {
+            const h = heap;
+            if (h._floatHeap instanceof Float64Array)
+              numericSignals = new Float64Array(h._floatHeap);
+            if (h._intHeap instanceof Int32Array)
+              booleanSignals = new Int32Array(h._intHeap);
+            signalIndexMap = { ...h._indexMap || {} };
+          }
+          const globalState = this.runtime.globalSignals();
+          if (globalState) {
+            objectSignals = [globalState];
+          }
+        }
+      } catch (e) {
+      }
+      const size = (numericSignals?.byteLength || 0) + (booleanSignals?.byteLength || 0);
+      return {
+        numericSignals,
+        booleanSignals,
+        objectSignals,
+        signalIndexMap,
+        size
+      };
+    }
+    /**
+     * Capture call stack from error
+     */
+    captureCallStack(error) {
+      const frames = [];
+      if (!error.stack)
+        return frames;
+      const stackLines = error.stack.split("\n").slice(1);
+      const maxDepth = Math.min(stackLines.length, this.config.maxStackDepth);
+      for (let i = 0; i < maxDepth; i++) {
+        const line = stackLines[i].trim();
+        if (!line)
+          continue;
+        let match = line.match(/at\s+(?:(.+?)\s+)?\(?(.+?):(\d+):(\d+)\)?/);
+        if (match) {
+          frames.push({
+            function: match[1] || "anonymous",
+            file: match[2],
+            line: parseInt(match[3], 10),
+            column: parseInt(match[4], 10)
+          });
+        } else {
+          match = line.match(/(?:(.+?)@)?(.+?):(\d+):(\d+)/);
+          if (match) {
+            frames.push({
+              function: match[1] || "anonymous",
+              file: match[2],
+              line: parseInt(match[3], 10),
+              column: parseInt(match[4], 10)
+            });
+          }
+        }
+      }
+      return frames;
+    }
+    /**
+     * Capture navigator info
+     */
+    captureNavigator() {
+      if (typeof navigator === "undefined") {
+        return { userAgent: "", language: "", hardwareConcurrency: 0 };
+      }
+      return {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        hardwareConcurrency: navigator.hardwareConcurrency || 0,
+        deviceMemory: navigator.deviceMemory
+      };
+    }
+    /**
+     * Capture memory info if available
+     */
+    captureMemory() {
+      if (typeof performance.memory === "undefined") {
+        return void 0;
+      }
+      const mem = performance.memory;
+      return {
+        usedJSHeapSize: mem.usedJSHeapSize,
+        totalJSHeapSize: mem.totalJSHeapSize,
+        jsHeapSizeLimit: mem.jsHeapSizeLimit
+      };
+    }
+    /**
+     * Create empty heap snapshot
+     */
+    createEmptyHeapSnapshot() {
+      return {
+        numericSignals: null,
+        booleanSignals: null,
+        objectSignals: [],
+        signalIndexMap: {},
+        size: 0
+      };
+    }
+    /**
+     * Generate unique beacon ID
+     */
+    generateBeaconId() {
+      return `beacon_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    }
+    /**
+     * Emit beacon to console
+     */
+    emitToConsole(beacon, type, context) {
+      console.error("[Nexus Self-Heal] Crash Beacon captured", {
+        id: beacon.id,
+        type,
+        timestamp: new Date(beacon.timestamp).toISOString(),
+        tier: beacon.tier,
+        memory: beacon.memory,
+        error: beacon.callStack[0]?.function || "Unknown",
+        stack: beacon.callStack
+      });
+      if (context) {
+        console.error("[Nexus Self-Heal] Context:", context);
+      }
+    }
+    /**
+     * Emit beacon to Aerea platform for AI analysis
+     */
+    async emitToPlatform(beacon) {
+      if (!this.config.platformEndpoint)
+        return;
+      try {
+        await fetch(this.config.platformEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(beacon)
+        });
+      } catch (e) {
+      }
+    }
+    /**
+     * Get beacon history
+     */
+    getBeaconHistory() {
+      return [...this.beaconHistory];
+    }
+    /**
+     * Get latest beacon
+     */
+    getLatestBeacon() {
+      return this.beaconHistory[this.beaconHistory.length - 1] || null;
+    }
+    /**
+     * Get beacon by ID
+     */
+    getBeaconById(id) {
+      return this.beaconHistory.find((b) => b.id === id) || null;
+    }
+    /**
+     * Clear beacon history
+     */
+    clearHistory() {
+      this.beaconHistory = [];
+    }
+    /**
+     * Update configuration
+     */
+    updateConfig(config) {
+      this.config = { ...this.config, ...config };
+    }
+    /**
+     * Manually trigger a beacon capture
+     */
+    manualCapture(message, context) {
+      const error = new Error(message);
+      return this.captureBeacon(error, "manual", context);
+    }
+    /**
+     * Report a non-breaking resolution failure to the Agentic Host.
+     * This is used for missing selectors or failed expression evaluations
+     * that don't throw but impede framework functionality.
+     */
+    reportResolutionFailure(type, identifier, context) {
+      if (!this.config.enabled)
+        return;
+      const emitBeacon = () => {
+        const errMsg = context?.error ? ` (Error: ${context.error})` : "";
+        console.warn(`[Nexus Resolution Beacon] ${type.toUpperCase()} Failure: "${identifier}"${errMsg}`, {
+          context,
+          timestamp: (/* @__PURE__ */ new Date()).toISOString()
+        });
+        if (this.config.emitToPlatform && this.config.platformEndpoint) {
+          const resolutionBeacon = {
+            id: `res_${this.generateBeaconId()}`,
+            timestamp: Date.now(),
+            type: "resolution_failure",
+            failureType: type,
+            identifier,
+            context,
+            tier: topology.getTier(),
+            navigator: this.captureNavigator()
+          };
+          this.emitToPlatform(resolutionBeacon);
+        }
+      };
+      if (type === "expression" && context && context.node instanceof Element) {
+        const el = context.node;
+        requestAnimationFrame(() => {
+          if (el[IS_TEMPLATE_KEY])
+            return;
+          if (!el.isConnected)
+            return;
+          if (this.runtime) {
+            let resolved = false;
+            try {
+              const res = this.runtime.evaluate(el, identifier);
+              if (res !== void 0)
+                resolved = true;
+            } catch (_e) {
+              resolved = false;
+            }
+            if (resolved)
+              return;
+          }
+          emitBeacon();
+        });
+      } else {
+        emitBeacon();
+      }
+    }
+    /**
+     * Cleanup - remove global handlers
+     */
+    dispose() {
+      if (typeof globalThis === "undefined")
+        return;
+      if (this.globalErrorHandler) {
+        globalThis.removeEventListener("error", this.globalErrorHandler);
+      }
+      if (this.globalRejectionHandler) {
+        globalThis.removeEventListener("unhandledrejection", this.globalRejectionHandler);
+      }
+      this.beaconHistory = [];
+    }
+  };
+  var agentInstance = null;
+  function getSelfHealAgent(runtime, config) {
+    if (!agentInstance) {
+      agentInstance = new SelfHealAgent(runtime, config);
+    }
+    return agentInstance;
+  }
+  function initSelfHeal(runtime, config) {
+    if (agentInstance) {
+      agentInstance.updateConfig(config || {});
+      return agentInstance;
+    }
+    agentInstance = new SelfHealAgent(runtime, config);
+    return agentInstance;
+  }
+  function getBeaconHistory() {
+    return getSelfHealAgent().getBeaconHistory();
+  }
+
+  // src/modules/sprites/selector.ts
   function resolveSelector(contextEl, selector) {
     if (!selector)
       return null;
@@ -16918,6 +16700,226 @@ ${bridge}`, {
       context.fetch = fetchUtilities;
     }
   };
+
+  // src/engine/evaluator.ts
+  init_debug();
+  registerScopeProvider("__global", (_, runtime) => runtime.globalSignals());
+  var shouldAutoEvaluateFunctions = true;
+  var currentEvalDepth = 0;
+  var MAX_EVAL_DEPTH = 50;
+  function evaluate(el, expression, runtime, extras = {}) {
+    if (typeof expression !== "string" || !expression || expression.trim() === "")
+      return {};
+    const runner = evaluateLater(el, expression, runtime);
+    let res;
+    runner((v) => res = v, extras);
+    return res;
+  }
+  function preProcessExpression(expression) {
+    let processed = expression;
+    if (processed.includes("@")) {
+      processed = processed.replace(/@(\w+)\s*\((.*?)\)\s*\{([^}]*)\}/g, (_match, name, arg, body) => {
+        let safeArg = arg.trim();
+        if (safeArg.startsWith("'") && safeArg.endsWith("'") || safeArg.startsWith('"') && safeArg.endsWith('"')) {
+          safeArg = safeArg.slice(1, -1);
+        }
+        safeArg = safeArg.replace(/`/g, "\\`");
+        return `_scopes.${name}(\`${safeArg}\`, () => { return ${body.trim()} })`;
+      });
+    }
+    if (processed.includes("#")) {
+      processed = processed.replace(/(^|[^a-zA-Z0-9_$'"`])#([a-zA-Z_$][\w$]*)/g, "$1__global.$2");
+    }
+    return processed;
+  }
+  function checkBalanced(expr) {
+    const stack = [];
+    const pairs = { "{": "}", "[": "]", "(": ")" };
+    let inString = null;
+    let escape = false;
+    for (let i = 0; i < expr.length; i++) {
+      const char = expr[i];
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (char === "\\") {
+        escape = true;
+        continue;
+      }
+      if (inString) {
+        if (char === inString)
+          inString = null;
+        continue;
+      }
+      if (char === '"' || char === "'" || char === "`") {
+        inString = char;
+        continue;
+      }
+      if (pairs[char]) {
+        stack.push({ char, pos: i });
+      } else if (char === "}" || char === "]" || char === ")") {
+        const last = stack.pop();
+        if (!last || pairs[last.char] !== char) {
+          return { type: "bracket", expected: last ? pairs[last.char] : "none", position: i };
+        }
+      }
+    }
+    if (inString) {
+      return { type: "quote", expected: inString, position: expr.length };
+    }
+    if (stack.length > 0) {
+      const last = stack[stack.length - 1];
+      return { type: "bracket", expected: pairs[last.char], position: last.pos };
+    }
+    return null;
+  }
+  function validateExpression(expression, el) {
+    const trimmed = expression.trim();
+    let attrName = "";
+    if (el instanceof Element) {
+      for (const attr of Array.from(el.attributes)) {
+        if (attr.value === expression) {
+          attrName = attr.name;
+          break;
+        }
+      }
+    }
+    if (attrName === "data-for") {
+      if (!trimmed.includes(" in ")) {
+        return {
+          severity: "error",
+          message: `Invalid data-for syntax: "${trimmed}". Expected "item in items".`,
+          suggestion: trimmed.includes(" of ") ? `Replace 'of' with 'in': "${trimmed.replace(" of ", " in ")}"` : `Use pattern: "(item, index) in list"`,
+          element: el,
+          expression: trimmed
+        };
+      }
+    }
+    const balanced = checkBalanced(trimmed);
+    if (balanced) {
+      return {
+        severity: "error",
+        message: `Unbalanced ${balanced.type} in expression: "${trimmed.substring(0, 60)}..."`,
+        suggestion: `Check for missing closing '${balanced.expected}' near position ${balanced.position}`,
+        element: el,
+        expression: trimmed
+      };
+    }
+    return null;
+  }
+  var MAX_COMPILED_CACHE_SIZE = 2048;
+  var compiledExpressionCache = /* @__PURE__ */ new Map();
+  function evaluateLater(el, expression, runtime, initialExtras = {}) {
+    const processedExpression = preProcessExpression(expression);
+    const scope = getElementScope(el, runtime, initialExtras);
+    let func = compiledExpressionCache.get(processedExpression);
+    if (func) {
+      compiledExpressionCache.delete(processedExpression);
+      compiledExpressionCache.set(processedExpression, func);
+    } else {
+      const diagnostic = validateExpression(expression, el);
+      if (diagnostic) {
+        syntaxError(
+          diagnostic.element ? diagnostic.element.tagName.toLowerCase() : "unknown",
+          expression,
+          `${diagnostic.message}
+\u{1F4A1} Suggestion: ${diagnostic.suggestion}`,
+          el instanceof HTMLElement ? el : void 0
+        );
+      }
+      try {
+        func = new Function("scope", `with (scope) { return (${processedExpression}) }`);
+      } catch (e) {
+        if (e instanceof SyntaxError) {
+          try {
+            func = new Function("scope", `with (scope) { ${processedExpression} }`);
+          } catch (e2) {
+            if (e2 instanceof SyntaxError) {
+              syntaxError("eval", expression, e2.message, el instanceof HTMLElement ? el : void 0);
+            }
+            throw e2;
+          }
+        } else {
+          throw e;
+        }
+      }
+      if (compiledExpressionCache.size >= MAX_COMPILED_CACHE_SIZE) {
+        const oldestKey = compiledExpressionCache.keys().next().value;
+        if (oldestKey !== void 0) {
+          compiledExpressionCache.delete(oldestKey);
+        }
+      }
+      compiledExpressionCache.set(processedExpression, func);
+    }
+    return (receiver, callExtras = {}) => {
+      if (currentEvalDepth > MAX_EVAL_DEPTH) {
+        console.warn(`[Nexus Loop Guard] Stopped runaway evaluation at depth ${currentEvalDepth} for expression: "${expression}"`);
+        receiver(void 0);
+        return;
+      }
+      currentEvalDepth++;
+      advanceEvalFrame();
+      try {
+        const currentScope = callExtras && Object.keys(callExtras).length > 0 ? new Proxy(callExtras, {
+          has(target, key) {
+            if (key === Symbol.unscopables)
+              return false;
+            if (typeof key === "string")
+              return key in target || key in scope;
+            return key in target;
+          },
+          get(target, key) {
+            if (key === Symbol.unscopables)
+              return void 0;
+            if (typeof key === "string") {
+              if (key in target)
+                return target[key];
+              return scope[key];
+            }
+            return void 0;
+          },
+          set(target, key, value) {
+            if (typeof key === "string") {
+              if (key in target) {
+                target[key] = value;
+                return true;
+              }
+              scope[key] = value;
+              return true;
+            }
+            return false;
+          }
+        }) : scope;
+        const result = func.call(el, currentScope);
+        if (shouldAutoEvaluateFunctions && typeof result === "function") {
+          receiver(result.call(el, currentScope));
+        } else {
+          receiver(result);
+        }
+      } catch (e) {
+        if (e instanceof Promise)
+          throw e;
+        if (e instanceof TypeError && e.message.includes("Cannot read properties of") || e instanceof ReferenceError) {
+          if (runtime.isDevMode) {
+            try {
+              getSelfHealAgent().reportResolutionFailure("expression", expression, {
+                error: e.message,
+                node: el
+              });
+            } catch (_err) {
+            }
+          }
+          receiver(void 0);
+        } else {
+          console.error(`[Evaluator Error] Expression "${expression}" failed:`, e);
+          evaluationError(expression, e instanceof Error ? e : new Error(String(e)), el);
+        }
+      } finally {
+        currentEvalDepth--;
+      }
+    };
+  }
 
   // src/engine/attributeParser.ts
   init_consts();

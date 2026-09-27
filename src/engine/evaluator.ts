@@ -220,13 +220,8 @@ function validateExpression(expression: string, el: Element | Text | Comment): U
 }
 
 
-let evalFrameCounter = 0;
-export function getEvalFrame(): number {
-  return evalFrameCounter;
-}
-export function advanceEvalFrame(): number {
-  return ++evalFrameCounter;
-}
+import { getEvalFrame, advanceEvalFrame } from './scheduler.ts';
+export { getEvalFrame, advanceEvalFrame };
 
 // Module-level compiled expression cache (Alpine.js & Vue compiler parity) with LRU eviction
 const MAX_COMPILED_CACHE_SIZE = 2048;

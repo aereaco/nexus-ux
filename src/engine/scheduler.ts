@@ -24,6 +24,14 @@
 
 export type Job = () => void;
 
+let currentEvalFrame = 0;
+export function getEvalFrame(): number {
+  return currentEvalFrame;
+}
+export function advanceEvalFrame(): number {
+  return ++currentEvalFrame;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SharedArrayBuffer Phase State (ZCZS cross-context coordination)
 // ─────────────────────────────────────────────────────────────────────────────
