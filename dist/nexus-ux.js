@@ -2610,6 +2610,7 @@ ${suggestion}`);
           globalSignals[key] = value;
           return true;
         }
+        return Reflect.set(target, key, value);
       }
     });
     if (!hasExtras) {

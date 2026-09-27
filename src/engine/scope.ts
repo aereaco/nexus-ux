@@ -466,11 +466,11 @@ export function getElementScope(
           return true;
         }
 
-        // 6. Global signal fallback
         (globalSignals as any)[key] = value;
         return true;
       }
 
+      return Reflect.set(target, key, value);
     }
   });
 
