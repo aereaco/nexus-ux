@@ -16,6 +16,7 @@
 
 import { scheduler } from './scheduler.ts';
 import { cacheEngine } from './cache.ts';
+import { topology } from './topology.ts';
 
 interface Point {
   x: number;
