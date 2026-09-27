@@ -411,13 +411,6 @@ class EngineTopology {
   }
 
   /**
-   * Returns current active tier.
-   */
-  public getTier(): TierLevel {
-    return this.currentTier;
-  }
-
-  /**
    * Dispatches a named task to a worker thread from the pool.
    */
   public async executeTask<T = any>(taskName: string, payload: unknown): Promise<T> {

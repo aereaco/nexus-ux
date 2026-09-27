@@ -12498,12 +12498,6 @@ ${match}</ul>
       return this.workers;
     }
     /**
-     * Returns current active tier.
-     */
-    getTier() {
-      return this.currentTier;
-    }
-    /**
      * Dispatches a named task to a worker thread from the pool.
      */
     async executeTask(taskName, payload) {
