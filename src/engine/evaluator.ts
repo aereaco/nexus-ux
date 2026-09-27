@@ -299,6 +299,7 @@ export function evaluateLater(
     }
 
     currentEvalDepth++;
+    advanceEvalFrame();
     try {
       const currentScope = callExtras && Object.keys(callExtras).length > 0
         ? Object.assign(Object.create(scope), callExtras)

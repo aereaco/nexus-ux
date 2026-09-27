@@ -330,6 +330,9 @@ ${suggestion}`);
   function getEvalFrame() {
     return currentEvalFrame;
   }
+  function advanceEvalFrame() {
+    return ++currentEvalFrame;
+  }
   var PHASE_CURRENT = 0;
   var PHASE_PENDING = 1;
   var CAPTURE_LEN = 2;
@@ -16902,6 +16905,7 @@ ${bridge}`, {
         return;
       }
       currentEvalDepth++;
+      advanceEvalFrame();
       try {
         const currentScope = callExtras && Object.keys(callExtras).length > 0 ? Object.assign(Object.create(scope), callExtras) : scope;
         const result = func.call(el, currentScope);
