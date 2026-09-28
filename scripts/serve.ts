@@ -319,6 +319,7 @@ async function handler(req: Request): Promise<Response> {
   // Let serveDir check if this exact file physically exists on disk in /site
   const staticRes = await serveDir(req, { fsRoot: SITE_DIR, quiet: true });
   if (staticRes.status !== 404) {
+    staticRes.headers.set("Cache-Control", config.isDev ? "no-cache, must-revalidate" : "public, max-age=0, must-revalidate");
     staticRes.headers.set("Cross-Origin-Opener-Policy", "same-origin");
     staticRes.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
     return staticRes;
