@@ -566,8 +566,10 @@ const scrollbarModule: AttributeModule = {
 
     let config: ScrollbarConfig = {};
     if (value && value.trim()) {
+      const trimmed = value.trim();
       try {
-        const evaluated = runtime.evaluate(el, value);
+        const expr = (trimmed.startsWith('{') && trimmed.endsWith('}')) ? `(${trimmed})` : trimmed;
+        const evaluated = runtime.evaluate(el, expr);
         if (typeof evaluated === 'object' && evaluated !== null) {
           config = evaluated as ScrollbarConfig;
         } else if (typeof evaluated === 'string') {
@@ -576,7 +578,11 @@ const scrollbarModule: AttributeModule = {
           }
         }
       } catch {
-        if (value === 'overlay' || value === 'none') config = { mode: value };
+        try {
+          config = (new Function(`return (${trimmed});`))();
+        } catch {
+          if (trimmed === 'overlay' || trimmed === 'none') config = { mode: trimmed };
+        }
       }
     }
 

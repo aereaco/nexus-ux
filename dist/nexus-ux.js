@@ -10226,8 +10226,10 @@ ${match}</ul>
       const isGlobal = el.hasAttribute("data-scrollbar_global") || parsedAttr?.modifiers && parsedAttr.modifiers.includes("global") || el.tagName.toLowerCase() === "html";
       let config = {};
       if (value && value.trim()) {
+        const trimmed = value.trim();
         try {
-          const evaluated = runtime.evaluate(el, value);
+          const expr = trimmed.startsWith("{") && trimmed.endsWith("}") ? `(${trimmed})` : trimmed;
+          const evaluated = runtime.evaluate(el, expr);
           if (typeof evaluated === "object" && evaluated !== null) {
             config = evaluated;
           } else if (typeof evaluated === "string") {
@@ -10236,8 +10238,12 @@ ${match}</ul>
             }
           }
         } catch {
-          if (value === "overlay" || value === "none")
-            config = { mode: value };
+          try {
+            config = new Function(`return (${trimmed});`)();
+          } catch {
+            if (trimmed === "overlay" || trimmed === "none")
+              config = { mode: trimmed };
+          }
         }
       }
       if (isGlobal) {
