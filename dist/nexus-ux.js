@@ -10119,6 +10119,7 @@ ${match}</ul>
       this.el.classList.remove("scrollbar-overlay-active", "scrollbar-no-autohide");
       activeInstances.delete(this);
       overlayInstances.delete(this.el);
+      delete this.el.__scrollbarInstance;
     }
   };
   function ensureOverlayInstance(el) {
