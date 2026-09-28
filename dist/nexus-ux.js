@@ -562,7 +562,7 @@ ${suggestion}`);
           } catch (e) {
             console.error("[Nexus Scheduler] Job error:", e);
           }
-          const shouldCheckStall = (head & 15) === 0 || head === queue.length;
+          const shouldCheckStall = (head & 7) === 0 || head === queue.length;
           const shouldYield = shouldCheckStall && head < queue.length && (performance.now() - startTime > this.stallBudget || typeof navigator !== "undefined" && navigator.scheduling?.isInputPending?.() === true);
           if (shouldYield) {
             if (head > 512) {
