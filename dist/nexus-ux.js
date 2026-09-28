@@ -458,9 +458,9 @@ ${suggestion}`);
     }
     // ─── Async Process Loop ───────────────────────────────────────────────
     /**
-     * Request a flush using the async process loop.
-     * Phases 1-3 are dispatched via queueMicrotask for immediate processing.
-     * Phase 4 (Paint) is deferred to requestAnimationFrame for frame alignment.
+     * Request a flush using the Deno/Node.js-style async microtask loop.
+     * Phases 1-3 (Capture, Evaluate, Resolve) are dispatched via queueMicrotask
+     * for immediate, non-blocking processing before the next paint.
      */
     requestFlush() {
       if (this.pending)
@@ -472,8 +472,38 @@ ${suggestion}`);
       });
     }
     /**
-     * Flush computation phases (Capture, Evaluate, Resolve) with stall detection.
-     * If any phase exceeds the budget, yield to the browser and resume.
+     * Request a flush for the Paint phase (Phase 4).
+     * Scheduled independently via requestAnimationFrame without locking or stalling
+     * computation phases.
+     */
+    requestPaintFlush() {
+      if (this.paintPending)
+        return;
+      this.paintPending = true;
+      const paintRunner = () => {
+        this.paintPending = false;
+        Atomics.store(sharedState, PHASE_CURRENT, 4);
+        this.runQueueSync(this.paintQueue);
+        this.runQueueSync(this.nextTickQueue);
+        Atomics.store(sharedState, PHASE_CURRENT, 0);
+        this.syncSharedState();
+        if (this.captureQueue.length > 0 || this.evaluateQueue.length > 0 || this.resolveQueue.length > 0) {
+          this.requestFlush();
+        } else if (this.paintQueue.length > 0 || this.nextTickQueue.length > 0) {
+          this.requestPaintFlush();
+        }
+      };
+      if (typeof requestAnimationFrame !== "undefined") {
+        requestAnimationFrame(paintRunner);
+      } else {
+        setTimeout(paintRunner, 0);
+      }
+    }
+    /**
+     * Flush computation phases (Capture, Evaluate, Resolve) via microtasks with stall detection.
+     * Fully decoupled from the Paint phase: computation finishes and releases its lock
+     * immediately, allowing subsequent microtasks (user interactions, hover states) to process
+     * on the next turn of the microtask loop without waiting for requestAnimationFrame.
      */
     async flushComputationPhases() {
       if (this.flushing)
@@ -488,51 +518,19 @@ ${suggestion}`);
         Atomics.store(sharedState, PHASE_CURRENT, 3);
         await this.runQueueWithYielding(this.resolveQueue);
         if (this.paintQueue.length > 0 || this.nextTickQueue.length > 0) {
-          await this.flushPaintPhase();
-        } else {
-          this.finalize();
+          this.requestPaintFlush();
         }
       } catch (e) {
         console.error("[Nexus Scheduler] Async loop error:", e);
-        this.finalize();
-      }
-    }
-    /**
-     * Flush the Paint phase on the next animation frame.
-     */
-    flushPaintPhase() {
-      return new Promise((resolve) => {
-        if (typeof requestAnimationFrame !== "undefined") {
-          requestAnimationFrame(() => {
-            Atomics.store(sharedState, PHASE_CURRENT, 4);
-            this.runQueueSync(this.paintQueue);
-            this.runQueueSync(this.nextTickQueue);
-            this.finalize();
-            resolve();
-          });
-        } else {
-          setTimeout(() => {
-            Atomics.store(sharedState, PHASE_CURRENT, 4);
-            this.runQueueSync(this.paintQueue);
-            this.runQueueSync(this.nextTickQueue);
-            this.finalize();
-            resolve();
-          }, 0);
-        }
-      });
-    }
-    /**
-     * Reset scheduler state after a full flush cycle.
-     */
-    finalize() {
-      this.flushing = false;
-      this.pending = false;
-      Atomics.store(sharedState, PHASE_CURRENT, 0);
-      Atomics.store(sharedState, PHASE_PENDING, 0);
-      this.syncSharedState();
-      if (this.captureQueue.length > 0 || this.evaluateQueue.length > 0 || this.resolveQueue.length > 0 || this.paintQueue.length > 0 || this.nextTickQueue.length > 0) {
+      } finally {
+        this.flushing = false;
         this.pending = false;
-        this.requestFlush();
+        Atomics.store(sharedState, PHASE_CURRENT, 0);
+        Atomics.store(sharedState, PHASE_PENDING, 0);
+        this.syncSharedState();
+        if (this.captureQueue.length > 0 || this.evaluateQueue.length > 0 || this.resolveQueue.length > 0) {
+          this.requestFlush();
+        }
       }
     }
     // ─── Queue Execution ──────────────────────────────────────────────────
