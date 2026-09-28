@@ -1131,7 +1131,7 @@ ${suggestion}`);
     try {
       const schedulerOptions = {
         scheduler: () => {
-          scheduler.enqueueEvaluate(stableJob);
+          scheduler.enqueueEvaluate(stableJob, el);
         },
         ...options
       };

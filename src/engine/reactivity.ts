@@ -677,7 +677,7 @@ export function elementBoundEffect(
   const stableJob = () => { if (runner) runner(); };
   try {
     const schedulerOptions: ReactiveEffectOptions = {
-      scheduler: () => { scheduler.enqueueEvaluate(stableJob); },
+      scheduler: () => { scheduler.enqueueEvaluate(stableJob, el); },
       ...options
     };
     runner = effect(suspenseWrappedCallback, schedulerOptions);
