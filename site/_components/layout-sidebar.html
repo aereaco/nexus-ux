@@ -98,7 +98,8 @@
   </template>
 
   <!-- ================= 2. Middle Content Section (Scrollable) ================= -->
-  <main class="sidebar-content flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+  <div class="relative flex-1 min-h-0 overflow-hidden flex flex-col">
+  <main class="sidebar-content w-full h-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
     data-effect="
       if (collapsed && !hovered && !sidebarOpen && $el) { $el.scrollTo({ top: 0, behavior: 'smooth' }); }
       const discovered = [...new Set((router.pages || []).map(p => p.category || p.meta?.category).filter(Boolean))];
