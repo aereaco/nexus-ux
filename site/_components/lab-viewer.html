@@ -79,20 +79,12 @@
 
             // Cleanup stale editor instances if any
             if ($el._sourceEditor) {
-                $el._sourceEditor.destroy();
+                try { $el._sourceEditor.destroy(); } catch {}
                 $el._sourceEditor = null;
             }
             if ($el._snippetEditor) {
-                $el._snippetEditor.destroy();
+                try { $el._snippetEditor.destroy(); } catch {}
                 $el._snippetEditor = null;
-            }
-            if (window._sourceEditor) {
-                window._sourceEditor.destroy();
-                window._sourceEditor = null;
-            }
-            if (window._snippetEditor) {
-                window._snippetEditor.destroy();
-                window._snippetEditor = null;
             }
 
             // Fetch framework module source (local /src in development, GitHub raw in production)
@@ -114,13 +106,17 @@
                 const { EditorView, EditorState, Compartment, basicSetup, javascript, html, oneDark } = window.CM;
 
                 // 1. Module Source Editor
-                const sourceEl = $('#source-editor');
-                if (sourceEl && !$el._sourceEditor && forkSource) {
+                const sourceEl = $el.querySelector ? $el.querySelector('#source-editor') : null;
+                if (sourceEl && forkSource && (!sourceEl.firstElementChild || !$el._sourceEditor)) {
+                    if ($el._sourceEditor) {
+                        try { $el._sourceEditor.destroy(); } catch {}
+                        $el._sourceEditor = null;
+                    }
                     const readOnly = new Compartment();
                     sourceEl.replaceChildren();
                     $el._sourceEditor = new EditorView({
                         state: EditorState.create({
-                            doc: forkSource,
+                            doc: forkCode || forkSource,
                             extensions: [
                                 basicSetup,
                                 javascript(),
@@ -137,7 +133,6 @@
                         }),
                         parent: sourceEl
                     });
-                    window._sourceEditor = $el._sourceEditor;
                     if ($el._sourceEditor?.scrollDOM) {
                         $el._sourceEditor.scrollDOM.setAttribute('data-scrollbar', 'overlay');
                         $el._sourceEditor.scrollDOM.dispatchEvent(new CustomEvent('scroll', { bubbles: true }));
@@ -145,8 +140,12 @@
                 }
 
                 // 2. Lab Snippet Editor (Live Editable)
-                const snippetEl = $('#snippet-editor');
-                if (snippetEl && (doc?.Snippet || doc?.Examples) && !$el._snippetEditor) {
+                const snippetEl = $el.querySelector ? $el.querySelector('#snippet-editor') : null;
+                if (snippetEl && (doc?.Snippet || doc?.Examples) && (!snippetEl.firstElementChild || !$el._snippetEditor)) {
+                    if ($el._snippetEditor) {
+                        try { $el._snippetEditor.destroy(); } catch {}
+                        $el._snippetEditor = null;
+                    }
                     snippetEl.replaceChildren();
                     $el._snippetEditor = new EditorView({
                         state: EditorState.create({
@@ -166,7 +165,6 @@
                         }),
                         parent: snippetEl
                     });
-                    window._snippetEditor = $el._snippetEditor;
                     if ($el._snippetEditor?.scrollDOM) {
                         $el._snippetEditor.scrollDOM.setAttribute('data-scrollbar', 'overlay');
                         $el._snippetEditor.scrollDOM.dispatchEvent(new CustomEvent('scroll', { bubbles: true }));
@@ -186,13 +184,20 @@
 
         // Reactive synchronization via native data-effect:
         if (activeModulePath) {
+            // Check if editors need to be remounted on revisit
+            const snipContainer = $el.querySelector ? $el.querySelector('#snippet-editor') : null;
+            const srcContainer = $el.querySelector ? $el.querySelector('#source-editor') : null;
+            if ((snipContainer && !snipContainer.firstElementChild) || (srcContainer && !srcContainer.firstElementChild)) {
+                $el._mountEditors?.();
+            }
+
             // Mount when switching to source or split
             if (specTab === 'source' || labTab === 'source' || labTab === 'split') {
                 window.setTimeout(() => $el._mountEditors?.(), 40);
             }
 
             // Sync snippet code to editor when changed externally
-            const activeSnipEd = $el._snippetEditor || window._snippetEditor;
+            const activeSnipEd = $el._snippetEditor;
             if (activeSnipEd && snippetCode !== undefined) {
                 const cur = activeSnipEd.state.doc.toString();
                 if (cur !== snippetCode) {
@@ -201,7 +206,7 @@
             }
 
             // Sync source code to editor when changed externally
-            const activeSrcEd = $el._sourceEditor || window._sourceEditor;
+            const activeSrcEd = $el._sourceEditor;
             if (activeSrcEd && forkCode !== undefined) {
                 const cur = activeSrcEd.state.doc.toString();
                 if (cur !== forkCode) {
