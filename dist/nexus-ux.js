@@ -2990,7 +2990,6 @@ ${scripts}
                   runtime.morphDOM(shadow, html);
                 }
                 stylesheet.adoptElementSubtree(shadow);
-                await new Promise((resolve) => queueMicrotask(resolve));
                 Array.from(shadow.children).forEach((child) => {
                   if (child instanceof HTMLElement || child instanceof SVGElement) {
                     runtime.processElement(child);
@@ -3004,7 +3003,6 @@ ${scripts}
                   runtime.morphDOM(el, html);
                 }
                 stylesheet.adoptElementSubtree(el);
-                await new Promise((resolve) => queueMicrotask(resolve));
                 Array.from(el.children).forEach((child) => {
                   if (child instanceof HTMLElement || child instanceof SVGElement) {
                     runtime.processElement(child);
