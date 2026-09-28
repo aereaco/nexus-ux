@@ -452,6 +452,18 @@ export function ensureOverlayInstance(el: HTMLElement): OverlayScrollbarInstance
   return inst;
 }
 
+if (typeof HTMLElement !== 'undefined' && !Object.prototype.hasOwnProperty.call(HTMLElement.prototype, '__scrollbarInstance')) {
+  Object.defineProperty(HTMLElement.prototype, '__scrollbarInstance', {
+    get() {
+      if (globalConfig.mode === 'overlay' || this.hasAttribute('data-scrollbar')) {
+        return ensureOverlayInstance(this);
+      }
+      return overlayInstances.get(this) || null;
+    },
+    configurable: true,
+  });
+}
+
 export function syncAllOverlayScrollbars(): void {
   activeInstances.forEach((inst) => inst.scheduleUpdate());
 }
