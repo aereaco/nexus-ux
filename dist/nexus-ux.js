@@ -17602,7 +17602,7 @@ ${bridge}`, {
       if (element[IS_TEMPLATE_KEY]) {
         return;
       }
-      const children = element.children;
+      const children = Array.from(element.children);
       const childLen = children.length;
       for (let i = 0; i < childLen; i++) {
         const child = children[i];
@@ -17611,7 +17611,7 @@ ${bridge}`, {
         } else if (child instanceof Element && child.classList && child.classList.length > 0) {
           if (currentIsolation !== "style") {
             this.runtimeContext.adoptStyle(child);
-            const grandchildren = child.children;
+            const grandchildren = Array.from(child.children);
             const gcLen = grandchildren.length;
             for (let j = 0; j < gcLen; j++) {
               const grandchild = grandchildren[j];
