@@ -10185,15 +10185,24 @@ ${match}</ul>
       return;
     globalListenerRegistered = true;
     window.addEventListener("resize", () => syncAllOverlayScrollbars(), { passive: true });
-    document.addEventListener("nexus:dom-mutated", () => {
+    const onGlobalScroll = (e) => {
+      const target = e.target;
+      if (target instanceof HTMLElement && isScrollContainer(target)) {
+        attachOverlayScrollbar(target);
+      }
+    };
+    document.addEventListener("scroll", onGlobalScroll, { capture: true, passive: true });
+    const scanScrollContainers = () => {
       if (globalConfig.mode !== "overlay")
         return;
-      document.querySelectorAll('.cm-scroller, [data-scrollbar="overlay"]').forEach((el) => {
+      document.querySelectorAll('.overflow-y-auto, .overflow-auto, [role="tabpanel"], .cm-scroller, [data-scrollbar="overlay"]').forEach((el) => {
         if (el instanceof HTMLElement && !overlayInstances.has(el) && isScrollContainer(el)) {
           attachOverlayScrollbar(el);
         }
       });
-    }, { passive: true });
+    };
+    document.addEventListener("nexus:dom-mutated", scanScrollContainers, { passive: true });
+    setTimeout(scanScrollContainers, 50);
   }
   var scrollbarModule = {
     name: "scrollbar",
