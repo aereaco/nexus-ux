@@ -333,63 +333,23 @@ ${suggestion}`);
   function advanceEvalFrame() {
     return ++currentEvalFrame;
   }
-  var PHASE_CURRENT = 0;
-  var PHASE_PENDING = 1;
-  var EVALUATE_LEN = 2;
-  var STATE_SLOTS = 6;
-  var sharedState;
-  try {
-    if (typeof SharedArrayBuffer !== "undefined" && typeof globalThis.crossOriginIsolated !== "undefined" && globalThis.crossOriginIsolated) {
-      sharedState = new Int32Array(new SharedArrayBuffer(STATE_SLOTS * 4));
-    } else {
-      sharedState = new Int32Array(new ArrayBuffer(STATE_SLOTS * 4));
-    }
-  } catch {
-    sharedState = new Int32Array(new ArrayBuffer(STATE_SLOTS * 4));
-  }
-  var yieldChannel = null;
-  var yieldResolve = null;
-  if (typeof MessageChannel !== "undefined") {
-    yieldChannel = new MessageChannel();
-    yieldChannel.port1.onmessage = () => {
-      if (yieldResolve) {
-        const res = yieldResolve;
-        yieldResolve = null;
-        res();
-      }
-    };
-  }
-  async function yieldToBrowser() {
-    if (typeof globalThis.scheduler?.yield === "function") {
-      return globalThis.scheduler.yield();
-    }
-    if (yieldChannel) {
-      return new Promise((resolve) => {
-        yieldResolve = resolve;
-        yieldChannel.port2.postMessage(null);
-      });
-    }
-    return new Promise((resolve) => setTimeout(resolve, 0));
-  }
-  var STALL_BUDGET_MS = 8;
-  var MAX_ITERATIONS = 5e3;
   var Scheduler = class {
-    queue = /* @__PURE__ */ new Set();
-    nextTickQueue = [];
-    isFlushPending = false;
+    queue = [];
+    flushIndex = 0;
     isFlushing = false;
-    stallBudget = STALL_BUDGET_MS;
+    isFlushPending = false;
+    nextTickQueue = [];
     /**
-     * Enqueue an evaluation job (deduplicated via Set for O(1) membership).
+     * Vue 3 queueJob pattern: Enqueues a job deduplicated.
+     * If a flush is not already scheduled, queues a microtask.
      */
     enqueueEvaluate(job) {
-      if (this.queue.has(job))
-        return;
-      this.queue.add(job);
-      this.syncSharedState();
-      this.requestFlush();
+      if (!this.queue.includes(job, this.flushIndex)) {
+        this.queue.push(job);
+        this.requestFlush();
+      }
     }
-    // Backward-compatibility aliases across the framework
+    // Compatibility aliases across the framework
     enqueueEffect(job) {
       this.enqueueEvaluate(job);
     }
@@ -412,78 +372,47 @@ ${suggestion}`);
       this.nextTickQueue.push(job);
       this.requestFlush();
     }
-    getSharedState() {
-      return sharedState;
-    }
     requestFlush() {
-      if (this.isFlushPending)
+      if (this.isFlushing || this.isFlushPending)
         return;
       this.isFlushPending = true;
-      Atomics.store(sharedState, PHASE_PENDING, 1);
-      queueMicrotask(() => {
-        this.flush();
-      });
+      queueMicrotask(() => this.flushJobs());
     }
-    async flush() {
-      if (this.isFlushing)
-        return;
-      this.isFlushing = true;
+    /**
+     * Vue 3 flushJobs pattern: Drains all pending jobs deterministically to completion.
+     */
+    flushJobs() {
       this.isFlushPending = false;
-      Atomics.store(sharedState, PHASE_CURRENT, 2);
-      let startTime = performance.now();
-      let iterations = 0;
+      this.isFlushing = true;
       try {
-        while (this.queue.size > 0) {
-          if (++iterations > MAX_ITERATIONS) {
-            console.error(`[Nexus Scheduler] Loop guard: exceeded ${MAX_ITERATIONS} iterations. Clearing queue.`);
-            this.queue.clear();
-            break;
-          }
-          const jobs = Array.from(this.queue);
-          this.queue.clear();
-          this.syncSharedState();
-          for (let i = 0; i < jobs.length; i++) {
+        for (this.flushIndex = 0; this.flushIndex < this.queue.length; this.flushIndex++) {
+          const job = this.queue[this.flushIndex];
+          if (job) {
             try {
-              jobs[i]();
+              job();
             } catch (err) {
               console.error("[Nexus Scheduler] Job error:", err);
             }
-            const shouldCheck = (i & 7) === 0 || i === jobs.length - 1;
-            const isInputPending = typeof navigator !== "undefined" && navigator.scheduling?.isInputPending?.() === true;
-            const isStalled = performance.now() - startTime > this.stallBudget;
-            if (shouldCheck && (isInputPending || isStalled)) {
-              for (let j = i + 1; j < jobs.length; j++) {
-                this.queue.add(jobs[j]);
-              }
-              this.syncSharedState();
-              await yieldToBrowser();
-              startTime = performance.now();
-              break;
-            }
           }
         }
+      } finally {
+        this.flushIndex = 0;
+        this.queue.length = 0;
+        this.isFlushing = false;
         if (this.nextTickQueue.length > 0) {
           const ticks = this.nextTickQueue.splice(0, this.nextTickQueue.length);
-          for (const tick of ticks) {
+          for (let i = 0; i < ticks.length; i++) {
             try {
-              tick();
+              ticks[i]();
             } catch (err) {
               console.error("[Nexus Scheduler] nextTick error:", err);
             }
           }
         }
-      } finally {
-        this.isFlushing = false;
-        Atomics.store(sharedState, PHASE_CURRENT, 0);
-        Atomics.store(sharedState, PHASE_PENDING, this.queue.size > 0 ? 1 : 0);
-        this.syncSharedState();
-        if (this.queue.size > 0 || this.nextTickQueue.length > 0) {
+        if (this.queue.length > 0) {
           this.requestFlush();
         }
       }
-    }
-    syncSharedState() {
-      Atomics.store(sharedState, EVALUATE_LEN, this.queue.size);
     }
   };
   var scheduler = new Scheduler();
