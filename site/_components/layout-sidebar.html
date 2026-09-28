@@ -8,7 +8,7 @@
     color: `color-mix(in oklab, black ${100 - (#sidebarTextLightness ?? 100)}%, white)`,
     '--color-base-content': `color-mix(in oklab, black ${100 - (#sidebarTextLightness ?? 100)}%, white)`
   }"
-  data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !collapsed, 'w-0 md:w-16': collapsed && !hovered && !sidebarOpen }"
+  data-class="{ 'open fixed inset-y-0 start-0 w-80 shadow-2xl': sidebarOpen, 'hovered fixed inset-y-0 start-0 w-80 shadow-2xl': hovered && !sidebarOpen, 'md:w-80': !collapsed, 'w-0 md:w-16 collapsed-rail': collapsed && !hovered && !sidebarOpen }"
   data-on-mouseenter="sidebarHovered = true; if (collapsed && !sidebarOpen) hovered = true"
   data-on-mouseleave="sidebarHovered = false; if (!ctxMenu?.open || ctxMenu?.source !== 'sidebar') hovered = false"
   data-effect="
@@ -29,6 +29,23 @@
     if (collapsed && !hovered && !sidebarOpen) { activeSidebarTab = 1; }
   ">
 
+  <style>
+    .dashboard-sidebar.collapsed-rail .sidebar-label,
+    .dashboard-sidebar.collapsed-rail .sidebar-chevron,
+    .dashboard-sidebar.collapsed-rail .logo {
+      display: none !important;
+    }
+    .dashboard-sidebar.collapsed-rail .menu-title {
+      max-height: 0 !important;
+      opacity: 0 !important;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      pointer-events: none !important;
+    }
+  </style>
+
   <!-- ================= 1. Header Section (shrink-0) ================= -->
   <header class="navbar flex justify-between p-0 h-16 min-h-16 shrink-0">
     <div class="flex flex-1 items-center">
@@ -39,8 +56,7 @@
           </svg>
         </div>
         <span
-          class="logo font-bold text-xl whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300"
-          data-class="{ 'opacity-0 hidden': collapsed && !hovered && !sidebarOpen }">Nexus-UX</span>
+          class="logo font-bold text-xl whitespace-nowrap transition-[opacity,display] [transition-behavior:allow-discrete] duration-300">Nexus-UX</span>
       </a>
     </div>
     <button class="btn btn-ghost btn-circle close me-4" data-class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }"
@@ -63,7 +79,7 @@
         data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
         data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item, source: 'sidebar' }">
         <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:article-outline'" class="shrink-0 text-xl" aria-hidden="true"></iconify-icon>
-        <span class="whitespace-nowrap" data-bind="item.title"></span>
+        <span class="whitespace-nowrap sidebar-label" data-bind="item.title"></span>
       </a>
     </li>
 
@@ -80,9 +96,9 @@
           data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
           data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item, source: 'sidebar' }">
           <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:folder-outline'" class="shrink-0 text-xl" aria-hidden="true"></iconify-icon>
-          <span class="whitespace-nowrap" data-bind="item.title"></span>
+          <span class="whitespace-nowrap sidebar-label" data-bind="item.title"></span>
         </a>
-        <button class="btn btn-circle btn-xs hover:bg-accent/60" data-on-click="open = !open"
+        <button class="btn btn-circle btn-xs hover:bg-accent/60 sidebar-chevron" data-on-click="open = !open"
           data-class="{ 'rotate-90 bg-accent/20': open }">
           <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl" aria-hidden="true"></iconify-icon>
         </button>
@@ -140,8 +156,7 @@
               data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
               data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item, source: 'sidebar' }">
               <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:article-outline'" class="shrink-0 text-2xl" aria-hidden="true"></iconify-icon>
-              <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
-                data-bind="item.title"></span>
+              <span class="whitespace-nowrap sidebar-label" data-bind="item.title"></span>
             </a>
           </li>
 
@@ -158,11 +173,10 @@
                 data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                 data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item, source: 'sidebar' }">
                 <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:folder-outline'" class="shrink-0 pe-2 text-2xl" aria-hidden="true"></iconify-icon>
-                <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
-                  data-bind="item.title"></span>
+                <span class="whitespace-nowrap sidebar-label" data-bind="item.title"></span>
               </a>
-              <button class="btn btn-circle btn-xs hover:bg-accent/60" data-on-click="open = !open"
-                data-class="{ 'bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
+              <button class="btn btn-circle btn-xs hover:bg-accent/60 sidebar-chevron" data-on-click="open = !open"
+                data-class="{ 'bg-accent/20': open }">
                 <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl" aria-hidden="true"
                   data-class="{ 'rotate-90': open}"></iconify-icon>
               </button>
@@ -185,8 +199,8 @@
             <!-- Category Header (Title + Separator Line) -->
             <ul class="menu w-full py-0">
               <li
-                class="menu-title !flex !flex-row items-center justify-between w-full ps-1 pe-1 py-1 overflow-hidden transition-[opacity,max-height,margin,padding] duration-200 ease-in-out cursor-grab"
-                data-class="{ 'max-h-0 opacity-0 !my-0 !py-0 pointer-events-none': collapsed && !hovered && !sidebarOpen, 'max-h-12 opacity-100 mt-4': !collapsed || hovered || sidebarOpen, 'text-primary font-bold': (router.activePageTab?.meta?.category || router.currentRoute?.meta?.category) === cat.name }">
+                class="menu-title !flex !flex-row items-center justify-between w-full ps-1 pe-1 py-1 max-h-12 opacity-100 mt-4 overflow-hidden transition-[opacity,max-height,margin,padding] duration-200 ease-in-out cursor-grab"
+                data-class="{ 'text-primary font-bold': (router.activePageTab?.meta?.category || router.currentRoute?.meta?.category) === cat.name }">
                 <span data-bind="cat.name" class="font-semibold text-xs tracking-wider uppercase">Title</span>
                 <iconify-icon data-bind-icon="cat.icon" class="text-base opacity-70 shrink-0" aria-hidden="true"></iconify-icon>
               </li>
@@ -210,8 +224,7 @@
                     data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                     data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item, source: 'sidebar' }">
                     <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:article-outline'" class="shrink-0 text-2xl" aria-hidden="true"></iconify-icon>
-                    <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
-                      data-bind="item.title"></span>
+                    <span class="whitespace-nowrap sidebar-label" data-bind="item.title"></span>
                   </a>
                 </li>
 
@@ -229,11 +242,10 @@
                       data-on-click="if (isMobile) { sidebarOpen = false; activeSidebarTab = 1; }"
                       data-on-contextmenu_prevent_stop="ctxMenu = { open: true, x: $evt.clientX, y: $evt.clientY, type: 'nav', target: item, source: 'sidebar' }">
                       <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:folder-outline'" class="shrink-0 pe-2 text-2xl" aria-hidden="true"></iconify-icon>
-                      <span class="whitespace-nowrap" data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
-                        data-bind="item.title"></span>
+                      <span class="whitespace-nowrap sidebar-label" data-bind="item.title"></span>
                     </a>
-                    <button class="btn btn-circle btn-xs hover:bg-accent/60" data-on-click="open = !open"
-                      data-class="{ 'bg-accent/20': open, 'hidden': collapsed && !hovered && !sidebarOpen }">
+                    <button class="btn btn-circle btn-xs hover:bg-accent/60 sidebar-chevron" data-on-click="open = !open"
+                      data-class="{ 'bg-accent/20': open }">
                       <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-2xl" aria-hidden="true"
                         data-class="{ 'rotate-90': open}"></iconify-icon>
                     </button>
@@ -256,12 +268,11 @@
                     <div class="flex items-center gap-2">
                       <iconify-icon data-bind-icon="item.icon || item.meta?.icon || 'material-symbols-light:folder-outline'"
                         class="shrink-0 text-xl opacity-70" aria-hidden="true"></iconify-icon>
-                      <span class="whitespace-nowrap font-medium"
-                        data-class="{ 'hidden': collapsed && !hovered && !sidebarOpen }"
+                      <span class="whitespace-nowrap font-medium sidebar-label"
                         data-bind="item.title"></span>
                     </div>
-                    <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-xl" aria-hidden="true"
-                      data-class="{ 'rotate-90': open, 'hidden': collapsed && !hovered && !sidebarOpen }"></iconify-icon>
+                    <iconify-icon icon="material-symbols-light:chevron-forward" class="shrink-0 text-xl sidebar-chevron" aria-hidden="true"
+                      data-class="{ 'rotate-90': open }"></iconify-icon>
                   </div>
                   <ul
                     class="menu-dropdown menu-dropdown-show ms-6 overflow-hidden [interpolate-size:allow-keywords] transition-[height,opacity] duration-300 ease-in-out"
@@ -278,7 +289,8 @@
     </div>
 
     <!-- ================= Panel Favorites (tab 2) ================= -->
-    <div class="w-full" data-show="activeSidebarTab === 2 && (!collapsed || hovered || sidebarOpen)">
+    <template data-if="activeSidebarTab === 2">
+      <div class="w-full">
       <!-- Favorites Toolbar -->
       <div class="px-4 pt-4 pb-2 flex items-center justify-between">
         <span class="text-xs font-bold uppercase tracking-wider opacity-60">Favorites</span>
@@ -422,9 +434,11 @@
         <p class="text-sm opacity-60">No favorites saved yet.</p>
       </div>
     </div>
+    </template>
 
     <!-- ================= Panel Preferences (tab 3) ================= -->
-    <div class="w-full" data-show="activeSidebarTab === 3 && (!collapsed || hovered || sidebarOpen)">
+    <template data-if="activeSidebarTab === 3">
+      <div class="w-full">
       <div class="p-6">
         <div class="mb-6 whitespace-nowrap">
           <h1 class="text-lg font-bold">Panel Preferences</h1>
@@ -658,6 +672,7 @@
         </div>
       </div>
     </div>
+    </template>
   </main>
   </div>
 
