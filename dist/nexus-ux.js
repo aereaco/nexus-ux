@@ -1366,7 +1366,7 @@ ${suggestion}`);
           if (cachedEntry.etag && isSameOrigin) {
             headers["If-None-Match"] = cachedEntry.etag;
           }
-          const res = await fetch(url, { headers });
+          const res = await fetch(url, { headers, cache: isSameOrigin ? "no-cache" : "default" });
           if (res.status === 304) {
             if (typeof document !== "undefined" && document.documentElement.hasAttribute("data-debug")) {
               console.log(`[Cache Engine] VERIFIED 304 (Not Modified): ${url}`);
@@ -1418,7 +1418,7 @@ ${suggestion}`);
       }
       let res;
       try {
-        res = await fetch(url, { signal: controller?.signal, headers });
+        res = await fetch(url, { signal: controller?.signal, headers, cache: isSameOrigin ? "no-cache" : "default" });
       } finally {
         if (timer)
           clearTimeout(timer);

@@ -168,7 +168,7 @@ export class UniversalCacheEngine {
           headers['If-None-Match'] = cachedEntry.etag;
         }
 
-        const res = await fetch(url, { headers });
+        const res = await fetch(url, { headers, cache: isSameOrigin ? 'no-cache' : 'default' });
 
         if (res.status === 304) {
           if (typeof document !== 'undefined' && document.documentElement.hasAttribute('data-debug')) {
@@ -233,7 +233,7 @@ export class UniversalCacheEngine {
 
     let res: Response;
     try {
-      res = await fetch(url, { signal: controller?.signal, headers });
+      res = await fetch(url, { signal: controller?.signal, headers, cache: isSameOrigin ? 'no-cache' : 'default' });
     } finally {
       if (timer) clearTimeout(timer);
     }
