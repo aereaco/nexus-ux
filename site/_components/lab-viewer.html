@@ -107,67 +107,83 @@
 
                 // 1. Module Source Editor
                 const sourceEl = $el.querySelector ? $el.querySelector('#source-editor') : null;
-                if (sourceEl && forkSource && (!sourceEl.firstElementChild || !$el._sourceEditor)) {
-                    if ($el._sourceEditor) {
-                        try { $el._sourceEditor.destroy(); } catch {}
-                        $el._sourceEditor = null;
+                const expectedSource = forkCode || forkSource;
+                if (sourceEl && forkSource) {
+                    if (!$el._sourceEditor || !sourceEl.contains($el._sourceEditor.dom)) {
+                        if ($el._sourceEditor) {
+                            try { $el._sourceEditor.destroy(); } catch {}
+                            $el._sourceEditor = null;
+                        }
+                        const readOnly = new Compartment();
+                        sourceEl.replaceChildren();
+                        $el._sourceEditor = new EditorView({
+                            state: EditorState.create({
+                                doc: expectedSource,
+                                extensions: [
+                                    basicSetup,
+                                    javascript(),
+                                    oneDark,
+                                    EditorView.lineWrapping,
+                                    readOnly.of(EditorState.readOnly.of(true)),
+                                    EditorView.updateListener.of(update => {
+                                        if (update.docChanged) {
+                                            const val = update.state.doc.toString();
+                                            if (forkCode !== val) forkCode = val;
+                                        }
+                                    })
+                                ]
+                            }),
+                            parent: sourceEl
+                        });
+                    } else if (expectedSource) {
+                        const cur = $el._sourceEditor.state.doc.toString();
+                        if (cur !== expectedSource) {
+                            $el._sourceEditor.dispatch({ changes: { from: 0, to: cur.length, insert: expectedSource } });
+                        }
+                        try { $el._sourceEditor.requestMeasure(); } catch {}
                     }
-                    const readOnly = new Compartment();
-                    sourceEl.replaceChildren();
-                    $el._sourceEditor = new EditorView({
-                        state: EditorState.create({
-                            doc: forkCode || forkSource,
-                            extensions: [
-                                basicSetup,
-                                javascript(),
-                                oneDark,
-                                EditorView.lineWrapping,
-                                readOnly.of(EditorState.readOnly.of(true)),
-                                EditorView.updateListener.of(update => {
-                                    if (update.docChanged) {
-                                        const val = update.state.doc.toString();
-                                        if (forkCode !== val) forkCode = val;
-                                    }
-                                })
-                            ]
-                        }),
-                        parent: sourceEl
-                    });
-                    if ($el._sourceEditor?.scrollDOM) {
+                    if ($el._sourceEditor?.scrollDOM && !$el._sourceEditor.scrollDOM.hasAttribute('data-scrollbar')) {
                         $el._sourceEditor.scrollDOM.setAttribute('data-scrollbar', 'overlay');
-                        $el._sourceEditor.scrollDOM.dispatchEvent(new CustomEvent('scroll', { bubbles: true }));
                     }
                 }
 
                 // 2. Lab Snippet Editor (Live Editable)
                 const snippetEl = $el.querySelector ? $el.querySelector('#snippet-editor') : null;
-                if (snippetEl && (doc?.Snippet || doc?.Examples) && (!snippetEl.firstElementChild || !$el._snippetEditor)) {
-                    if ($el._snippetEditor) {
-                        try { $el._snippetEditor.destroy(); } catch {}
-                        $el._snippetEditor = null;
+                const expectedSnippet = snippetCode || (doc?.Examples && doc?.Examples[activeSnippet]) || doc?.Snippet || '';
+                if (snippetEl && (expectedSnippet || doc?.Snippet || doc?.Examples)) {
+                    if (!$el._snippetEditor || !snippetEl.contains($el._snippetEditor.dom)) {
+                        if ($el._snippetEditor) {
+                            try { $el._snippetEditor.destroy(); } catch {}
+                            $el._snippetEditor = null;
+                        }
+                        snippetEl.replaceChildren();
+                        $el._snippetEditor = new EditorView({
+                            state: EditorState.create({
+                                doc: expectedSnippet,
+                                extensions: [
+                                    basicSetup,
+                                    html(),
+                                    oneDark,
+                                    EditorView.lineWrapping,
+                                    EditorView.updateListener.of(update => {
+                                        if (update.docChanged) {
+                                            const val = update.state.doc.toString();
+                                            if (snippetCode !== val) snippetCode = val;
+                                        }
+                                    })
+                                ]
+                            }),
+                            parent: snippetEl
+                        });
+                    } else if (expectedSnippet) {
+                        const cur = $el._snippetEditor.state.doc.toString();
+                        if (cur !== expectedSnippet) {
+                            $el._snippetEditor.dispatch({ changes: { from: 0, to: cur.length, insert: expectedSnippet } });
+                        }
+                        try { $el._snippetEditor.requestMeasure(); } catch {}
                     }
-                    snippetEl.replaceChildren();
-                    $el._snippetEditor = new EditorView({
-                        state: EditorState.create({
-                            doc: snippetCode || '',
-                            extensions: [
-                                basicSetup,
-                                html(),
-                                oneDark,
-                                EditorView.lineWrapping,
-                                EditorView.updateListener.of(update => {
-                                    if (update.docChanged) {
-                                        const val = update.state.doc.toString();
-                                        if (snippetCode !== val) snippetCode = val;
-                                    }
-                                })
-                            ]
-                        }),
-                        parent: snippetEl
-                    });
-                    if ($el._snippetEditor?.scrollDOM) {
+                    if ($el._snippetEditor?.scrollDOM && !$el._snippetEditor.scrollDOM.hasAttribute('data-scrollbar')) {
                         $el._snippetEditor.scrollDOM.setAttribute('data-scrollbar', 'overlay');
-                        $el._snippetEditor.scrollDOM.dispatchEvent(new CustomEvent('scroll', { bubbles: true }));
                     }
                 }
             };
@@ -184,33 +200,31 @@
 
         // Reactive synchronization via native data-effect:
         if (activeModulePath) {
-            // Check if editors need to be remounted on revisit
-            const snipContainer = $el.querySelector ? $el.querySelector('#snippet-editor') : null;
-            const srcContainer = $el.querySelector ? $el.querySelector('#source-editor') : null;
-            if ((snipContainer && !snipContainer.firstElementChild) || (srcContainer && !srcContainer.firstElementChild)) {
-                $el._mountEditors?.();
-            }
+            $el._mountEditors?.();
 
-            // Mount when switching to source or split
             if (specTab === 'source' || labTab === 'source' || labTab === 'split') {
-                window.setTimeout(() => $el._mountEditors?.(), 40);
+                window.requestAnimationFrame(() => {
+                    try { $el._sourceEditor?.requestMeasure(); } catch {}
+                    try { $el._snippetEditor?.requestMeasure(); } catch {}
+                });
             }
 
             // Sync snippet code to editor when changed externally
             const activeSnipEd = $el._snippetEditor;
-            if (activeSnipEd && snippetCode !== undefined) {
+            if (activeSnipEd && snippetCode) {
                 const cur = activeSnipEd.state.doc.toString();
                 if (cur !== snippetCode) {
-                    activeSnipEd.dispatch({ changes: { from: 0, to: cur.length, insert: snippetCode || '' } });
+                    activeSnipEd.dispatch({ changes: { from: 0, to: cur.length, insert: snippetCode } });
                 }
             }
 
             // Sync source code to editor when changed externally
             const activeSrcEd = $el._sourceEditor;
-            if (activeSrcEd && forkCode !== undefined) {
+            if (activeSrcEd && (forkCode || forkSource)) {
+                const targetSrc = forkCode || forkSource;
                 const cur = activeSrcEd.state.doc.toString();
-                if (cur !== forkCode) {
-                    activeSrcEd.dispatch({ changes: { from: 0, to: cur.length, insert: forkCode || '' } });
+                if (cur !== targetSrc) {
+                    activeSrcEd.dispatch({ changes: { from: 0, to: cur.length, insert: targetSrc } });
                 }
             }
         }
