@@ -334,83 +334,101 @@ ${suggestion}`);
     return ++currentEvalFrame;
   }
   var Scheduler = class {
-    queue = [];
-    flushIndex = 0;
-    isFlushing = false;
-    isFlushPending = false;
+    domainQueues = /* @__PURE__ */ new Map();
+    pendingDomains = /* @__PURE__ */ new Set();
     nextTickQueue = [];
     /**
-     * Vue 3 queueJob pattern: Enqueues a job deduplicated.
-     * If a flush is not already scheduled, queues a microtask.
+     * Resolve an element or context to its semantic ownership domain key.
      */
-    enqueueEvaluate(job) {
-      if (!this.queue.includes(job, this.flushIndex)) {
-        this.queue.push(job);
-        this.requestFlush();
+    resolveDomain(target) {
+      if (typeof target === "string")
+        return target;
+      if (target && typeof target.closest === "function") {
+        const el = target;
+        if (el.closest("aside, .dashboard-sidebar"))
+          return "sidebar";
+        if (el.closest('tab-content, [role="tabpanel"], .tab-content'))
+          return "tab-content";
+        if (el.closest("header, .navbar"))
+          return "header";
+        return el.tagName.toLowerCase();
+      }
+      return "default";
+    }
+    /**
+     * Enqueue a job into its specific domain microtask queue.
+     * Deduplicates within the domain. Drains independently.
+     */
+    enqueueEvaluate(job, domainTarget) {
+      const domain = this.resolveDomain(domainTarget);
+      let queue = this.domainQueues.get(domain);
+      if (!queue) {
+        queue = [];
+        this.domainQueues.set(domain, queue);
+      }
+      if (!queue.includes(job)) {
+        queue.push(job);
+      }
+      if (!this.pendingDomains.has(domain)) {
+        this.pendingDomains.add(domain);
+        queueMicrotask(() => this.flushDomain(domain));
       }
     }
     // Compatibility aliases across the framework
-    enqueueEffect(job) {
-      this.enqueueEvaluate(job);
+    enqueueEffect(job, domain) {
+      this.enqueueEvaluate(job, domain);
     }
-    enqueueCapture(job) {
-      this.enqueueEvaluate(job);
+    enqueueCapture(job, domain) {
+      this.enqueueEvaluate(job, domain);
     }
-    enqueueResolve(job) {
-      this.enqueueEvaluate(job);
+    enqueueResolve(job, domain) {
+      this.enqueueEvaluate(job, domain);
     }
-    enqueuePaint(job) {
-      this.enqueueEvaluate(job);
+    enqueuePaint(job, domain) {
+      this.enqueueEvaluate(job, domain);
     }
-    enqueueMorph(job) {
-      this.enqueueEvaluate(job);
+    enqueueMorph(job, domain) {
+      this.enqueueEvaluate(job, domain);
     }
-    enqueueClean(job) {
-      this.enqueueEvaluate(job);
+    enqueueClean(job, domain) {
+      this.enqueueEvaluate(job, domain);
     }
     nextTick(job) {
       this.nextTickQueue.push(job);
-      this.requestFlush();
-    }
-    requestFlush() {
-      if (this.isFlushing || this.isFlushPending)
-        return;
-      this.isFlushPending = true;
-      queueMicrotask(() => this.flushJobs());
+      if (!this.pendingDomains.has("__nextTick__")) {
+        this.pendingDomains.add("__nextTick__");
+        queueMicrotask(() => this.flushNextTick());
+      }
     }
     /**
-     * Vue 3 flushJobs pattern: Drains all pending jobs deterministically to completion.
+     * Drain an isolated domain's microtask queue deterministically.
      */
-    flushJobs() {
-      this.isFlushPending = false;
-      this.isFlushing = true;
-      try {
-        for (this.flushIndex = 0; this.flushIndex < this.queue.length; this.flushIndex++) {
-          const job = this.queue[this.flushIndex];
-          if (job) {
-            try {
-              job();
-            } catch (err) {
-              console.error("[Nexus Scheduler] Job error:", err);
-            }
-          }
+    flushDomain(domain) {
+      this.pendingDomains.delete(domain);
+      const queue = this.domainQueues.get(domain);
+      if (!queue || queue.length === 0)
+        return;
+      const jobs = queue.splice(0, queue.length);
+      for (let i = 0; i < jobs.length; i++) {
+        try {
+          jobs[i]();
+        } catch (err) {
+          console.error(`[Nexus Scheduler] Error in domain '${domain}':`, err);
         }
-      } finally {
-        this.flushIndex = 0;
-        this.queue.length = 0;
-        this.isFlushing = false;
-        if (this.nextTickQueue.length > 0) {
-          const ticks = this.nextTickQueue.splice(0, this.nextTickQueue.length);
-          for (let i = 0; i < ticks.length; i++) {
-            try {
-              ticks[i]();
-            } catch (err) {
-              console.error("[Nexus Scheduler] nextTick error:", err);
-            }
-          }
-        }
-        if (this.queue.length > 0) {
-          this.requestFlush();
+      }
+      if (queue.length > 0 && !this.pendingDomains.has(domain)) {
+        this.pendingDomains.add(domain);
+        queueMicrotask(() => this.flushDomain(domain));
+      }
+    }
+    flushNextTick() {
+      this.pendingDomains.delete("__nextTick__");
+      const ticks = this.nextTickQueue.splice(0, this.nextTickQueue.length);
+      for (let i = 0; i < ticks.length; i++) {
+        try {
+          ticks[i]();
+        } catch (err) {
+          console.error("[Nexus Scheduler] nextTick error:", err);
         }
       }
     }
