@@ -335,10 +335,7 @@ ${suggestion}`);
   }
   var PHASE_CURRENT = 0;
   var PHASE_PENDING = 1;
-  var CAPTURE_LEN = 2;
-  var EVALUATE_LEN = 3;
-  var RESOLVE_LEN = 4;
-  var PAINT_LEN = 5;
+  var EVALUATE_LEN = 2;
   var STATE_SLOTS = 6;
   var sharedState;
   try {
@@ -356,13 +353,14 @@ ${suggestion}`);
     yieldChannel = new MessageChannel();
     yieldChannel.port1.onmessage = () => {
       if (yieldResolve) {
-        yieldResolve();
+        const res = yieldResolve;
         yieldResolve = null;
+        res();
       }
     };
   }
   async function yieldToBrowser() {
-    if (typeof globalThis.scheduler === "object" && typeof globalThis.scheduler?.yield === "function") {
+    if (typeof globalThis.scheduler?.yield === "function") {
       return globalThis.scheduler.yield();
     }
     if (yieldChannel) {
@@ -374,241 +372,118 @@ ${suggestion}`);
     return new Promise((resolve) => setTimeout(resolve, 0));
   }
   var STALL_BUDGET_MS = 8;
-  var Scheduler = class _Scheduler {
-    // Phase 1: Capture (Input/Signal Flagging)
-    captureQueue = [];
-    // Phase 2: Evaluate (Downstream effects & Ghost DOM)
-    evaluateQueue = [];
-    // Phase 3: Resolve (Instruction Queue translation)
-    resolveQueue = [];
-    // Phase 4: Paint (DOM mutation execution)
-    paintQueue = [];
+  var MAX_ITERATIONS = 5e3;
+  var Scheduler = class {
+    queue = /* @__PURE__ */ new Set();
     nextTickQueue = [];
-    pending = false;
-    flushing = false;
-    paintPending = false;
-    // Deduplication set: prevents the same runner from being enqueued multiple
-    // times in the same flush cycle, which was the root cause of infinite loops.
-    evaluateSet = /* @__PURE__ */ new Set();
-    /** Configurable stall detection budget (ms). Phases yielding after this. */
+    isFlushPending = false;
+    isFlushing = false;
     stallBudget = STALL_BUDGET_MS;
     /**
-     * Phase 1: Capture
-     */
-    enqueueCapture(job) {
-      this.captureQueue.push(job);
-      this.syncSharedState();
-      this.requestFlush();
-    }
-    /**
-     * Phase 2: Evaluate (Legacy enqueueEffect/enqueueMorph mapping)
-     * Deduplicates: if a runner is already queued, skip re-enqueue.
+     * Enqueue an evaluation job (deduplicated via Set for O(1) membership).
      */
     enqueueEvaluate(job) {
-      if (this.evaluateSet.has(job))
+      if (this.queue.has(job))
         return;
-      this.evaluateSet.add(job);
-      this.evaluateQueue.push(job);
+      this.queue.add(job);
       this.syncSharedState();
       this.requestFlush();
     }
-    // Alias for compatibility with existing modules
+    // Backward-compatibility aliases across the framework
     enqueueEffect(job) {
       this.enqueueEvaluate(job);
     }
-    /**
-     * Phase 3: Resolve
-     */
+    enqueueCapture(job) {
+      this.enqueueEvaluate(job);
+    }
     enqueueResolve(job) {
-      this.resolveQueue.push(job);
-      this.syncSharedState();
-      this.requestFlush();
+      this.enqueueEvaluate(job);
     }
-    /**
-     * Phase 4: Paint (Legacy enqueueMorph mapping)
-     */
     enqueuePaint(job) {
-      this.paintQueue.push(job);
-      this.syncSharedState();
-      this.requestPaintFlush();
+      this.enqueueEvaluate(job);
     }
-    // Alias for compatibility with existing code
     enqueueMorph(job) {
-      this.enqueuePaint(job);
+      this.enqueueEvaluate(job);
     }
-    // Alias for Phase 4 or cleanup
     enqueueClean(job) {
-      this.paintQueue.push(job);
-      this.syncSharedState();
-      this.requestPaintFlush();
+      this.enqueueEvaluate(job);
     }
-    /**
-     * Schedules a task to run after the current atomic frame completes.
-     */
     nextTick(job) {
       this.nextTickQueue.push(job);
-      this.requestPaintFlush();
+      this.requestFlush();
     }
-    /**
-     * Exposes the shared phase state for cross-context coordination.
-     * Workers can read this to check scheduler load without IPC.
-     */
     getSharedState() {
       return sharedState;
     }
-    // ─── Async Process Loop ───────────────────────────────────────────────
-    /**
-     * Request a flush using the Deno/Node.js-style async microtask loop.
-     * Phases 1-3 (Capture, Evaluate, Resolve) are dispatched via queueMicrotask
-     * for immediate, non-blocking processing before the next paint.
-     */
     requestFlush() {
-      if (this.pending)
+      if (this.isFlushPending)
         return;
-      this.pending = true;
+      this.isFlushPending = true;
       Atomics.store(sharedState, PHASE_PENDING, 1);
       queueMicrotask(() => {
-        this.flushComputationPhases();
+        this.flush();
       });
     }
-    /**
-     * Request a flush for the Paint phase (Phase 4).
-     * Scheduled independently via requestAnimationFrame without locking or stalling
-     * computation phases.
-     */
-    requestPaintFlush() {
-      if (this.paintPending)
+    async flush() {
+      if (this.isFlushing)
         return;
-      this.paintPending = true;
-      const paintRunner = () => {
-        this.paintPending = false;
-        Atomics.store(sharedState, PHASE_CURRENT, 4);
-        this.runQueueSync(this.paintQueue);
-        this.runQueueSync(this.nextTickQueue);
-        Atomics.store(sharedState, PHASE_CURRENT, 0);
-        this.syncSharedState();
-        if (this.captureQueue.length > 0 || this.evaluateQueue.length > 0 || this.resolveQueue.length > 0) {
-          this.requestFlush();
-        } else if (this.paintQueue.length > 0 || this.nextTickQueue.length > 0) {
-          this.requestPaintFlush();
-        }
-      };
-      if (typeof requestAnimationFrame !== "undefined") {
-        requestAnimationFrame(paintRunner);
-      } else {
-        setTimeout(paintRunner, 0);
-      }
-    }
-    /**
-     * Flush computation phases (Capture, Evaluate, Resolve) via microtasks with stall detection.
-     * Fully decoupled from the Paint phase: computation finishes and releases its lock
-     * immediately, allowing subsequent microtasks (user interactions, hover states) to process
-     * on the next turn of the microtask loop without waiting for requestAnimationFrame.
-     */
-    async flushComputationPhases() {
-      if (this.flushing)
-        return;
-      this.flushing = true;
-      try {
-        Atomics.store(sharedState, PHASE_CURRENT, 1);
-        await this.runQueueWithYielding(this.captureQueue);
-        Atomics.store(sharedState, PHASE_CURRENT, 2);
-        await this.runQueueWithYielding(this.evaluateQueue);
-        this.evaluateSet.clear();
-        Atomics.store(sharedState, PHASE_CURRENT, 3);
-        await this.runQueueWithYielding(this.resolveQueue);
-        if (this.paintQueue.length > 0 || this.nextTickQueue.length > 0) {
-          this.requestPaintFlush();
-        }
-      } catch (e) {
-        console.error("[Nexus Scheduler] Async loop error:", e);
-      } finally {
-        this.flushing = false;
-        this.pending = false;
-        Atomics.store(sharedState, PHASE_CURRENT, 0);
-        Atomics.store(sharedState, PHASE_PENDING, 0);
-        this.syncSharedState();
-        if (this.captureQueue.length > 0 || this.evaluateQueue.length > 0 || this.resolveQueue.length > 0) {
-          this.requestFlush();
-        }
-      }
-    }
-    // ─── Queue Execution ──────────────────────────────────────────────────
-    /** Maximum iterations per queue flush to prevent infinite loops */
-    static MAX_QUEUE_ITERATIONS = 1e4;
-    /**
-     * Run a queue with stall detection. If execution exceeds the budget,
-     * yield to the browser and resume processing.
-     * Uses an indexed pointer loop (Vue 3 / React Scheduler parity) to eliminate O(N^2) Array.shift() overhead.
-     */
-    async runQueueWithYielding(queue) {
-      if (queue.length === 0)
-        return;
+      this.isFlushing = true;
+      this.isFlushPending = false;
+      Atomics.store(sharedState, PHASE_CURRENT, 2);
       let startTime = performance.now();
       let iterations = 0;
-      let head = 0;
       try {
-        while (head < queue.length) {
-          if (++iterations > _Scheduler.MAX_QUEUE_ITERATIONS) {
-            console.error(
-              `[Nexus Scheduler] Loop guard: ${iterations} iterations exceeded. Remaining queue size: ${queue.length - head}. Draining queue to prevent infinite loop.`
-            );
-            queue.length = 0;
-            return;
+        while (this.queue.size > 0) {
+          if (++iterations > MAX_ITERATIONS) {
+            console.error(`[Nexus Scheduler] Loop guard: exceeded ${MAX_ITERATIONS} iterations. Clearing queue.`);
+            this.queue.clear();
+            break;
           }
-          const job = queue[head++];
-          try {
-            job();
-          } catch (e) {
-            console.error("[Nexus Scheduler] Job error:", e);
-          }
-          const shouldCheckStall = (head & 7) === 0 || head === queue.length;
-          const shouldYield = shouldCheckStall && head < queue.length && (performance.now() - startTime > this.stallBudget || typeof navigator !== "undefined" && navigator.scheduling?.isInputPending?.() === true);
-          if (shouldYield) {
-            if (head > 512) {
-              queue.copyWithin(0, head);
-              queue.length -= head;
-              head = 0;
+          const jobs = Array.from(this.queue);
+          this.queue.clear();
+          this.syncSharedState();
+          for (let i = 0; i < jobs.length; i++) {
+            try {
+              jobs[i]();
+            } catch (err) {
+              console.error("[Nexus Scheduler] Job error:", err);
             }
-            this.syncSharedState();
-            await yieldToBrowser();
-            startTime = performance.now();
+            const shouldCheck = (i & 7) === 0 || i === jobs.length - 1;
+            const isInputPending = typeof navigator !== "undefined" && navigator.scheduling?.isInputPending?.() === true;
+            const isStalled = performance.now() - startTime > this.stallBudget;
+            if (shouldCheck && (isInputPending || isStalled)) {
+              for (let j = i + 1; j < jobs.length; j++) {
+                this.queue.add(jobs[j]);
+              }
+              this.syncSharedState();
+              await yieldToBrowser();
+              startTime = performance.now();
+              break;
+            }
+          }
+        }
+        if (this.nextTickQueue.length > 0) {
+          const ticks = this.nextTickQueue.splice(0, this.nextTickQueue.length);
+          for (const tick of ticks) {
+            try {
+              tick();
+            } catch (err) {
+              console.error("[Nexus Scheduler] nextTick error:", err);
+            }
           }
         }
       } finally {
-        if (head >= queue.length) {
-          queue.length = 0;
-        } else if (head > 0) {
-          queue.copyWithin(0, head);
-          queue.length -= head;
-        }
+        this.isFlushing = false;
+        Atomics.store(sharedState, PHASE_CURRENT, 0);
+        Atomics.store(sharedState, PHASE_PENDING, this.queue.size > 0 ? 1 : 0);
         this.syncSharedState();
-      }
-    }
-    /**
-     * Run a queue synchronously (used for Paint phase which must be atomic).
-     */
-    runQueueSync(queue) {
-      const len = queue.length;
-      if (len === 0)
-        return;
-      for (let i = 0; i < len; i++) {
-        try {
-          queue[i]();
-        } catch (e) {
-          console.error("[Nexus Scheduler] Job error:", e);
+        if (this.queue.size > 0 || this.nextTickQueue.length > 0) {
+          this.requestFlush();
         }
       }
-      queue.length = 0;
     }
-    /**
-     * Sync queue lengths to the shared state buffer for cross-context visibility.
-     */
     syncSharedState() {
-      Atomics.store(sharedState, CAPTURE_LEN, this.captureQueue.length);
-      Atomics.store(sharedState, EVALUATE_LEN, this.evaluateQueue.length);
-      Atomics.store(sharedState, RESOLVE_LEN, this.resolveQueue.length);
-      Atomics.store(sharedState, PAINT_LEN, this.paintQueue.length);
+      Atomics.store(sharedState, EVALUATE_LEN, this.queue.size);
     }
   };
   var scheduler = new Scheduler();
