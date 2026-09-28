@@ -100,8 +100,10 @@
   <!-- ================= 2. Middle Content Section (Scrollable) ================= -->
   <div class="relative flex-1 min-h-0 overflow-hidden flex flex-col">
   <main class="sidebar-content w-full h-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+    data-bind-data-scrollbar="collapsed && !hovered && !sidebarOpen ? 'none' : 'overlay'"
+    data-class="{ 'pe-3': !collapsed || hovered || sidebarOpen }"
     data-effect="
-      if (collapsed && !hovered && !sidebarOpen && $el) { $el.scrollTo({ top: 0, behavior: 'smooth' }); }
+      if (collapsed && !hovered && !sidebarOpen && $el) { $el.scrollTop = 0; $el.__scrollbarInstance?.hide(); }
       const discovered = [...new Set((router.pages || []).map(p => p.category || p.meta?.category).filter(Boolean))];
       const known = new Set((categories || []).map(c => c.name));
       const extra = discovered.filter(c => !known.has(c)).map(c => ({ id: c, name: c, itemsDraggable: true, icon: 'material-symbols-light:folder-outline' }));
