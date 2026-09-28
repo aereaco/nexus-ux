@@ -464,6 +464,7 @@ const componentModule: AttributeModule = {
                 runtime.morphDOM(shadow as unknown as HTMLElement, html);
               }
               stylesheet.adoptElementSubtree(shadow);
+              await new Promise(resolve => queueMicrotask(resolve));
               Array.from(shadow.children).forEach((child) => {
                 if (child instanceof HTMLElement || child instanceof SVGElement) {
                   runtime.processElement(child as unknown as HTMLElement);
@@ -477,6 +478,7 @@ const componentModule: AttributeModule = {
                 runtime.morphDOM(el, html);
               }
               stylesheet.adoptElementSubtree(el);
+              await new Promise(resolve => queueMicrotask(resolve));
               Array.from(el.children).forEach((child) => {
                 if (child instanceof HTMLElement || child instanceof SVGElement) {
                   runtime.processElement(child as unknown as HTMLElement);
