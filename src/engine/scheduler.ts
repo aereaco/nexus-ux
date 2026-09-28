@@ -174,7 +174,7 @@ class Scheduler {
   enqueuePaint(job: Job): void {
     this.paintQueue.push(job);
     this.syncSharedState();
-    this.requestFlush();
+    this.requestPaintFlush();
   }
 
   // Alias for compatibility with existing code
@@ -186,7 +186,7 @@ class Scheduler {
   enqueueClean(job: Job): void {
     this.paintQueue.push(job); // Cleanup usually happens in the paint phase or right after
     this.syncSharedState();
-    this.requestFlush();
+    this.requestPaintFlush();
   }
 
   /**
@@ -194,7 +194,7 @@ class Scheduler {
    */
   nextTick(job: Job): void {
     this.nextTickQueue.push(job);
-    this.requestFlush();
+    this.requestPaintFlush();
   }
 
   /**

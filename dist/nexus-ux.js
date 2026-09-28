@@ -430,7 +430,7 @@ ${suggestion}`);
     enqueuePaint(job) {
       this.paintQueue.push(job);
       this.syncSharedState();
-      this.requestFlush();
+      this.requestPaintFlush();
     }
     // Alias for compatibility with existing code
     enqueueMorph(job) {
@@ -440,14 +440,14 @@ ${suggestion}`);
     enqueueClean(job) {
       this.paintQueue.push(job);
       this.syncSharedState();
-      this.requestFlush();
+      this.requestPaintFlush();
     }
     /**
      * Schedules a task to run after the current atomic frame completes.
      */
     nextTick(job) {
       this.nextTickQueue.push(job);
-      this.requestFlush();
+      this.requestPaintFlush();
     }
     /**
      * Exposes the shared phase state for cross-context coordination.
