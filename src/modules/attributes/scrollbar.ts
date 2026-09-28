@@ -442,28 +442,12 @@ export class OverlayScrollbarInstance {
 }
 
 export function ensureOverlayInstance(el: HTMLElement): OverlayScrollbarInstance {
-  let inst = overlayInstances.get(el);
+  let inst = (el as any).__scrollbarInstance || overlayInstances.get(el);
   if (!inst) {
     inst = new OverlayScrollbarInstance(el);
     overlayInstances.set(el, inst);
   }
   return inst;
-}
-
-if (typeof HTMLElement !== 'undefined' && !Object.prototype.hasOwnProperty.call(HTMLElement.prototype, '__scrollbarInstance')) {
-  Object.defineProperty(HTMLElement.prototype, '__scrollbarInstance', {
-    get() {
-      if (globalConfig.mode === 'overlay' || this.hasAttribute('data-scrollbar')) {
-        return ensureOverlayInstance(this);
-      }
-      return overlayInstances.get(this) || null;
-    },
-    set(val: OverlayScrollbarInstance | null) {
-      if (val) overlayInstances.set(this, val);
-      else overlayInstances.delete(this);
-    },
-    configurable: true,
-  });
 }
 
 export function syncAllOverlayScrollbars(): void {
