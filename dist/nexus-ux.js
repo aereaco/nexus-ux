@@ -1361,7 +1361,7 @@ ${suggestion}`);
     revalidateInBackground(url, cacheKey, cachedEntry, options) {
       setTimeout(async () => {
         try {
-          const isSameOrigin = typeof location === "undefined" || url.startsWith("/") || url.startsWith(location.origin);
+          const isSameOrigin = typeof location === "undefined" || !url.startsWith("http") || url.startsWith(location.origin);
           const headers = {};
           if (cachedEntry.etag && isSameOrigin) {
             headers["If-None-Match"] = cachedEntry.etag;
@@ -1406,7 +1406,7 @@ ${suggestion}`);
       }, 100);
     }
     async performNetworkFetch(url, options, etagHeader) {
-      const isSameOrigin = typeof location === "undefined" || url.startsWith("/") || url.startsWith(location.origin);
+      const isSameOrigin = typeof location === "undefined" || !url.startsWith("http") || url.startsWith(location.origin);
       const headers = {};
       if (etagHeader && isSameOrigin)
         headers["If-None-Match"] = etagHeader;
