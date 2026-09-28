@@ -9740,7 +9740,6 @@ ${match}</ul>
     default: () => scrollbar_default,
     ensureOverlayInstance: () => ensureOverlayInstance,
     ensureScrollbarStyles: () => ensureScrollbarStyles,
-    isGlobalOverlayActive: () => isGlobalOverlayActive,
     isScrollContainer: () => isScrollContainer,
     syncAllOverlayScrollbars: () => syncAllOverlayScrollbars,
     triggerContainerMotion: () => triggerContainerMotion
@@ -9753,8 +9752,7 @@ ${match}</ul>
     height: "0.625rem",
     fade: "0.4s",
     fadeIn: "0.2s",
-    fadeOut: "0.4s",
-    fadeTiming: "cubic-bezier(0.4, 0, 0.2, 1)"
+    fadeOut: "0.4s"
   };
   function buildScrollbarCSS(config) {
     const cfg = { ...globalConfig, ...config };
@@ -9951,12 +9949,18 @@ ${match}</ul>
       });
     }
     update() {
+      if (!this.el.isConnected) {
+        this.destroy();
+        return;
+      }
       const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
-      if (!this.el.isConnected || this.el.getAttribute("data-scrollbar") === "none" || this.el.classList.contains("scrollbar-none") || clientHeight === 0 || this.el.style.display === "none" || this.el.offsetParent === null && window.getComputedStyle(this.el).position !== "fixed" && window.getComputedStyle(this.el).display === "none") {
+      if (this.el.getAttribute("data-scrollbar") === "none" || this.el.classList.contains("scrollbar-none") || clientHeight === 0 || this.el.style.display === "none") {
         this.hide();
         return;
       }
-      const canScrollY = scrollHeight - clientHeight > 1 && clientHeight > 0;
+      const s = window.getComputedStyle(this.el);
+      const isScrollableY = s.overflowY === "auto" || s.overflowY === "scroll";
+      const canScrollY = isScrollableY && scrollHeight - clientHeight > 1 && clientHeight > 0;
       if (canScrollY && this.trackV && this.thumbV) {
         if (this.trackV.style.display !== "block")
           this.trackV.style.display = "block";
@@ -9969,7 +9973,8 @@ ${match}</ul>
       } else if (this.trackV && this.trackV.style.display !== "none") {
         this.trackV.style.display = "none";
       }
-      const canScrollX = scrollWidth - clientWidth > 1 && clientWidth > 0;
+      const isScrollableX = s.overflowX === "auto" || s.overflowX === "scroll";
+      const canScrollX = isScrollableX && scrollWidth - clientWidth > 1 && clientWidth > 0;
       if (canScrollX && this.trackH && this.thumbH) {
         if (this.trackH.style.display !== "block")
           this.trackH.style.display = "block";
@@ -10113,6 +10118,7 @@ ${match}</ul>
       }
       this.el.classList.remove("scrollbar-overlay-active", "scrollbar-no-autohide");
       activeInstances.delete(this);
+      overlayInstances.delete(this.el);
     }
   };
   function ensureOverlayInstance(el) {
@@ -10143,30 +10149,30 @@ ${match}</ul>
   function syncAllOverlayScrollbars() {
     activeInstances.forEach((inst) => inst.scheduleUpdate());
   }
-  function isGlobalOverlayActive() {
-    return globalConfig.mode === "overlay";
-  }
   function isScrollContainer(el) {
     if (!el || !(el instanceof HTMLElement) || !el.isConnected)
       return false;
     if (el.hasAttribute("data-scrollbar_ignore") || el.getAttribute("data-scrollbar") === "none" || el.classList.contains("scrollbar-none")) {
       return false;
     }
+    if (el === document.documentElement || el === document.body) {
+      const s2 = window.getComputedStyle(el);
+      if (s2.overflow === "hidden" || s2.overflowX === "hidden" && s2.overflowY === "hidden") {
+        return false;
+      }
+    }
     const s = window.getComputedStyle(el);
     if (s.display === "none" || s.visibility === "hidden")
       return false;
-    if (el.hasAttribute("data-scrollbar"))
+    if (el.hasAttribute("data-scrollbar") && el.getAttribute("data-scrollbar") !== "native" && el.getAttribute("data-scrollbar") !== "none")
       return true;
     const hasScrollY = (s.overflowY === "auto" || s.overflowY === "scroll") && el.scrollHeight - el.clientHeight > 1;
     const hasScrollX = (s.overflowX === "auto" || s.overflowX === "scroll") && el.scrollWidth - el.clientWidth > 1;
     return hasScrollY || hasScrollX;
   }
   function attachOverlayScrollbar(el) {
-    if (!el || !(el instanceof HTMLElement))
+    if (!el || !(el instanceof HTMLElement) || !isScrollContainer(el))
       return null;
-    if (el.getAttribute("data-scrollbar") === "none" || el.classList.contains("scrollbar-none")) {
-      return null;
-    }
     const inst = ensureOverlayInstance(el);
     inst.scheduleUpdate();
     triggerContainerMotion(el);
@@ -10236,7 +10242,6 @@ ${match}</ul>
         const inst = overlayInstances.get(el);
         if (inst) {
           inst.destroy();
-          overlayInstances.delete(el);
         }
         return;
       }
@@ -10269,18 +10274,18 @@ ${match}</ul>
         ensureScrollbarStyles(el.getRootNode(), globalConfig);
         setupGlobalListeners();
         syncAllOverlayScrollbars();
+        return;
       }
       const merged = { ...globalConfig, ...config };
       if (merged.mode === "none") {
         el.classList.add("scrollbar-none");
         return;
       }
-      if (merged.mode === "overlay") {
+      if (merged.mode === "overlay" && isScrollContainer(el)) {
         const overlayInst = attachOverlayScrollbar(el);
-        if (overlayInst && !isGlobal) {
+        if (overlayInst) {
           return () => {
             overlayInst.destroy();
-            overlayInstances.delete(el);
           };
         }
       }

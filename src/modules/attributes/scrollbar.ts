@@ -1,7 +1,7 @@
 /**
  * Universal Native + Overlay Scrollbar Engine for Nexus-UX
  *
- * Streamlined, zero-copy modern architecture:
+ * Zero-copy modern architecture:
  * - Constructable StyleSheets for 100% pre-paint certainty.
  * - CSS Logical Properties (`inset-inline`, `inset-block`) for automatic LTR/RTL mirroring.
  * - Hardware-accelerated GPU transforms (`translateY`/`translateX`).
@@ -22,18 +22,9 @@ export interface ScrollbarConfig {
   thin?: boolean;
   width?: string | number;
   height?: string | number;
-  thumb?: string;
-  thumbHover?: string;
-  thumbActive?: string;
-  track?: string;
-  trackHover?: string;
-  radius?: string;
-  thumbRadius?: string;
-  trackRadius?: string;
   fade?: number | string;
   fadeIn?: number | string;
   fadeOut?: number | string;
-  fadeTiming?: string;
   global?: boolean;
 }
 
@@ -46,7 +37,6 @@ let globalConfig: ScrollbarConfig = {
   fade: '0.4s',
   fadeIn: '0.2s',
   fadeOut: '0.4s',
-  fadeTiming: 'cubic-bezier(0.4, 0, 0.2, 1)'
 };
 
 export function buildScrollbarCSS(config?: Partial<ScrollbarConfig>): string {
@@ -260,22 +250,28 @@ export class OverlayScrollbarInstance {
   }
 
   public update(): void {
+    if (!this.el.isConnected) {
+      this.destroy();
+      return;
+    }
+
     const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
 
     if (
-      !this.el.isConnected ||
       this.el.getAttribute('data-scrollbar') === 'none' ||
       this.el.classList.contains('scrollbar-none') ||
       clientHeight === 0 ||
-      this.el.style.display === 'none' ||
-      (this.el.offsetParent === null && window.getComputedStyle(this.el).position !== 'fixed' && window.getComputedStyle(this.el).display === 'none')
+      this.el.style.display === 'none'
     ) {
       this.hide();
       return;
     }
 
+    const s = window.getComputedStyle(this.el);
+
     // Vertical Update
-    const canScrollY = scrollHeight - clientHeight > 1 && clientHeight > 0;
+    const isScrollableY = s.overflowY === 'auto' || s.overflowY === 'scroll';
+    const canScrollY = isScrollableY && (scrollHeight - clientHeight > 1) && clientHeight > 0;
     if (canScrollY && this.trackV && this.thumbV) {
       if (this.trackV.style.display !== 'block') this.trackV.style.display = 'block';
       const thumbHeight = Math.max(24, (clientHeight / scrollHeight) * clientHeight);
@@ -290,7 +286,8 @@ export class OverlayScrollbarInstance {
     }
 
     // Horizontal Update
-    const canScrollX = scrollWidth - clientWidth > 1 && clientWidth > 0;
+    const isScrollableX = s.overflowX === 'auto' || s.overflowX === 'scroll';
+    const canScrollX = isScrollableX && (scrollWidth - clientWidth > 1) && clientWidth > 0;
     if (canScrollX && this.trackH && this.thumbH) {
       if (this.trackH.style.display !== 'block') this.trackH.style.display = 'block';
       const thumbWidth = Math.max(24, (clientWidth / scrollWidth) * clientWidth);
@@ -306,7 +303,6 @@ export class OverlayScrollbarInstance {
   }
 
   private bindEvents(): void {
-    // Scroll listener on container for immediate sync & auto-hide trigger
     this.scrollHandler = () => {
       this.update();
       triggerContainerMotion(this.el);
@@ -441,6 +437,7 @@ export class OverlayScrollbarInstance {
     }
     this.el.classList.remove('scrollbar-overlay-active', 'scrollbar-no-autohide');
     activeInstances.delete(this);
+    overlayInstances.delete(this.el);
   }
 }
 
@@ -473,28 +470,27 @@ export function syncAllOverlayScrollbars(): void {
   activeInstances.forEach((inst) => inst.scheduleUpdate());
 }
 
-export function isGlobalOverlayActive(): boolean {
-  return globalConfig.mode === 'overlay';
-}
-
 export function isScrollContainer(el: HTMLElement): boolean {
   if (!el || !(el instanceof HTMLElement) || !el.isConnected) return false;
   if (el.hasAttribute('data-scrollbar_ignore') || el.getAttribute('data-scrollbar') === 'none' || el.classList.contains('scrollbar-none')) {
     return false;
   }
+  if (el === document.documentElement || el === document.body) {
+    const s = window.getComputedStyle(el);
+    if (s.overflow === 'hidden' || (s.overflowX === 'hidden' && s.overflowY === 'hidden')) {
+      return false;
+    }
+  }
   const s = window.getComputedStyle(el);
   if (s.display === 'none' || s.visibility === 'hidden') return false;
-  if (el.hasAttribute('data-scrollbar')) return true;
+  if (el.hasAttribute('data-scrollbar') && el.getAttribute('data-scrollbar') !== 'native' && el.getAttribute('data-scrollbar') !== 'none') return true;
   const hasScrollY = (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight - el.clientHeight > 1;
   const hasScrollX = (s.overflowX === 'auto' || s.overflowX === 'scroll') && el.scrollWidth - el.clientWidth > 1;
   return hasScrollY || hasScrollX;
 }
 
 export function attachOverlayScrollbar(el: HTMLElement): OverlayScrollbarInstance | null {
-  if (!el || !(el instanceof HTMLElement)) return null;
-  if (el.getAttribute('data-scrollbar') === 'none' || el.classList.contains('scrollbar-none')) {
-    return null;
-  }
+  if (!el || !(el instanceof HTMLElement) || !isScrollContainer(el)) return null;
   const inst = ensureOverlayInstance(el);
   inst.scheduleUpdate();
   triggerContainerMotion(el);
@@ -572,7 +568,6 @@ const scrollbarModule: AttributeModule = {
       const inst = overlayInstances.get(el);
       if (inst) {
         inst.destroy();
-        overlayInstances.delete(el);
       }
       return;
     }
@@ -609,6 +604,7 @@ const scrollbarModule: AttributeModule = {
       ensureScrollbarStyles(el.getRootNode() as Document | ShadowRoot, globalConfig);
       setupGlobalListeners();
       syncAllOverlayScrollbars();
+      return;
     }
 
     const merged = { ...globalConfig, ...config };
@@ -617,12 +613,11 @@ const scrollbarModule: AttributeModule = {
       return;
     }
 
-    if (merged.mode === 'overlay') {
+    if (merged.mode === 'overlay' && isScrollContainer(el)) {
       const overlayInst = attachOverlayScrollbar(el);
-      if (overlayInst && !isGlobal) {
+      if (overlayInst) {
         return () => {
           overlayInst.destroy();
-          overlayInstances.delete(el);
         };
       }
     }
