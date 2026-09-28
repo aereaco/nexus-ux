@@ -125,6 +125,7 @@ class Scheduler {
   private nextTickQueue: Job[] = [];
   private pending = false;
   private flushing = false;
+  private paintPending = false;
   // Deduplication set: prevents the same runner from being enqueued multiple
   // times in the same flush cycle, which was the root cause of infinite loops.
   private evaluateSet = new Set<Job>();

@@ -386,6 +386,7 @@ ${suggestion}`);
     nextTickQueue = [];
     pending = false;
     flushing = false;
+    paintPending = false;
     // Deduplication set: prevents the same runner from being enqueued multiple
     // times in the same flush cycle, which was the root cause of infinite loops.
     evaluateSet = /* @__PURE__ */ new Set();
