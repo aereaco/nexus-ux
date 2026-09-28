@@ -9952,7 +9952,7 @@ ${match}</ul>
     }
     update() {
       const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
-      if (!this.el.isConnected || this.el.getAttribute("data-scrollbar") === "none" || this.el.classList.contains("scrollbar-none") || clientHeight === 0 || this.el.offsetParent === null) {
+      if (!this.el.isConnected || this.el.getAttribute("data-scrollbar") === "none" || this.el.classList.contains("scrollbar-none") || clientHeight === 0 || this.el.style.display === "none" || this.el.offsetParent === null && window.getComputedStyle(this.el).position !== "fixed" && window.getComputedStyle(this.el).display === "none") {
         this.hide();
         return;
       }
