@@ -10131,6 +10131,12 @@ ${match}</ul>
         }
         return overlayInstances.get(this) || null;
       },
+      set(val) {
+        if (val)
+          overlayInstances.set(this, val);
+        else
+          overlayInstances.delete(this);
+      },
       configurable: true
     });
   }

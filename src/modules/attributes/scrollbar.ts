@@ -461,6 +461,10 @@ if (typeof HTMLElement !== 'undefined' && !Object.prototype.hasOwnProperty.call(
       }
       return overlayInstances.get(this) || null;
     },
+    set(val: OverlayScrollbarInstance | null) {
+      if (val) overlayInstances.set(this, val);
+      else overlayInstances.delete(this);
+    },
     configurable: true,
   });
 }
