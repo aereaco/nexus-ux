@@ -14644,58 +14644,25 @@ ${match}</ul>
     throttleModifier: () => throttleModifier
   });
   init_consts();
-  var throttleModifier = {
-    name: "throttle",
-    handle: (payload, el, arg, runtime) => {
-      const cmd = parseCommandArg(arg);
-      if (cmd.command === "cancel" || cmd.command === "reset") {
-        if (typeof payload === "function") {
-          return (e) => {
-            const targets = resolveTargetElements(el, cmd.targetSelector);
-            targets.forEach((target) => {
-              const map = getTimerMap(target);
-              map.delete("throttle");
-            });
-            return payload(e);
-          };
-        }
-        return (...args) => {
-          const targets = resolveTargetElements(el, cmd.targetSelector);
-          targets.forEach((target) => {
-            const map = getTimerMap(target);
-            map.delete("throttle");
-          });
-          return typeof payload === "function" ? payload(...args) : payload;
-        };
+  var throttleModifier = createTimerModifier(
+    "throttle",
+    DEFAULT_THROTTLE_TIME,
+    (run, wait, _el, rec, map) => {
+      const now = performance.now();
+      const last = rec.last ?? 0;
+      if (now - last > wait) {
+        rec.last = now;
+        map.set("throttle", rec);
+        run();
       }
-      if (typeof payload === "function") {
-        return (e) => {
-          const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_THROTTLE_TIME);
-          const map = getTimerMap(el);
-          const rec = map.get("throttle") || { timer: null, last: 0 };
-          const now = performance.now();
-          const last = rec.last ?? 0;
-          if (now - last > wait) {
-            rec.last = now;
-            map.set("throttle", rec);
-            return payload(e);
-          }
-        };
+    },
+    {
+      supportsNonFunctionPromise: true,
+      onCancel: (_target, map) => {
+        map.delete("throttle");
       }
-      return (...args) => {
-        const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_THROTTLE_TIME);
-        const map = getTimerMap(el);
-        const rec = map.get("throttle") || { timer: null, last: 0 };
-        const now = performance.now();
-        const last = rec.last ?? 0;
-        if (now - last > wait) {
-          rec.last = now;
-          map.set("throttle", rec);
-          return typeof payload === "function" ? payload(...args) : payload;
-        }
-      };
     }
-  };
+  );
   var throttle_default = throttleModifier;
 
   // src/modules/modifiers/window.ts
