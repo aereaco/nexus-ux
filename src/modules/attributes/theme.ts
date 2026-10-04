@@ -51,11 +51,7 @@ const themeModule: AttributeModule = {
       try {
         rawConfig = runtime.evaluate(el, expression);
       } catch (_) {
-        if (hasObjectConfig) {
-           try { rawConfig = (new Function('return (' + expression + ')'))(); } catch (_) {}
-        } else {
-           rawConfig = { default: trimmed };
-        }
+        rawConfig = { default: trimmed };
       }
     }
 

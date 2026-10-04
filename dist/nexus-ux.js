@@ -10595,14 +10595,7 @@ ${match}</ul>
         try {
           rawConfig = runtime.evaluate(el, expression);
         } catch (_) {
-          if (hasObjectConfig) {
-            try {
-              rawConfig = new Function("return (" + expression + ")")();
-            } catch (_2) {
-            }
-          } else {
-            rawConfig = { default: trimmed };
-          }
+          rawConfig = { default: trimmed };
         }
       }
       if (!rawConfig || typeof rawConfig !== "object") {
