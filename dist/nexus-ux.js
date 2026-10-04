@@ -9562,11 +9562,12 @@ ${match}</ul>
     ensureOverlayInstance: () => ensureOverlayInstance,
     ensureScrollbarStyles: () => ensureScrollbarStyles,
     isScrollContainer: () => isScrollContainer,
+    scanScrollContainers: () => scanScrollContainers,
     syncAllOverlayScrollbars: () => syncAllOverlayScrollbars,
     triggerContainerMotion: () => triggerContainerMotion
   });
   var globalConfig = {
-    mode: "native",
+    mode: "overlay",
     autohide: 800,
     thin: true,
     width: "0.625rem",
@@ -9700,6 +9701,7 @@ ${match}</ul>
   }
   if (typeof document !== "undefined") {
     ensureScrollbarStyles();
+    setupGlobalListeners();
   }
   var overlayInstances = /* @__PURE__ */ new WeakMap();
   var activeInstances = /* @__PURE__ */ new Set();
@@ -9785,6 +9787,10 @@ ${match}</ul>
       if (canScrollY && this.trackV && this.thumbV) {
         if (this.trackV.style.display !== "block")
           this.trackV.style.display = "block";
+        if (this.host !== this.el) {
+          this.trackV.style.top = `${this.el.offsetTop}px`;
+          this.trackV.style.height = `${this.el.clientHeight}px`;
+        }
         const thumbHeight = Math.max(24, clientHeight / scrollHeight * clientHeight);
         const maxScroll = scrollHeight - clientHeight;
         const maxThumb = clientHeight - thumbHeight;
@@ -9799,6 +9805,10 @@ ${match}</ul>
       if (canScrollX && this.trackH && this.thumbH) {
         if (this.trackH.style.display !== "block")
           this.trackH.style.display = "block";
+        if (this.host !== this.el) {
+          this.trackH.style.left = `${this.el.offsetLeft}px`;
+          this.trackH.style.width = `${this.el.clientWidth}px`;
+        }
         const thumbWidth = Math.max(24, clientWidth / scrollWidth * clientWidth);
         const maxScroll = scrollWidth - clientWidth;
         const maxThumb = clientWidth - thumbWidth;
@@ -9975,12 +9985,14 @@ ${match}</ul>
     const hasScrollX = (s.overflowX === "auto" || s.overflowX === "scroll") && el.scrollWidth - el.clientWidth > 1;
     return hasScrollY || hasScrollX;
   }
-  function attachOverlayScrollbar(el) {
+  function attachOverlayScrollbar(el, triggerMotion = true) {
     if (!el || !(el instanceof HTMLElement) || !isScrollContainer(el))
       return null;
     const inst = ensureOverlayInstance(el);
     inst.scheduleUpdate();
-    triggerContainerMotion(el);
+    if (triggerMotion) {
+      triggerContainerMotion(el);
+    }
     return inst;
   }
   function triggerContainerMotion(target) {
@@ -10008,6 +10020,18 @@ ${match}</ul>
     elementTimers.set(target, timer);
   }
   var globalListenerRegistered = false;
+  function scanScrollContainers() {
+    if (typeof document === "undefined")
+      return;
+    const candidates = document.querySelectorAll(
+      '[data-scrollbar], .overflow-y-auto, .overflow-x-auto, .overflow-auto, [role="tabpanel"], .cm-scroller, .sidebar-content'
+    );
+    candidates.forEach((el) => {
+      if (el instanceof HTMLElement && isScrollContainer(el)) {
+        attachOverlayScrollbar(el, false);
+      }
+    });
+  }
   function setupGlobalListeners() {
     if (globalListenerRegistered || typeof document === "undefined")
       return;
@@ -10016,21 +10040,40 @@ ${match}</ul>
     const onGlobalScroll = (e) => {
       const target = e.target;
       if (target instanceof HTMLElement && isScrollContainer(target)) {
-        attachOverlayScrollbar(target);
+        attachOverlayScrollbar(target, true);
       }
     };
     document.addEventListener("scroll", onGlobalScroll, { capture: true, passive: true });
-    const scanScrollContainers = () => {
-      if (globalConfig.mode !== "overlay")
-        return;
-      document.querySelectorAll('.overflow-y-auto, .overflow-auto, [role="tabpanel"], .cm-scroller, [data-scrollbar="overlay"]').forEach((el) => {
-        if (el instanceof HTMLElement && !overlayInstances.has(el) && isScrollContainer(el)) {
-          attachOverlayScrollbar(el);
+    const onPointerOver = (e) => {
+      let target = e.target;
+      let depth = 0;
+      while (target && depth < 5 && target !== document.body && target !== document.documentElement) {
+        if (isScrollContainer(target)) {
+          if (!overlayInstances.has(target)) {
+            attachOverlayScrollbar(target, false);
+          } else {
+            overlayInstances.get(target)?.scheduleUpdate();
+          }
+          break;
         }
-      });
+        target = target.parentElement;
+        depth++;
+      }
     };
-    document.addEventListener("nexus:dom-mutated", scanScrollContainers, { passive: true });
-    setTimeout(scanScrollContainers, 50);
+    document.addEventListener("pointerover", onPointerOver, { capture: true, passive: true });
+    document.addEventListener("nexus:dom-mutated", () => {
+      requestAnimationFrame(scanScrollContainers);
+    }, { passive: true });
+    window.addEventListener("hashchange", () => {
+      setTimeout(scanScrollContainers, 50);
+    }, { passive: true });
+    window.addEventListener("popstate", () => {
+      setTimeout(scanScrollContainers, 50);
+    }, { passive: true });
+    scanScrollContainers();
+    requestAnimationFrame(scanScrollContainers);
+    setTimeout(scanScrollContainers, 150);
+    setTimeout(scanScrollContainers, 600);
   }
   var scrollbarModule = {
     name: "scrollbar",
@@ -10038,6 +10081,7 @@ ${match}</ul>
     onRegister() {
       if (typeof document !== "undefined") {
         ensureScrollbarStyles(document);
+        setupGlobalListeners();
       }
     },
     handle: (el, value, runtime, parsedAttr) => {
@@ -10086,13 +10130,13 @@ ${match}</ul>
         el.classList.add("scrollbar-none");
         return;
       }
-      if (merged.mode === "overlay" && isScrollContainer(el)) {
-        const overlayInst = attachOverlayScrollbar(el);
-        if (overlayInst) {
-          return () => {
-            overlayInst.destroy();
-          };
-        }
+      if (merged.mode === "overlay") {
+        const overlayInst = ensureOverlayInstance(el);
+        overlayInst.scheduleUpdate();
+        requestAnimationFrame(() => overlayInst.update());
+        return () => {
+          overlayInst.destroy();
+        };
       }
     }
   };

@@ -29,7 +29,7 @@ export interface ScrollbarConfig {
 }
 
 let globalConfig: ScrollbarConfig = {
-  mode: 'native',
+  mode: 'overlay',
   autohide: 800,
   thin: true,
   width: '0.625rem',
@@ -168,6 +168,7 @@ export function ensureScrollbarStyles(root?: Document | ShadowRoot | null, confi
 
 if (typeof document !== 'undefined') {
   ensureScrollbarStyles();
+  setupGlobalListeners();
 }
 
 const overlayInstances = new WeakMap<Element, OverlayScrollbarInstance>();
@@ -274,6 +275,10 @@ export class OverlayScrollbarInstance {
     const canScrollY = isScrollableY && (scrollHeight - clientHeight > 1) && clientHeight > 0;
     if (canScrollY && this.trackV && this.thumbV) {
       if (this.trackV.style.display !== 'block') this.trackV.style.display = 'block';
+      if (this.host !== this.el) {
+        this.trackV.style.top = `${this.el.offsetTop}px`;
+        this.trackV.style.height = `${this.el.clientHeight}px`;
+      }
       const thumbHeight = Math.max(24, (clientHeight / scrollHeight) * clientHeight);
       const maxScroll = scrollHeight - clientHeight;
       const maxThumb = clientHeight - thumbHeight;
@@ -290,6 +295,10 @@ export class OverlayScrollbarInstance {
     const canScrollX = isScrollableX && (scrollWidth - clientWidth > 1) && clientWidth > 0;
     if (canScrollX && this.trackH && this.thumbH) {
       if (this.trackH.style.display !== 'block') this.trackH.style.display = 'block';
+      if (this.host !== this.el) {
+        this.trackH.style.left = `${this.el.offsetLeft}px`;
+        this.trackH.style.width = `${this.el.clientWidth}px`;
+      }
       const thumbWidth = Math.max(24, (clientWidth / scrollWidth) * clientWidth);
       const maxScroll = scrollWidth - clientWidth;
       const maxThumb = clientWidth - thumbWidth;
@@ -474,11 +483,13 @@ export function isScrollContainer(el: HTMLElement): boolean {
   return hasScrollY || hasScrollX;
 }
 
-export function attachOverlayScrollbar(el: HTMLElement): OverlayScrollbarInstance | null {
+export function attachOverlayScrollbar(el: HTMLElement, triggerMotion: boolean = true): OverlayScrollbarInstance | null {
   if (!el || !(el instanceof HTMLElement) || !isScrollContainer(el)) return null;
   const inst = ensureOverlayInstance(el);
   inst.scheduleUpdate();
-  triggerContainerMotion(el);
+  if (triggerMotion) {
+    triggerContainerMotion(el);
+  }
   return inst;
 }
 
@@ -509,6 +520,18 @@ export function triggerContainerMotion(target: Element): void {
 
 let globalListenerRegistered = false;
 
+export function scanScrollContainers(): void {
+  if (typeof document === 'undefined') return;
+  const candidates = document.querySelectorAll(
+    '[data-scrollbar], .overflow-y-auto, .overflow-x-auto, .overflow-auto, [role="tabpanel"], .cm-scroller, .sidebar-content'
+  );
+  candidates.forEach((el) => {
+    if (el instanceof HTMLElement && isScrollContainer(el)) {
+      attachOverlayScrollbar(el, false);
+    }
+  });
+}
+
 function setupGlobalListeners(): void {
   if (globalListenerRegistered || typeof document === 'undefined') return;
   globalListenerRegistered = true;
@@ -518,22 +541,45 @@ function setupGlobalListeners(): void {
   const onGlobalScroll = (e: Event) => {
     const target = e.target;
     if (target instanceof HTMLElement && isScrollContainer(target)) {
-      attachOverlayScrollbar(target);
+      attachOverlayScrollbar(target, true);
     }
   };
   document.addEventListener('scroll', onGlobalScroll, { capture: true, passive: true });
 
-  const scanScrollContainers = () => {
-    if (globalConfig.mode !== 'overlay') return;
-    document.querySelectorAll('.overflow-y-auto, .overflow-auto, [role="tabpanel"], .cm-scroller, [data-scrollbar="overlay"]').forEach((el) => {
-      if (el instanceof HTMLElement && !overlayInstances.has(el) && isScrollContainer(el)) {
-        attachOverlayScrollbar(el);
+  const onPointerOver = (e: Event) => {
+    let target = e.target as HTMLElement | null;
+    let depth = 0;
+    while (target && depth < 5 && target !== document.body && target !== document.documentElement) {
+      if (isScrollContainer(target)) {
+        if (!overlayInstances.has(target)) {
+          attachOverlayScrollbar(target, false);
+        } else {
+          overlayInstances.get(target)?.scheduleUpdate();
+        }
+        break;
       }
-    });
+      target = target.parentElement;
+      depth++;
+    }
   };
+  document.addEventListener('pointerover', onPointerOver, { capture: true, passive: true });
 
-  document.addEventListener('nexus:dom-mutated', scanScrollContainers, { passive: true });
-  setTimeout(scanScrollContainers, 50);
+  document.addEventListener('nexus:dom-mutated', () => {
+    requestAnimationFrame(scanScrollContainers);
+  }, { passive: true });
+
+  window.addEventListener('hashchange', () => {
+    setTimeout(scanScrollContainers, 50);
+  }, { passive: true });
+
+  window.addEventListener('popstate', () => {
+    setTimeout(scanScrollContainers, 50);
+  }, { passive: true });
+
+  scanScrollContainers();
+  requestAnimationFrame(scanScrollContainers);
+  setTimeout(scanScrollContainers, 150);
+  setTimeout(scanScrollContainers, 600);
 }
 
 const scrollbarModule: AttributeModule = {
@@ -542,6 +588,7 @@ const scrollbarModule: AttributeModule = {
   onRegister() {
     if (typeof document !== 'undefined') {
       ensureScrollbarStyles(document);
+      setupGlobalListeners();
     }
   },
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext, parsedAttr?: any): (() => void) | void => {
@@ -598,13 +645,13 @@ const scrollbarModule: AttributeModule = {
       return;
     }
 
-    if (merged.mode === 'overlay' && isScrollContainer(el)) {
-      const overlayInst = attachOverlayScrollbar(el);
-      if (overlayInst) {
-        return () => {
-          overlayInst.destroy();
-        };
-      }
+    if (merged.mode === 'overlay') {
+      const overlayInst = ensureOverlayInstance(el);
+      overlayInst.scheduleUpdate();
+      requestAnimationFrame(() => overlayInst.update());
+      return () => {
+        overlayInst.destroy();
+      };
     }
   }
 };
