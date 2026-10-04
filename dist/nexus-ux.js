@@ -2895,15 +2895,7 @@ ${scripts}
             try {
               config = JSON.parse(evaluated);
             } catch {
-              if (evaluated.trim().startsWith("{")) {
-                try {
-                  config = new Function("return (" + evaluated + ")")();
-                } catch {
-                  config = { path: evaluated };
-                }
-              } else {
-                config = { path: evaluated };
-              }
+              config = { path: evaluated };
             }
           } else {
             return;
