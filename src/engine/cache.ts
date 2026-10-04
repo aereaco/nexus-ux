@@ -8,6 +8,7 @@
  * Storage Tiers:
  *   - Web Storage (sessionStorage / localStorage) for text, HTML, CSS, JS, JSON
  *   - IndexedDB ('nexus-media-cache') for binary media (images, videos, audio, PDFs, blobs)
+ */
 import { isSameOriginUrl } from './utils/url.ts';
 
 export interface CacheOptions {

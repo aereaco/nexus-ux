@@ -1252,6 +1252,14 @@ ${suggestion}`);
     stylesheet: () => stylesheet
   });
 
+  // src/engine/utils/url.ts
+  function isSameOriginUrl(url, origin) {
+    if (typeof location === "undefined")
+      return true;
+    const currentOrigin = origin || location.origin;
+    return !url.startsWith("http:") && !url.startsWith("https:") || url.startsWith(currentOrigin);
+  }
+
   // src/engine/cache.ts
   var DB_NAME = "nexus-media-cache";
   var DB_VERSION = 1;
@@ -1318,7 +1326,7 @@ ${suggestion}`);
      */
     async fetchWithCache(url, options = {}) {
       const {
-        storage = url.startsWith("http") && !url.includes(location?.host || "") ? "local" : "session",
+        storage = !isSameOriginUrl(url) ? "local" : "session",
         responseType = "text",
         timeoutMs = 5e3,
         onUpdate
@@ -1361,7 +1369,7 @@ ${suggestion}`);
     revalidateInBackground(url, cacheKey, cachedEntry, options) {
       setTimeout(async () => {
         try {
-          const isSameOrigin = typeof location === "undefined" || !url.startsWith("http") || url.startsWith(location.origin);
+          const isSameOrigin = isSameOriginUrl(url);
           const headers = {};
           if (cachedEntry.etag && isSameOrigin) {
             headers["If-None-Match"] = cachedEntry.etag;
@@ -1406,7 +1414,7 @@ ${suggestion}`);
       }, 100);
     }
     async performNetworkFetch(url, options, etagHeader) {
-      const isSameOrigin = typeof location === "undefined" || !url.startsWith("http") || url.startsWith(location.origin);
+      const isSameOrigin = isSameOriginUrl(url);
       const headers = {};
       if (etagHeader && isSameOrigin)
         headers["If-None-Match"] = etagHeader;
