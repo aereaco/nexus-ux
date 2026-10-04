@@ -38,6 +38,14 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/debug.ts';
 import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
+import {
+  parseQuery,
+  buildQuery,
+  pathToRegex,
+  fillPath,
+  matchRoute,
+  type RouteMeta,
+} from '../../engine/utils/url.ts';
 
 /**
  * data-router: The Core Router
@@ -249,48 +257,6 @@ export interface RouterState {
   // projected interaction frustum: a hovered route link's destination is
   // fetched ahead of the click. Pass an href, a name, or a component URL.
   prewarm(ref: string): void;
-}
-
-// Convert path pattern to regex (supports :param, :param?, and trailing wildcard *)
-function pathToRegex(path: string): { regex: RegExp; keys: string[]; hasWildcard: boolean } {
-  const keys: string[] = [];
-  let hasWildcard = false;
-
-  let pattern = path
-    .replace(/:([a-zA-Z0-9_]+)\?/g, (_, key) => {
-      keys.push(key);
-      return '(?:/([^/]+))?';
-    })
-    .replace(/:([a-zA-Z0-9_]+)/g, (_, key) => {
-      keys.push(key);
-      return '([^/]+)';
-    });
-
-  // Trailing wildcard -> capture group named "wildcard"
-  if (pattern.endsWith('*')) {
-    hasWildcard = true;
-    pattern = pattern.slice(0, -1) + '(.*)';
-  } else {
-    // Non-trailing wildcards degrade to "match anything" without capture
-    pattern = pattern.replace(/\*/g, '.*');
-  }
-
-  return { regex: new RegExp(`^${pattern}$`), keys, hasWildcard };
-}
-
-// Fill a route pattern with params to produce a concrete path (for named nav).
-function fillPath(pattern: string, params: Record<string, string | number>): string {
-  let out = pattern
-    .replace(/:([a-zA-Z0-9_]+)\??/g, (_, key) => {
-      const v = params[key];
-      return v !== undefined && v !== null ? String(v) : '';
-    })
-    // Collapse the trailing wildcard with a provided `wildcard` param if present.
-    .replace(/\*$/, () => (params.wildcard !== undefined ? String(params.wildcard) : ''));
-  // Clean up any doubled or trailing slashes introduced by empty optionals.
-  out = out.replace(/\/{2,}/g, '/');
-  if (out.length > 1 && out.endsWith('/')) out = out.slice(0, -1);
-  return out || '/';
 }
 
 // Detect a base path from the current location when not explicitly configured.
@@ -536,10 +502,7 @@ export const routerAttributeModule: AttributeModule = {
       // reactive graph, or `path.match(proxiedRegExp)` throws
       // "RegExp.prototype.hasIndices getter called on non-RegExp object".
       const routeList: RouteRecord[] = [];
-      const matchMeta = new WeakMap<
-        RouteRecord,
-        { regex: RegExp; keys: string[]; hasWildcard: boolean }
-      >();
+      const matchMeta = new WeakMap<RouteRecord, RouteMeta>();
 
       if (Array.isArray(cfg.routes)) {
         for (const r of cfg.routes) {
@@ -1217,12 +1180,7 @@ export const routerAttributeModule: AttributeModule = {
         },
 
         buildQuery(obj: Record<string, unknown>) {
-          const usp = new URLSearchParams();
-          for (const [k, v] of Object.entries(obj)) {
-            if (v === undefined || v === null) continue;
-            usp.append(k, String(v));
-          }
-          return usp.toString();
+          return buildQuery(obj);
         },
 
         addRoute(route: RouteRecord) {
@@ -1279,23 +1237,9 @@ export const routerAttributeModule: AttributeModule = {
         // would use — without navigating. Useful for guards/preview UI.
         match(path?: string): RouteInfo | null {
           const p = path ? stripBase(path) : state.path;
-          const exact = routeList.find((r) => !r.internal && r.path && r.path === p);
-          if (exact) {
-            return buildInfo(exact, p, {}, state.query, state.hash);
-          }
-          for (const route of routeList) {
-            if (route.internal || !route.path) continue;
-            const meta = matchMeta.get(route);
-            if (!meta) continue;
-            if (meta.keys.length > 0 || meta.hasWildcard) {
-              const m = p.match(meta.regex);
-              if (m) {
-                const params: Record<string, string> = {};
-                meta.keys.forEach((key: string, i: number) => { params[key] = m[i + 1] || ''; });
-                if (meta.hasWildcard) params.wildcard = m[meta.keys.length + 1] || '';
-                return buildInfo(route, p, params, state.query, state.hash);
-              }
-            }
+          const { matched, params } = matchRoute(p, routeList, matchMeta);
+          if (matched) {
+            return buildInfo(matched, p, params, state.query, state.hash);
           }
           if (mode === 'static' || mode === 'hybrid') {
             return buildInfo(null, p, {}, state.query, state.hash);
@@ -1338,28 +1282,10 @@ export const routerAttributeModule: AttributeModule = {
           // Parse path/query/hash from the stored tab path.
           const fakeUrl = new URL(applyBase(path), globalThis.location.origin);
           const switchPath = path;
-          const query: Record<string, string> = {};
-          fakeUrl.searchParams.forEach((val, key) => (query[key] = val));
+          const query = parseQuery(fakeUrl);
 
           // Match a route record synchronously.
-          let matched: RouteRecord | null = routeList.find((r) => !r.internal && r.path && r.path === switchPath) || null;
-          const params: Record<string, string> = {};
-          if (!matched) {
-            for (const route of routeList) {
-              if (route.internal || !route.path) continue;
-              const meta = matchMeta.get(route);
-              if (!meta) continue;
-              if (meta.keys.length > 0 || meta.hasWildcard) {
-                const m = switchPath.match(meta.regex);
-                if (m) {
-                  matched = route;
-                  meta.keys.forEach((key: string, i: number) => { params[key] = m[i + 1] || ''; });
-                  if (meta.hasWildcard) params.wildcard = m[meta.keys.length + 1] || '';
-                  break;
-                }
-              }
-            }
-          }
+          const { matched, params } = matchRoute(switchPath, routeList, matchMeta);
 
           // Resolve static component for hybrid/static modes if no signal match.
           let staticComponent: string | null = null;
@@ -1614,35 +1540,13 @@ export const routerAttributeModule: AttributeModule = {
           return;
         }
 
-        const query: Record<string, string> = {};
-        url.searchParams.forEach((val, key) => (query[key] = val));
+        const query = parseQuery(url);
 
         // Match a signal route.
-        // 1. Vite/NGINX style: Exact canonical match first
-        let matched: RouteRecord | null = routeList.find((r) => !r.internal && r.path && r.path === path) || null;
-        const params: Record<string, string> = {};
-
-        // 2. Parameterized / dynamic regex fallback
-        if (!matched) {
-          for (const route of routeList) {
-            if (route.internal || !route.path) continue;
-            const meta = matchMeta.get(route);
-            if (!meta) continue;
-            if (meta.keys.length > 0 || meta.hasWildcard) {
-              const match = path.match(meta.regex);
-              if (match) {
-                runtime.debug(`Matched route: ${route.path} via path ${path}`);
-                matched = route;
-                meta.keys.forEach((key: string, i: number) => {
-                  params[key] = match[i + 1] || '';
-                });
-                if (meta.hasWildcard) {
-                  params.wildcard = match[meta.keys.length + 1] || '';
-                }
-                break;
-              }
-            }
-          }
+        const { matched: routeMatched, params } = matchRoute(path, routeList, matchMeta);
+        let matched: RouteRecord | null = routeMatched;
+        if (matched) {
+          runtime.debug(`Matched route: ${matched.path} via path ${path}`);
         }
 
         const errorPage = state.config.error ?? resolvePagesPath(undefined, 'error.html');
