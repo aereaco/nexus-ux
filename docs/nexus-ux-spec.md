@@ -1336,7 +1336,6 @@ nexus-ux/
 │   ├── engine/               # Core runtime (reactivity, scheduler, observers, ZCZS heap)
 │   │   ├── agent.ts          # Self-heal diagnostic coordinator & crash beacons
 │   │   ├── animation.ts      # Web Animations API & core flip() layout transitions
-│   │   ├── assets.ts         # Constructable stylesheets & asset manager
 │   │   ├── attributeParser.ts# State-machine parser for NEG attributes
 │   │   ├── cache.ts          # Universal caching engine (Cache API, Storage, IDB)
 │   │   ├── composition.ts    # RuntimeContext & InitContext zero-copy god object
