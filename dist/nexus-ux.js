@@ -9615,7 +9615,7 @@ ${match}</ul>
   inset-inline-end: 0;
   width: var(--scrollbar-width, 0.625rem);
   overflow: visible;
-  pointer-events: none;
+  pointer-events: auto;
   z-index: 50;
 }
 .scrollbar-thumb-v {
@@ -9642,7 +9642,7 @@ ${match}</ul>
   inset-inline-end: 0;
   height: var(--scrollbar-height, 0.625rem);
   overflow: visible;
-  pointer-events: none;
+  pointer-events: auto;
   z-index: 50;
 }
 .scrollbar-thumb-h {
@@ -9679,8 +9679,8 @@ ${match}</ul>
   opacity: 1 !important;
   transition: opacity var(--scrollbar-fade-in, 0.2s) ease-out, background-color 0.2s ease-out !important;
 }
-.scrollbar-track-v:not([style*="display: none"]):hover > .scrollbar-thumb-v,
-.scrollbar-track-h:not([style*="display: none"]):hover > .scrollbar-thumb-h {
+.scrollbar-thumb-v:hover,
+.scrollbar-thumb-h:hover {
   background-color: var(--scrollbar-thumb-hover) !important;
 }
 .scrollbar-thumb-v.is-dragging,
