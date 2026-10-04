@@ -9812,6 +9812,10 @@ ${match}</ul>
         if (this.host !== this.el) {
           this.trackH.style.left = `${this.el.offsetLeft}px`;
           this.trackH.style.width = `${this.el.clientWidth}px`;
+          this.trackH.style.right = "auto";
+          const offsetBottom = this.host.clientHeight - (this.el.offsetTop + this.el.clientHeight);
+          this.trackH.style.bottom = `${Math.max(0, offsetBottom)}px`;
+          this.trackH.style.top = "auto";
         }
         const thumbWidth = Math.max(24, clientWidth / scrollWidth * clientWidth);
         const maxScroll = scrollWidth - clientWidth;
