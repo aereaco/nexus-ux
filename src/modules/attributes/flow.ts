@@ -22,6 +22,18 @@ const sharedViewport = (el: Element | null): Viewport => {
   return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
 };
 
+const toFlowCoords = (container: HTMLElement, clientX: number, clientY: number, vp?: Viewport) => {
+  const r = container.getBoundingClientRect();
+  const v = vp || sharedViewport(container);
+  const z = v.zoom || 1;
+  return { x: (clientX - r.left - (v.x || 0)) / z, y: (clientY - r.top - (v.y || 0)) / z };
+};
+
+const simpleBezier = (x1: number, y1: number, x2: number, y2: number) => {
+  const dx = Math.abs(x1 - x2) / 2;
+  return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+};
+
 const FLOW_CSS = `
 [data-flow] {
   position: relative;
@@ -372,15 +384,6 @@ export const flowAttribute: AttributeModule = {
     let selRectEl: HTMLElement | null = null;
     let didMove = false;
 
-    const screenToFlowLocal = (clientX: number, clientY: number) => {
-      const r = element.getBoundingClientRect();
-      const z = state.zoom || 1;
-      return {
-        x: (clientX - r.left - (state.x || 0)) / z,
-        y: (clientY - r.top - (state.y || 0)) / z
-      };
-    };
-
     const canPan = (e: PointerEvent): boolean => {
       if (e.button === 1) return true;
       if (e.button === 0 && e.altKey) return true;
@@ -397,7 +400,7 @@ export const flowAttribute: AttributeModule = {
         // Marquee selection if Shift is held on empty canvas
         if (e.button === 0 && e.shiftKey) {
           isSelecting = true;
-          const pt = screenToFlowLocal(e.clientX, e.clientY);
+          const pt = toFlowCoords(element, e.clientX, e.clientY, state);
           selStartX = pt.x;
           selStartY = pt.y;
           selRectEl = document.createElement('div');
@@ -415,7 +418,7 @@ export const flowAttribute: AttributeModule = {
       onMove: (e) => {
         if (isSelecting && selRectEl) {
           didMove = true;
-          const pt = screenToFlowLocal(e.clientX, e.clientY);
+          const pt = toFlowCoords(element, e.clientX, e.clientY, state);
           const minX = Math.min(selStartX, pt.x);
           const minY = Math.min(selStartY, pt.y);
           const w = Math.abs(pt.x - selStartX);
@@ -749,14 +752,7 @@ export const flowHandleAttribute: AttributeModule = {
     }
 
     const viewport = () => element.closest('[data-flow]') as FlowElement | null;
-
-    const toFlow = (clientX: number, clientY: number) => {
-      const vp = viewport()!;
-      const st = sharedViewport(element);
-      const r = vp.getBoundingClientRect();
-      return { x: (clientX - r.left - st.x) / st.zoom, y: (clientY - r.top - st.y) / st.zoom };
-    };
-
+    const toFlow = (cx: number, cy: number) => toFlowCoords(viewport()!, cx, cy);
     const anchorFlow = (el: Element) => {
       const r = el.getBoundingClientRect();
       return toFlow(r.left + r.width / 2, r.top + r.height / 2);
@@ -806,9 +802,7 @@ export const flowHandleAttribute: AttributeModule = {
       onMove: (ev) => {
         if (!preview) return;
         const pt = toFlow(ev.clientX, ev.clientY);
-        const dx = Math.abs(start.x - pt.x) / 2;
-        preview.setAttribute('d',
-          `M ${start.x} ${start.y} C ${start.x + dx} ${start.y}, ${pt.x - dx} ${pt.y}, ${pt.x} ${pt.y}`);
+        preview.setAttribute('d', simpleBezier(start.x, start.y, pt.x, pt.y));
       },
       onEnd: (ev) => {
         if (preview) {
@@ -1511,17 +1505,10 @@ export const flowEdgeReconnectAttribute: AttributeModule = {
       },
       onMove: (ev) => {
         if (!preview || !flowEl) return;
-        const vp = flowEl.__flowViewport;
-        const r = flowEl.getBoundingClientRect();
-        const z = vp?.zoom || 1;
-        const pt = {
-          x: (ev.clientX - r.left - (vp?.x || 0)) / z,
-          y: (ev.clientY - r.top - (vp?.y || 0)) / z
-        };
+        const pt = toFlowCoords(flowEl, ev.clientX, ev.clientY);
         const s = terminal === 'target' ? staticPt : pt;
         const t = terminal === 'target' ? pt : staticPt;
-        const dx = Math.abs(s.x - t.x) / 2;
-        preview.setAttribute('d', `M ${s.x} ${s.y} C ${s.x + dx} ${s.y}, ${t.x - dx} ${t.y}, ${t.x} ${t.y}`);
+        preview.setAttribute('d', simpleBezier(s.x, s.y, t.x, t.y));
       },
       onEnd: (ev) => {
         if (preview) {

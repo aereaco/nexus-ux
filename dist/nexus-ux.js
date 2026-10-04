@@ -4848,6 +4848,16 @@ ${scripts}
     const vp = flow?.__flowViewport;
     return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
   };
+  var toFlowCoords = (container, clientX, clientY, vp) => {
+    const r = container.getBoundingClientRect();
+    const v = vp || sharedViewport(container);
+    const z = v.zoom || 1;
+    return { x: (clientX - r.left - (v.x || 0)) / z, y: (clientY - r.top - (v.y || 0)) / z };
+  };
+  var simpleBezier = (x1, y1, x2, y2) => {
+    const dx = Math.abs(x1 - x2) / 2;
+    return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+  };
   var FLOW_CSS = `
 [data-flow] {
   position: relative;
@@ -5194,14 +5204,6 @@ ${scripts}
       let selStartY = 0;
       let selRectEl = null;
       let didMove = false;
-      const screenToFlowLocal = (clientX, clientY) => {
-        const r = element.getBoundingClientRect();
-        const z = state.zoom || 1;
-        return {
-          x: (clientX - r.left - (state.x || 0)) / z,
-          y: (clientY - r.top - (state.y || 0)) / z
-        };
-      };
       const canPan = (e) => {
         if (e.button === 1)
           return true;
@@ -5219,7 +5221,7 @@ ${scripts}
           didMove = false;
           if (e.button === 0 && e.shiftKey) {
             isSelecting = true;
-            const pt = screenToFlowLocal(e.clientX, e.clientY);
+            const pt = toFlowCoords(element, e.clientX, e.clientY, state);
             selStartX = pt.x;
             selStartY = pt.y;
             selRectEl = document.createElement("div");
@@ -5236,7 +5238,7 @@ ${scripts}
         onMove: (e) => {
           if (isSelecting && selRectEl) {
             didMove = true;
-            const pt = screenToFlowLocal(e.clientX, e.clientY);
+            const pt = toFlowCoords(element, e.clientX, e.clientY, state);
             const minX = Math.min(selStartX, pt.x);
             const minY = Math.min(selStartY, pt.y);
             const w = Math.abs(pt.x - selStartX);
@@ -5562,12 +5564,7 @@ ${scripts}
         element.setAttribute("data-flow-handle-side", sideAttr);
       }
       const viewport = () => element.closest("[data-flow]");
-      const toFlow = (clientX, clientY) => {
-        const vp2 = viewport();
-        const st = sharedViewport(element);
-        const r = vp2.getBoundingClientRect();
-        return { x: (clientX - r.left - st.x) / st.zoom, y: (clientY - r.top - st.y) / st.zoom };
-      };
+      const toFlow = (cx, cy) => toFlowCoords(viewport(), cx, cy);
       const anchorFlow = (el) => {
         const r = el.getBoundingClientRect();
         return toFlow(r.left + r.width / 2, r.top + r.height / 2);
@@ -5615,11 +5612,7 @@ ${scripts}
           if (!preview)
             return;
           const pt = toFlow(ev.clientX, ev.clientY);
-          const dx = Math.abs(start.x - pt.x) / 2;
-          preview.setAttribute(
-            "d",
-            `M ${start.x} ${start.y} C ${start.x + dx} ${start.y}, ${pt.x - dx} ${pt.y}, ${pt.x} ${pt.y}`
-          );
+          preview.setAttribute("d", simpleBezier(start.x, start.y, pt.x, pt.y));
         },
         onEnd: (ev) => {
           if (preview) {
@@ -6274,17 +6267,10 @@ ${scripts}
         onMove: (ev) => {
           if (!preview || !flowEl)
             return;
-          const vp = flowEl.__flowViewport;
-          const r = flowEl.getBoundingClientRect();
-          const z = vp?.zoom || 1;
-          const pt = {
-            x: (ev.clientX - r.left - (vp?.x || 0)) / z,
-            y: (ev.clientY - r.top - (vp?.y || 0)) / z
-          };
+          const pt = toFlowCoords(flowEl, ev.clientX, ev.clientY);
           const s = terminal === "target" ? staticPt : pt;
           const t = terminal === "target" ? pt : staticPt;
-          const dx = Math.abs(s.x - t.x) / 2;
-          preview.setAttribute("d", `M ${s.x} ${s.y} C ${s.x + dx} ${s.y}, ${t.x - dx} ${t.y}, ${t.x} ${t.y}`);
+          preview.setAttribute("d", simpleBezier(s.x, s.y, t.x, t.y));
         },
         onEnd: (ev) => {
           if (preview) {
