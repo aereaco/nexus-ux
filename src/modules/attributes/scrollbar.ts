@@ -620,11 +620,7 @@ const scrollbarModule: AttributeModule = {
           }
         }
       } catch {
-        try {
-          config = (new Function(`return (${trimmed});`))();
-        } catch {
-          if (trimmed === 'overlay' || trimmed === 'none') config = { mode: trimmed };
-        }
+        if (trimmed === 'overlay' || trimmed === 'none') config = { mode: trimmed };
       }
     }
 
