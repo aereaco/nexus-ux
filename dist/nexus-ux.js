@@ -1252,91 +1252,6 @@ ${suggestion}`);
     stylesheet: () => stylesheet
   });
 
-  // src/engine/utils/url.ts
-  function parseQuery(queryOrUrl) {
-    const query = {};
-    if (!queryOrUrl)
-      return query;
-    const search = typeof queryOrUrl === "string" ? queryOrUrl.includes("?") ? queryOrUrl.slice(queryOrUrl.indexOf("?")) : queryOrUrl.startsWith("?") ? queryOrUrl : "" : queryOrUrl.search;
-    if (!search)
-      return query;
-    const usp = new URLSearchParams(search);
-    usp.forEach((val, key) => {
-      query[key] = val;
-    });
-    return query;
-  }
-  function buildQuery(obj) {
-    const usp = new URLSearchParams();
-    for (const [k, v] of Object.entries(obj)) {
-      if (v === void 0 || v === null)
-        continue;
-      usp.append(k, String(v));
-    }
-    return usp.toString();
-  }
-  function isSameOriginUrl(url, origin) {
-    if (typeof location === "undefined")
-      return true;
-    const currentOrigin = origin || location.origin;
-    return !url.startsWith("http:") && !url.startsWith("https:") || url.startsWith(currentOrigin);
-  }
-  function pathToRegex(path) {
-    const keys = [];
-    let hasWildcard = false;
-    let pattern = path.replace(/:([a-zA-Z0-9_]+)\?/g, (_, key) => {
-      keys.push(key);
-      return "(?:/([^/]+))?";
-    }).replace(/:([a-zA-Z0-9_]+)/g, (_, key) => {
-      keys.push(key);
-      return "([^/]+)";
-    });
-    if (pattern.endsWith("*")) {
-      hasWildcard = true;
-      pattern = pattern.slice(0, -1) + "(.*)";
-    } else {
-      pattern = pattern.replace(/\*/g, ".*");
-    }
-    return { regex: new RegExp(`^${pattern}$`), keys, hasWildcard };
-  }
-  function fillPath(pattern, params) {
-    let out = pattern.replace(/:([a-zA-Z0-9_]+)\??/g, (_, key) => {
-      const v = params[key];
-      return v !== void 0 && v !== null ? String(v) : "";
-    }).replace(/\*$/, () => params.wildcard !== void 0 ? String(params.wildcard) : "");
-    out = out.replace(/\/{2,}/g, "/");
-    if (out.length > 1 && out.endsWith("/"))
-      out = out.slice(0, -1);
-    return out || "/";
-  }
-  function matchRoute(path, routeList, matchMeta) {
-    const exact = routeList.find((r) => !r.internal && r.path && r.path === path) || null;
-    if (exact) {
-      return { matched: exact, params: {} };
-    }
-    const params = {};
-    for (const route of routeList) {
-      if (route.internal || !route.path)
-        continue;
-      const meta = matchMeta.get(route);
-      if (!meta)
-        continue;
-      if (meta.keys.length > 0 || meta.hasWildcard) {
-        const m = path.match(meta.regex);
-        if (m) {
-          meta.keys.forEach((key, i) => {
-            params[key] = m[i + 1] || "";
-          });
-          if (meta.hasWildcard) {
-            params.wildcard = m[meta.keys.length + 1] || "";
-          }
-          return { matched: route, params };
-        }
-      }
-    }
-    return { matched: null, params };
-  }
-
   // src/engine/cache.ts
   var DB_NAME = "nexus-media-cache";
   var DB_VERSION = 1;
@@ -1403,7 +1318,7 @@ ${suggestion}`);
      */
     async fetchWithCache(url, options = {}) {
       const {
-        storage = !isSameOriginUrl(url) ? "local" : "session",
+        storage = url.startsWith("http") && !url.includes(location?.host || "") ? "local" : "session",
         responseType = "text",
         timeoutMs = 5e3,
         onUpdate
@@ -1446,7 +1361,7 @@ ${suggestion}`);
     revalidateInBackground(url, cacheKey, cachedEntry, options) {
       setTimeout(async () => {
         try {
-          const isSameOrigin = isSameOriginUrl(url);
+          const isSameOrigin = typeof location === "undefined" || !url.startsWith("http") || url.startsWith(location.origin);
           const headers = {};
           if (cachedEntry.etag && isSameOrigin) {
             headers["If-None-Match"] = cachedEntry.etag;
@@ -1491,7 +1406,7 @@ ${suggestion}`);
       }, 100);
     }
     async performNetworkFetch(url, options, etagHeader) {
-      const isSameOrigin = isSameOriginUrl(url);
+      const isSameOrigin = typeof location === "undefined" || !url.startsWith("http") || url.startsWith(location.origin);
       const headers = {};
       if (etagHeader && isSameOrigin)
         headers["If-None-Match"] = etagHeader;
@@ -8180,6 +8095,87 @@ ${match}</ul>
   });
   init_debug();
   init_consts();
+
+  // src/engine/utils/url.ts
+  function parseQuery(queryOrUrl) {
+    const query = {};
+    if (!queryOrUrl)
+      return query;
+    const search = typeof queryOrUrl === "string" ? queryOrUrl.includes("?") ? queryOrUrl.slice(queryOrUrl.indexOf("?")) : queryOrUrl.startsWith("?") ? queryOrUrl : "" : queryOrUrl.search;
+    if (!search)
+      return query;
+    const usp = new URLSearchParams(search);
+    usp.forEach((val, key) => {
+      query[key] = val;
+    });
+    return query;
+  }
+  function buildQuery(obj) {
+    const usp = new URLSearchParams();
+    for (const [k, v] of Object.entries(obj)) {
+      if (v === void 0 || v === null)
+        continue;
+      usp.append(k, String(v));
+    }
+    return usp.toString();
+  }
+  function pathToRegex(path) {
+    const keys = [];
+    let hasWildcard = false;
+    let pattern = path.replace(/:([a-zA-Z0-9_]+)\?/g, (_, key) => {
+      keys.push(key);
+      return "(?:/([^/]+))?";
+    }).replace(/:([a-zA-Z0-9_]+)/g, (_, key) => {
+      keys.push(key);
+      return "([^/]+)";
+    });
+    if (pattern.endsWith("*")) {
+      hasWildcard = true;
+      pattern = pattern.slice(0, -1) + "(.*)";
+    } else {
+      pattern = pattern.replace(/\*/g, ".*");
+    }
+    return { regex: new RegExp(`^${pattern}$`), keys, hasWildcard };
+  }
+  function fillPath(pattern, params) {
+    let out = pattern.replace(/:([a-zA-Z0-9_]+)\??/g, (_, key) => {
+      const v = params[key];
+      return v !== void 0 && v !== null ? String(v) : "";
+    }).replace(/\*$/, () => params.wildcard !== void 0 ? String(params.wildcard) : "");
+    out = out.replace(/\/{2,}/g, "/");
+    if (out.length > 1 && out.endsWith("/"))
+      out = out.slice(0, -1);
+    return out || "/";
+  }
+  function matchRoute(path, routeList, matchMeta) {
+    const exact = routeList.find((r) => !r.internal && r.path && r.path === path) || null;
+    if (exact) {
+      return { matched: exact, params: {} };
+    }
+    const params = {};
+    for (const route of routeList) {
+      if (route.internal || !route.path)
+        continue;
+      const meta = matchMeta.get(route);
+      if (!meta)
+        continue;
+      if (meta.keys.length > 0 || meta.hasWildcard) {
+        const m = path.match(meta.regex);
+        if (m) {
+          meta.keys.forEach((key, i) => {
+            params[key] = m[i + 1] || "";
+          });
+          if (meta.hasWildcard) {
+            params.wildcard = m[meta.keys.length + 1] || "";
+          }
+          return { matched: route, params };
+        }
+      }
+    }
+    return { matched: null, params };
+  }
+
+  // src/modules/attributes/router.ts
   function autoDetectBasePath() {
     const baseEl = document.querySelector("base[href]");
     if (baseEl && baseEl.href) {
