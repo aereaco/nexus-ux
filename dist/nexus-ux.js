@@ -8336,6 +8336,42 @@ ${match}</ul>
         const initialPath = stripBase(globalThis.location.pathname) || "/";
         const initialMatched = routeList.find((r) => r.path === initialPath);
         const initialSource = initialMatched?.component || resolveStaticComponent(initialPath);
+        const syncTabState = (tabId, source, route, meta) => {
+          const curPageTab = state.pageTabs?.find((t) => t && t.id === tabId);
+          if (curPageTab) {
+            if (source && curPageTab.source !== source) {
+              curPageTab.source = source;
+              if (curPageTab.linkedContent)
+                curPageTab.linkedContent.isLoading = true;
+            }
+            if (route && curPageTab.route !== route)
+              curPageTab.route = route;
+            if (meta && Object.keys(meta).length > 0) {
+              curPageTab.meta = { ...curPageTab.meta || {}, ...meta };
+            }
+            state.pageTabs = [...state.pageTabs];
+          }
+          if (meta && (meta.title !== void 0 || meta.icon !== void 0)) {
+            state.tabMeta[tabId] = {
+              ...state.tabMeta[tabId] || {},
+              ...meta.title !== void 0 ? { title: meta.title } : {},
+              ...meta.icon !== void 0 ? { icon: meta.icon } : {}
+            };
+          }
+          const g = runtime.globalSignals ? runtime.globalSignals() : null;
+          if (g && Array.isArray(g.tabs)) {
+            const tab = g.tabs.find((t) => t && t.id === tabId);
+            if (tab) {
+              if (source && tab.source !== source)
+                tab.source = source;
+              if (route && tab.route !== route)
+                tab.route = route;
+              if (meta && Object.keys(meta).length > 0) {
+                tab.meta = { ...tab.meta || {}, ...meta };
+              }
+            }
+          }
+        };
         state = runtime.shallowReactive({
           path: initialPath,
           params: {},
@@ -8773,45 +8809,12 @@ ${match}</ul>
             const _activeId = tabId || state.activePageTabId || getActiveTabId();
             if (_activeId && state.tabPaths[_activeId] !== "custom-component") {
               const resolvedSource = matched?.component || resolveStaticComponent(cleanPath);
-              const curPageTab = state.pageTabs.find((t) => t.id === _activeId);
               const routeMeta = matched?.meta;
-              if (curPageTab) {
-                if (curPageTab.source !== resolvedSource) {
-                  curPageTab.source = resolvedSource;
-                  if (curPageTab.linkedContent) {
-                    curPageTab.linkedContent.isLoading = true;
-                  }
-                }
-                if (curPageTab.route !== cleanPath)
-                  curPageTab.route = cleanPath;
-                if (routeMeta || opts?.title !== void 0 || opts?.icon !== void 0) {
-                  curPageTab.meta = {
-                    ...curPageTab.meta || {},
-                    ...routeMeta || {},
-                    ...opts?.title !== void 0 ? { title: opts.title } : {},
-                    ...opts?.icon !== void 0 ? { icon: opts.icon } : {}
-                  };
-                }
-                state.pageTabs = [...state.pageTabs];
-              }
-              const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs;
-              if (Array.isArray(_tabs)) {
-                const _tab = _tabs.find((t) => t.id === _activeId);
-                if (_tab) {
-                  if (_tab.source !== resolvedSource)
-                    _tab.source = resolvedSource;
-                  if (_tab.route !== cleanPath)
-                    _tab.route = cleanPath;
-                  if (routeMeta || opts?.title !== void 0 || opts?.icon !== void 0) {
-                    _tab.meta = {
-                      ..._tab.meta || {},
-                      ...routeMeta || {},
-                      ...opts?.title !== void 0 ? { title: opts.title } : {},
-                      ...opts?.icon !== void 0 ? { icon: opts.icon } : {}
-                    };
-                  }
-                }
-              }
+              syncTabState(_activeId, resolvedSource, cleanPath, {
+                ...routeMeta || {},
+                ...opts?.title !== void 0 ? { title: opts.title } : {},
+                ...opts?.icon !== void 0 ? { icon: opts.icon } : {}
+              });
             }
             if (isShadow) {
               updateRoute(target);
@@ -8920,17 +8923,12 @@ ${match}</ul>
               const _activeId = opts?.tabId ?? getActiveTabId() ?? state.activePageTabId ?? state.activeTabId ?? null;
               if (_activeId) {
                 const comp = named.component || named.path;
-                const curPageTab = state.pageTabs.find((t) => t.id === _activeId);
-                if (curPageTab) {
-                  curPageTab.source = comp;
-                  if (named.meta?.title || named.meta?.icon || named.name) {
-                    curPageTab.meta = {
-                      title: named.meta?.title || curPageTab.meta?.title || named.name,
-                      icon: named.meta?.icon || curPageTab.meta?.icon
-                    };
-                  }
-                  state.pageTabs = [...state.pageTabs];
-                }
+                const title = named.meta?.title || named.name;
+                const icon = named.meta?.icon;
+                syncTabState(_activeId, comp, null, {
+                  ...title ? { title } : {},
+                  ...icon ? { icon } : {}
+                });
               }
               return;
             }
@@ -9302,31 +9300,7 @@ ${match}</ul>
               state.tabPaths[_at] = path;
               const resolvedSource = matched?.component ?? null;
               if (resolvedSource) {
-                const curPageTab = state.pageTabs.find((t) => t.id === _at);
-                if (curPageTab) {
-                  if (curPageTab.source !== resolvedSource)
-                    curPageTab.source = resolvedSource;
-                  if (curPageTab.route !== path)
-                    curPageTab.route = path;
-                  const routeMeta = matched?.meta;
-                  if (routeMeta?.title || routeMeta?.icon) {
-                    curPageTab.meta = { ...curPageTab.meta || {}, ...routeMeta };
-                  }
-                  state.pageTabs = [...state.pageTabs];
-                }
-                const tabs = globals.tabs || [];
-                const atIdx = tabs.findIndex((t) => t.id === _at);
-                if (atIdx >= 0) {
-                  const cur = tabs[atIdx];
-                  if (cur.source !== resolvedSource)
-                    cur.source = resolvedSource;
-                  if (cur.route !== path)
-                    cur.route = path;
-                  const routeMeta = matched?.meta;
-                  if (routeMeta?.title || routeMeta?.icon) {
-                    cur.meta = { ...cur.meta || {}, ...routeMeta };
-                  }
-                }
+                syncTabState(_at, resolvedSource, path, matched?.meta);
               }
             }
           }
@@ -9379,14 +9353,8 @@ ${match}</ul>
           if (destTab && destTab !== state.activePageTabId) {
             state.switchPageTab(destTab);
           }
-          if (destTab && destState) {
-            if (destState.title !== void 0 || destState.icon !== void 0) {
-              state.tabMeta[destTab] = {
-                ...state.tabMeta[destTab] || {},
-                ...destState.title !== void 0 ? { title: destState.title } : {},
-                ...destState.icon !== void 0 ? { icon: destState.icon } : {}
-              };
-            }
+          if (destTab && destState && (destState.title !== void 0 || destState.icon !== void 0)) {
+            syncTabState(destTab, null, null, { title: destState.title, icon: destState.icon });
           }
           e.intercept({
             async handler() {
@@ -9403,14 +9371,8 @@ ${match}</ul>
           if (tab && tab !== state.activePageTabId) {
             state.switchPageTab(tab);
           }
-          if (tab && st) {
-            if (st.title !== void 0 || st.icon !== void 0) {
-              state.tabMeta[tab] = {
-                ...state.tabMeta[tab] || {},
-                ...st.title !== void 0 ? { title: st.title } : {},
-                ...st.icon !== void 0 ? { icon: st.icon } : {}
-              };
-            }
+          if (tab && st && (st.title !== void 0 || st.icon !== void 0)) {
+            syncTabState(tab, null, null, { title: st.title, icon: st.icon });
           }
           updateRoute(globalThis.location.href);
         };

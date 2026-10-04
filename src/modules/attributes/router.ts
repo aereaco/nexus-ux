@@ -635,6 +635,39 @@ export const routerAttributeModule: AttributeModule = {
       const initialMatched = routeList.find((r) => r.path === initialPath);
       const initialSource = initialMatched?.component || resolveStaticComponent(initialPath);
 
+      const syncTabState = (tabId: string, source?: string | null, route?: string | null, meta?: Record<string, any>) => {
+        const curPageTab = state.pageTabs?.find((t: PageTab) => t && t.id === tabId);
+        if (curPageTab) {
+          if (source && curPageTab.source !== source) {
+            curPageTab.source = source;
+            if (curPageTab.linkedContent) curPageTab.linkedContent.isLoading = true;
+          }
+          if (route && curPageTab.route !== route) curPageTab.route = route;
+          if (meta && Object.keys(meta).length > 0) {
+            curPageTab.meta = { ...(curPageTab.meta || {}), ...meta };
+          }
+          state.pageTabs = [...state.pageTabs];
+        }
+        if (meta && (meta.title !== undefined || meta.icon !== undefined)) {
+          state.tabMeta[tabId] = {
+            ...(state.tabMeta[tabId] || {}),
+            ...(meta.title !== undefined ? { title: meta.title } : {}),
+            ...(meta.icon !== undefined ? { icon: meta.icon } : {}),
+          };
+        }
+        const g = runtime.globalSignals ? (runtime.globalSignals() as any) : null;
+        if (g && Array.isArray(g.tabs)) {
+          const tab = g.tabs.find((t: any) => t && t.id === tabId);
+          if (tab) {
+            if (source && tab.source !== source) tab.source = source;
+            if (route && tab.route !== route) tab.route = route;
+            if (meta && Object.keys(meta).length > 0) {
+              tab.meta = { ...(tab.meta || {}), ...meta };
+            }
+          }
+        }
+      };
+
       // 1. Create Reactive State
       // shallowReactive prevents deep proxying of HTMLElements held in routes.
       state = runtime.shallowReactive<RouterState>({
@@ -1118,45 +1151,12 @@ export const routerAttributeModule: AttributeModule = {
           const _activeId = tabId || state.activePageTabId || getActiveTabId();
           if (_activeId && state.tabPaths[_activeId] !== 'custom-component') {
             const resolvedSource = matched?.component || resolveStaticComponent(cleanPath);
-            // 1. Sync router.pageTabs
-            const curPageTab = state.pageTabs.find((t: PageTab) => t.id === _activeId);
             const routeMeta = matched?.meta as Record<string, any> | undefined;
-            if (curPageTab) {
-              if (curPageTab.source !== resolvedSource) {
-                curPageTab.source = resolvedSource;
-                if (curPageTab.linkedContent) {
-                  curPageTab.linkedContent.isLoading = true;
-                }
-              }
-              if (curPageTab.route !== cleanPath) curPageTab.route = cleanPath;
-              if (routeMeta || opts?.title !== undefined || opts?.icon !== undefined) {
-                curPageTab.meta = {
-                  ...(curPageTab.meta || {}),
-                  ...(routeMeta || {}),
-                  ...(opts?.title !== undefined ? { title: opts.title } : {}),
-                  ...(opts?.icon !== undefined ? { icon: opts.icon } : {}),
-                };
-              }
-              state.pageTabs = [...state.pageTabs];
-            }
-
-            // 2. Sync globals.tabs (backward compatibility)
-            const _tabs = (runtime.globalSignals ? runtime.globalSignals() : {}).tabs as any[];
-            if (Array.isArray(_tabs)) {
-              const _tab = _tabs.find((t: any) => t.id === _activeId);
-              if (_tab) {
-                if (_tab.source !== resolvedSource) _tab.source = resolvedSource;
-                if (_tab.route !== cleanPath) _tab.route = cleanPath;
-                if (routeMeta || opts?.title !== undefined || opts?.icon !== undefined) {
-                  _tab.meta = {
-                    ...(_tab.meta || {}),
-                    ...(routeMeta || {}),
-                    ...(opts?.title !== undefined ? { title: opts.title } : {}),
-                    ...(opts?.icon !== undefined ? { icon: opts.icon } : {}),
-                  };
-                }
-              }
-            }
+            syncTabState(_activeId, resolvedSource, cleanPath, {
+              ...(routeMeta || {}),
+              ...(opts?.title !== undefined ? { title: opts.title } : {}),
+              ...(opts?.icon !== undefined ? { icon: opts.icon } : {}),
+            });
           }
 
           if (isShadow) {
@@ -1265,17 +1265,12 @@ export const routerAttributeModule: AttributeModule = {
             const _activeId = opts?.tabId ?? getActiveTabId() ?? state.activePageTabId ?? state.activeTabId ?? null;
             if (_activeId) {
               const comp = named.component || named.path;
-              const curPageTab = state.pageTabs.find((t: PageTab) => t.id === _activeId);
-              if (curPageTab) {
-                curPageTab.source = comp;
-                if (named.meta?.title || named.meta?.icon || named.name) {
-                  curPageTab.meta = {
-                    title: named.meta?.title || curPageTab.meta?.title || named.name,
-                    icon: named.meta?.icon || curPageTab.meta?.icon,
-                  };
-                }
-                state.pageTabs = [...state.pageTabs];
-              }
+              const title = named.meta?.title || named.name;
+              const icon = named.meta?.icon;
+              syncTabState(_activeId, comp, null, {
+                ...(title ? { title } : {}),
+                ...(icon ? { icon } : {}),
+              });
             }
             return;
           }
@@ -1739,30 +1734,7 @@ export const routerAttributeModule: AttributeModule = {
             state.tabPaths[_at] = path;
             const resolvedSource = matched?.component ?? null;
             if (resolvedSource) {
-              // 1. Sync first-class router.pageTabs
-              const curPageTab = state.pageTabs.find((t) => t.id === _at);
-              if (curPageTab) {
-                if (curPageTab.source !== resolvedSource) curPageTab.source = resolvedSource;
-                if (curPageTab.route !== path) curPageTab.route = path;
-                const routeMeta = matched?.meta as Record<string, string> | undefined;
-                if (routeMeta?.title || routeMeta?.icon) {
-                  curPageTab.meta = { ...(curPageTab.meta || {}), ...routeMeta };
-                }
-                state.pageTabs = [...state.pageTabs];
-              }
-
-              // 2. Backward compatibility: sync globals.tabs
-              const tabs = (globals.tabs as any[]) || [];
-              const atIdx = tabs.findIndex((t: any) => t.id === _at);
-              if (atIdx >= 0) {
-                const cur = tabs[atIdx];
-                if (cur.source !== resolvedSource) cur.source = resolvedSource;
-                if (cur.route !== path) cur.route = path;
-                const routeMeta = matched?.meta as Record<string, string> | undefined;
-                if (routeMeta?.title || routeMeta?.icon) {
-                  cur.meta = { ...(cur.meta || {}), ...routeMeta };
-                }
-              }
+              syncTabState(_at, resolvedSource, path, matched?.meta as Record<string, any>);
             }
           }
         }
@@ -1834,14 +1806,8 @@ export const routerAttributeModule: AttributeModule = {
         if (destTab && destTab !== state.activePageTabId) {
           state.switchPageTab(destTab);
         }
-        if (destTab && destState) {
-          if (destState.title !== undefined || destState.icon !== undefined) {
-            state.tabMeta[destTab] = {
-              ...(state.tabMeta[destTab] || {}),
-              ...(destState.title !== undefined ? { title: destState.title } : {}),
-              ...(destState.icon !== undefined ? { icon: destState.icon } : {}),
-            };
-          }
+        if (destTab && destState && (destState.title !== undefined || destState.icon !== undefined)) {
+          syncTabState(destTab, null, null, { title: destState.title, icon: destState.icon });
         }
 
         e.intercept({
@@ -1863,14 +1829,8 @@ export const routerAttributeModule: AttributeModule = {
         if (tab && tab !== state.activePageTabId) {
           state.switchPageTab(tab);
         }
-        if (tab && st) {
-          if (st.title !== undefined || st.icon !== undefined) {
-            state.tabMeta[tab] = {
-              ...(state.tabMeta[tab] || {}),
-              ...(st.title !== undefined ? { title: st.title } : {}),
-              ...(st.icon !== undefined ? { icon: st.icon } : {}),
-            };
-          }
+        if (tab && st && (st.title !== undefined || st.icon !== undefined)) {
+          syncTabState(tab, null, null, { title: st.title, icon: st.icon });
         }
         updateRoute(globalThis.location.href);
       };
