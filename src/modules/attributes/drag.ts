@@ -167,10 +167,6 @@ export class Draggable {
   private nextEl: HTMLElement | null = null;
   private lastTarget: HTMLElement | null = null;
   private lastDirection = 0;
-  private pastFirstInvertThresh = false;
-  private isCircumstantialInvert = false;
-  private targetMoveDistance = 0;
-  private targetBeforeFirstSwap?: number;
   private _swapHighlightTarget: HTMLElement | null = null;
 
   private tapEvt: PointerEvent | null = null;
@@ -500,26 +496,17 @@ export class Draggable {
 
     const differentLevel = this.dragEl.parentNode !== targetParent;
     const differentRowCol = !this._dragElInRowColumn(dragRect, targetRect, vertical);
-    const side1 = vertical ? 'top' : 'left';
-
-    if (this.lastTarget !== target) {
-      this.targetBeforeFirstSwap = targetRect[side1];
-      this.pastFirstInvertThresh = false;
-      this.isCircumstantialInvert = (!differentRowCol && this.options.invertSwap) || differentLevel;
-    }
 
     // The swap-threshold is kept live by the reactive bridge in dragAttribute,
     // which writes slider-bound values straight into this.options — so reading
     // options here honors runtime threshold changes without a second code path.
     const direction = this._getSwapDirection(
       e,
-      target,
       targetRect,
       vertical,
       differentRowCol ? 1 : this.options.swapThreshold!,
       this.options.invertedSwapThreshold!,
-      this.isCircumstantialInvert,
-      this.lastTarget === target
+      differentLevel || (!differentRowCol && !!this.options.invertSwap)
     );
 
     // Swap mode: decouple hover highlight from DOM mutation.
@@ -571,12 +558,6 @@ export class Draggable {
       }
 
       this._updateDocked();
-
-      // Recalculate targetMoveDistance
-      if (this.targetBeforeFirstSwap !== undefined && !this.isCircumstantialInvert) {
-        const newTargetRect = target.getBoundingClientRect();
-        this.targetMoveDistance = Math.abs(this.targetBeforeFirstSwap - newTargetRect[side1]);
-      }
     }
   }
 
@@ -891,69 +872,30 @@ export class Draggable {
 
   private _getSwapDirection(
     evt: PointerEvent,
-    target: HTMLElement,
     targetRect: DOMRect,
     vertical: boolean,
     swapThreshold: number,
     invertedSwapThreshold: number,
-    invertSwap: boolean,
-    isLastTarget: boolean
+    invertSwap: boolean
   ): number {
     const mouseOnAxis = vertical ? evt.clientY : evt.clientX;
     const targetLength = vertical ? targetRect.height : targetRect.width;
     const targetS1 = vertical ? targetRect.top : targetRect.left;
     const targetS2 = vertical ? targetRect.bottom : targetRect.right;
-    let invert = false;
 
-    if (!invertSwap) {
-      if (isLastTarget && this.targetMoveDistance < targetLength * swapThreshold) {
-        if (!this.pastFirstInvertThresh &&
-          (this.lastDirection === 1 ?
-            (mouseOnAxis > targetS1 + targetLength * invertedSwapThreshold / 2) :
-            (mouseOnAxis < targetS2 - targetLength * invertedSwapThreshold / 2)
-          )
-        ) {
-          this.pastFirstInvertThresh = true;
-        }
-
-        if (!this.pastFirstInvertThresh) {
-          if (this.lastDirection === 1 ?
-            (mouseOnAxis < targetS1 + this.targetMoveDistance) :
-            (mouseOnAxis > targetS2 - this.targetMoveDistance)
-          ) {
-            return -this.lastDirection;
-          }
-        } else {
-          invert = true;
-        }
-      } else {
-        if (
-          mouseOnAxis > targetS1 + (targetLength * (1 - swapThreshold) / 2) &&
-          mouseOnAxis < targetS2 - (targetLength * (1 - swapThreshold) / 2)
-        ) {
-          return this._getInsertDirection(evt, target, targetRect, vertical);
-        }
-      }
-    }
-
-    invert = invert || invertSwap;
-    if (invert) {
-      if (
-        mouseOnAxis < targetS1 + (targetLength * invertedSwapThreshold / 2) ||
-        mouseOnAxis > targetS2 - (targetLength * invertedSwapThreshold / 2)
-      ) {
+    if (invertSwap) {
+      const margin = (targetLength * invertedSwapThreshold) / 2;
+      if (mouseOnAxis < targetS1 + margin || mouseOnAxis > targetS2 - margin) {
         return (mouseOnAxis > targetS1 + targetLength / 2) ? 1 : -1;
       }
+      return 0;
     }
 
+    const margin = (targetLength * (1 - swapThreshold)) / 2;
+    if (mouseOnAxis >= targetS1 + margin && mouseOnAxis <= targetS2 - margin) {
+      return (mouseOnAxis > targetS1 + targetLength / 2) ? 1 : -1;
+    }
     return 0;
-  }
-
-  private _getInsertDirection(evt: PointerEvent, target: HTMLElement, targetRect: DOMRect, vertical: boolean): number {
-    const mouseOnAxis = vertical ? evt.clientY : evt.clientX;
-    const targetS1 = vertical ? targetRect.top : targetRect.left;
-    const targetLength = vertical ? targetRect.height : targetRect.width;
-    return (mouseOnAxis > targetS1 + targetLength / 2) ? 1 : -1;
   }
 
   private _swapNodes(n1: HTMLElement, n2: HTMLElement) {
@@ -1032,6 +974,7 @@ export class Draggable {
   }
 
   private _animateShift(container: HTMLElement, beforeRects: Map<HTMLElement, DOMRect>) {
+    const animMs = this.options.animation || 150;
     Array.from(container.children).forEach((child: any) => {
       if (child.nodeName.toUpperCase() === 'TEMPLATE' || child === this.dragEl) return;
       const beforeRect = beforeRects.get(child);
@@ -1042,17 +985,18 @@ export class Draggable {
       const dy = beforeRect.top - afterRect.top;
 
       if (dx !== 0 || dy !== 0) {
-        child.style.transition = 'none';
-        child.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-        child.offsetHeight; // force repaint
-        child.style.transition = `transform ${this.options.animation}ms ease-out`;
-        child.style.transform = 'translate3d(0, 0, 0)';
-
-        const clean = () => {
-          child.style.transition = '';
-          child.style.transform = '';
-        };
-        child.addEventListener('transitionend', clean, { once: true });
+        if (typeof child.animate === 'function') {
+          child.animate(
+            [{ transform: `translate3d(${dx}px, ${dy}px, 0)` }, { transform: 'translate3d(0, 0, 0)' }],
+            { duration: animMs, easing: 'ease-out' }
+          );
+        } else {
+          child.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+          requestAnimationFrame(() => {
+            child.style.transition = `transform ${animMs}ms ease-out`;
+            child.style.transform = '';
+          });
+        }
       }
     });
   }
