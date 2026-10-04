@@ -38,14 +38,7 @@ import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reportError } from '../../engine/debug.ts';
 import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
-import {
-  parseQuery,
-  buildQuery,
-  pathToRegex,
-  fillPath,
-  matchRoute,
-  type RouteMeta,
-} from '../../engine/utils/url.ts';
+
 
 /**
  * data-router: The Core Router
@@ -257,6 +250,70 @@ export interface RouterState {
   // projected interaction frustum: a hovered route link's destination is
   // fetched ahead of the click. Pass an href, a name, or a component URL.
   prewarm(ref: string): void;
+}
+
+interface RouteMeta {
+  regex: RegExp;
+  keys: string[];
+  hasWildcard: boolean;
+}
+
+function pathToRegex(path: string): RouteMeta {
+  const keys: string[] = [];
+  let hasWildcard = false;
+  let pattern = path
+    .replace(/:([a-zA-Z0-9_]+)\?/g, (_, key) => { keys.push(key); return '(?:/([^/]+))?'; })
+    .replace(/:([a-zA-Z0-9_]+)/g, (_, key) => { keys.push(key); return '([^/]+)'; });
+  if (pattern.endsWith('*')) {
+    hasWildcard = true;
+    pattern = pattern.slice(0, -1) + '(.*)';
+  } else {
+    pattern = pattern.replace(/\*/g, '.*');
+  }
+  return { regex: new RegExp(`^${pattern}$`), keys, hasWildcard };
+}
+
+function fillPath(pattern: string, params: Record<string, string | number>): string {
+  let out = pattern
+    .replace(/:([a-zA-Z0-9_]+)\??/g, (_, key) => (params[key] != null ? String(params[key]) : ''))
+    .replace(/\*$/, () => (params.wildcard != null ? String(params.wildcard) : ''));
+  out = out.replace(/\/{2,}/g, '/');
+  if (out.length > 1 && out.endsWith('/')) out = out.slice(0, -1);
+  return out || '/';
+}
+
+function parseQuery(queryOrUrl: string | URL): Record<string, string> {
+  const query: Record<string, string> = {};
+  if (!queryOrUrl) return query;
+  const search = typeof queryOrUrl === 'string'
+    ? (queryOrUrl.includes('?') ? queryOrUrl.slice(queryOrUrl.indexOf('?')) : (queryOrUrl.startsWith('?') ? queryOrUrl : ''))
+    : queryOrUrl.search;
+  if (!search) return query;
+  const usp = new URLSearchParams(search);
+  usp.forEach((val, key) => { query[key] = val; });
+  return query;
+}
+
+function matchRoute(
+  path: string,
+  routeList: RouteRecord[],
+  matchMeta: WeakMap<RouteRecord, RouteMeta>
+): { matched: RouteRecord | null; params: Record<string, string> } {
+  const exact = routeList.find((r) => !r.internal && r.path && r.path === path);
+  if (exact) return { matched: exact, params: {} };
+  const params: Record<string, string> = {};
+  for (const route of routeList) {
+    if (route.internal || !route.path) continue;
+    const meta = matchMeta.get(route);
+    if (!meta || (!meta.keys.length && !meta.hasWildcard)) continue;
+    const m = path.match(meta.regex);
+    if (m) {
+      meta.keys.forEach((key: string, i: number) => { params[key] = m[i + 1] || ''; });
+      if (meta.hasWildcard) params.wildcard = m[meta.keys.length + 1] || '';
+      return { matched: route, params };
+    }
+  }
+  return { matched: null, params };
 }
 
 // Detect a base path from the current location when not explicitly configured.
@@ -1180,7 +1237,11 @@ export const routerAttributeModule: AttributeModule = {
         },
 
         buildQuery(obj: Record<string, unknown>) {
-          return buildQuery(obj);
+          const usp = new URLSearchParams();
+          for (const [k, v] of Object.entries(obj)) {
+            if (v != null) usp.append(k, String(v));
+          }
+          return usp.toString();
         },
 
         addRoute(route: RouteRecord) {

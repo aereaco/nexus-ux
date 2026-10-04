@@ -8095,30 +8095,6 @@ ${match}</ul>
   });
   init_debug();
   init_consts();
-
-  // src/engine/utils/url.ts
-  function parseQuery(queryOrUrl) {
-    const query = {};
-    if (!queryOrUrl)
-      return query;
-    const search = typeof queryOrUrl === "string" ? queryOrUrl.includes("?") ? queryOrUrl.slice(queryOrUrl.indexOf("?")) : queryOrUrl.startsWith("?") ? queryOrUrl : "" : queryOrUrl.search;
-    if (!search)
-      return query;
-    const usp = new URLSearchParams(search);
-    usp.forEach((val, key) => {
-      query[key] = val;
-    });
-    return query;
-  }
-  function buildQuery(obj) {
-    const usp = new URLSearchParams();
-    for (const [k, v] of Object.entries(obj)) {
-      if (v === void 0 || v === null)
-        continue;
-      usp.append(k, String(v));
-    }
-    return usp.toString();
-  }
   function pathToRegex(path) {
     const keys = [];
     let hasWildcard = false;
@@ -8138,44 +8114,48 @@ ${match}</ul>
     return { regex: new RegExp(`^${pattern}$`), keys, hasWildcard };
   }
   function fillPath(pattern, params) {
-    let out = pattern.replace(/:([a-zA-Z0-9_]+)\??/g, (_, key) => {
-      const v = params[key];
-      return v !== void 0 && v !== null ? String(v) : "";
-    }).replace(/\*$/, () => params.wildcard !== void 0 ? String(params.wildcard) : "");
+    let out = pattern.replace(/:([a-zA-Z0-9_]+)\??/g, (_, key) => params[key] != null ? String(params[key]) : "").replace(/\*$/, () => params.wildcard != null ? String(params.wildcard) : "");
     out = out.replace(/\/{2,}/g, "/");
     if (out.length > 1 && out.endsWith("/"))
       out = out.slice(0, -1);
     return out || "/";
   }
+  function parseQuery(queryOrUrl) {
+    const query = {};
+    if (!queryOrUrl)
+      return query;
+    const search = typeof queryOrUrl === "string" ? queryOrUrl.includes("?") ? queryOrUrl.slice(queryOrUrl.indexOf("?")) : queryOrUrl.startsWith("?") ? queryOrUrl : "" : queryOrUrl.search;
+    if (!search)
+      return query;
+    const usp = new URLSearchParams(search);
+    usp.forEach((val, key) => {
+      query[key] = val;
+    });
+    return query;
+  }
   function matchRoute(path, routeList, matchMeta) {
-    const exact = routeList.find((r) => !r.internal && r.path && r.path === path) || null;
-    if (exact) {
+    const exact = routeList.find((r) => !r.internal && r.path && r.path === path);
+    if (exact)
       return { matched: exact, params: {} };
-    }
     const params = {};
     for (const route of routeList) {
       if (route.internal || !route.path)
         continue;
       const meta = matchMeta.get(route);
-      if (!meta)
+      if (!meta || !meta.keys.length && !meta.hasWildcard)
         continue;
-      if (meta.keys.length > 0 || meta.hasWildcard) {
-        const m = path.match(meta.regex);
-        if (m) {
-          meta.keys.forEach((key, i) => {
-            params[key] = m[i + 1] || "";
-          });
-          if (meta.hasWildcard) {
-            params.wildcard = m[meta.keys.length + 1] || "";
-          }
-          return { matched: route, params };
-        }
+      const m = path.match(meta.regex);
+      if (m) {
+        meta.keys.forEach((key, i) => {
+          params[key] = m[i + 1] || "";
+        });
+        if (meta.hasWildcard)
+          params.wildcard = m[meta.keys.length + 1] || "";
+        return { matched: route, params };
       }
     }
     return { matched: null, params };
   }
-
-  // src/modules/attributes/router.ts
   function autoDetectBasePath() {
     const baseEl = document.querySelector("base[href]");
     if (baseEl && baseEl.href) {
@@ -8957,7 +8937,12 @@ ${match}</ul>
             return current === path || current.startsWith(path + "/");
           },
           buildQuery(obj) {
-            return buildQuery(obj);
+            const usp = new URLSearchParams();
+            for (const [k, v] of Object.entries(obj)) {
+              if (v != null)
+                usp.append(k, String(v));
+            }
+            return usp.toString();
           },
           addRoute(route) {
             runtime.debug("addRoute called with path:", route.path);
