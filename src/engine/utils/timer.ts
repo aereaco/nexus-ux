@@ -1,5 +1,6 @@
 import { TIMER_MAP_KEY } from '../consts.ts';
 import { RuntimeContext } from '../composition.ts';
+import { resolveTargetElements } from '../../modules/sprites/selector.ts';
 
 export interface TimerRecord {
   timer: number | null;
