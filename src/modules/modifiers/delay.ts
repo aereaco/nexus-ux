@@ -8,101 +8,26 @@
  *   - `_delay` — uses DEFAULT_DEBOUNCE_TIME (250ms)
  *   - `_delay-500` — static 500ms delay
  *   - `_delay-#ms` — dynamic delay from signal/expression
- *
- * ZCZS Guarantees:
- *   - Zero-copy: Timeout IDs are stored by reference; no cloning.
- *   - Zero-serialization: Handler is wrapped in closure; no serialization.
- *
- * Coordination:
- *   - on.ts applies this modifier during event listener construction
- *   - consts.ts provides DEFAULT_DEBOUNCE_TIME
- *   - ModuleCoordinator registers via registerModifierModule
- *
- * Nexus-UX Innovation Preserved:
- *   - Dynamic wait time via expression evaluation
- *   - Support for both event and non-event payloads
+ *   - `_delay.cancel` — imperative cancel command
  */
 
-import { ModifierModule } from '../../engine/modules.ts';
-import { RuntimeContext } from '../../engine/composition.ts';
 import { DEFAULT_DEBOUNCE_TIME } from '../../engine/consts.ts';
-import { 
-  getTimerMap, 
-  parseCommandArg, 
-  resolveTimerDuration,
-  clearTimer 
-} from '../../engine/utils/timer.ts';
-import { resolveTargetElements } from '../sprites/selector.ts';
+import { createTimerModifier, clearTimer } from '../../engine/utils/timer.ts';
 
-export const delayModifier: ModifierModule = {
-  name: 'delay',
-  handle: (payload: any, el: HTMLElement, arg: string, runtime: RuntimeContext) => {
-    const cmd = parseCommandArg(arg);
-
-    if (cmd.command === 'cancel') {
-      if (typeof payload === 'function') {
-        return (e: Event) => {
-          const targets = resolveTargetElements(el, cmd.targetSelector);
-          targets.forEach(target => {
-            const map = getTimerMap(target);
-            const rec = map.get('delay');
-            if (rec) {
-              clearTimer(rec);
-              map.delete('delay');
-            }
-          });
-          return payload(e);
-        };
-      }
-
-      return (...args: any[]) => {
-        const targets = resolveTargetElements(el, cmd.targetSelector);
-        targets.forEach(target => {
-          const map = getTimerMap(target);
-          const rec = map.get('delay');
-          if (rec) {
-            clearTimer(rec);
-            map.delete('delay');
-          }
-        });
-        return typeof payload === 'function' ? payload(...args) : payload;
-      };
-    }
-
-    if (typeof payload === 'function') {
-      return (e: Event) => {
-        const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
-        const map = getTimerMap(el);
-        const existing = map.get('delay');
-        if (existing) clearTimer(existing);
-
-        const runner = () => {
-          map.delete('delay');
-          payload(e);
-        };
-
-        const timer = setTimeout(runner, wait);
-        map.set('delay', { timer, fn: runner });
-      };
-    }
-
-    return (...args: any[]) => {
-      return new Promise((resolve) => {
-        const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
-        const map = getTimerMap(el);
-        const existing = map.get('delay');
-        if (existing) clearTimer(existing);
-
-        const runner = () => {
-          map.delete('delay');
-          resolve(typeof payload === 'function' ? payload(...args) : payload);
-        };
-
-        const timer = setTimeout(runner, wait);
-        map.set('delay', { timer, fn: runner });
-      });
+export const delayModifier = createTimerModifier(
+  'delay',
+  DEFAULT_DEBOUNCE_TIME,
+  (run, wait, _el, rec, map) => {
+    clearTimer(rec);
+    const runner = () => {
+      map.delete('delay');
+      run();
     };
-  }
-};
+    rec.timer = setTimeout(runner, wait) as unknown as number;
+    rec.fn = runner;
+    map.set('delay', rec);
+  },
+  { supportsNonFunctionPromise: true }
+);
 
 export default delayModifier;

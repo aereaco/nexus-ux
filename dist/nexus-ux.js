@@ -14292,70 +14292,21 @@ ${match}</ul>
     delayModifier: () => delayModifier
   });
   init_consts();
-  var delayModifier = {
-    name: "delay",
-    handle: (payload, el, arg, runtime) => {
-      const cmd = parseCommandArg(arg);
-      if (cmd.command === "cancel") {
-        if (typeof payload === "function") {
-          return (e) => {
-            const targets = resolveTargetElements(el, cmd.targetSelector);
-            targets.forEach((target) => {
-              const map = getTimerMap(target);
-              const rec = map.get("delay");
-              if (rec) {
-                clearTimer(rec);
-                map.delete("delay");
-              }
-            });
-            return payload(e);
-          };
-        }
-        return (...args) => {
-          const targets = resolveTargetElements(el, cmd.targetSelector);
-          targets.forEach((target) => {
-            const map = getTimerMap(target);
-            const rec = map.get("delay");
-            if (rec) {
-              clearTimer(rec);
-              map.delete("delay");
-            }
-          });
-          return typeof payload === "function" ? payload(...args) : payload;
-        };
-      }
-      if (typeof payload === "function") {
-        return (e) => {
-          const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
-          const map = getTimerMap(el);
-          const existing = map.get("delay");
-          if (existing)
-            clearTimer(existing);
-          const runner = () => {
-            map.delete("delay");
-            payload(e);
-          };
-          const timer = setTimeout(runner, wait);
-          map.set("delay", { timer, fn: runner });
-        };
-      }
-      return (...args) => {
-        return new Promise((resolve) => {
-          const wait = resolveTimerDuration(runtime, el, arg, DEFAULT_DEBOUNCE_TIME);
-          const map = getTimerMap(el);
-          const existing = map.get("delay");
-          if (existing)
-            clearTimer(existing);
-          const runner = () => {
-            map.delete("delay");
-            resolve(typeof payload === "function" ? payload(...args) : payload);
-          };
-          const timer = setTimeout(runner, wait);
-          map.set("delay", { timer, fn: runner });
-        });
+  var delayModifier = createTimerModifier(
+    "delay",
+    DEFAULT_DEBOUNCE_TIME,
+    (run, wait, _el, rec, map) => {
+      clearTimer(rec);
+      const runner = () => {
+        map.delete("delay");
+        run();
       };
-    }
-  };
+      rec.timer = setTimeout(runner, wait);
+      rec.fn = runner;
+      map.set("delay", rec);
+    },
+    { supportsNonFunctionPromise: true }
+  );
   var delay_default = delayModifier;
 
   // src/modules/modifiers/document.ts
