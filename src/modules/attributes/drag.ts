@@ -7,70 +7,7 @@ import { stylesheet } from "./stylesheet.ts";
 import { dragState } from "../sprites/drag.ts";
 import { ensureAdoptedStylesheet } from "../../engine/utils/styles.ts";
 
-const DRAG_CSS = `
-[data-drag-item], [data-drag]:not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]) {
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: none;
-}
-
-[data-drag-item]:not([data-drag-handle]),
-[data-drag]:not([data-drag-handle]):not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]) {
-  cursor: grab;
-}
-
-[data-drag-item]:not([data-drag-handle]):active,
-[data-drag]:not([data-drag-handle]):not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]):active {
-  cursor: grabbing;
-}
-
-[data-drag-handle], .handle {
-  cursor: grab;
-  touch-action: none;
-}
-
-[data-drag-handle]:active, .handle:active {
-  cursor: grabbing;
-}
-
-[data-drag-nodrag] {
-  cursor: default !important;
-  touch-action: auto !important;
-  pointer-events: auto !important;
-}
-
-.draggable-drag, .drag-active {
-  opacity: 1 !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
-  transform: scale(1.03) !important;
-  cursor: grabbing !important;
-  z-index: 9999 !important;
-  pointer-events: none !important;
-}
-
-.draggable-ghost, .drag-ghost {
-  opacity: 0.4 !important;
-  pointer-events: none !important;
-  border: 2px dashed color-mix(in srgb, currentColor 25%, transparent) !important;
-  background-color: color-mix(in srgb, currentColor 10%, transparent) !important;
-}
-
-.draggable-chosen, .drag-chosen {
-  cursor: grabbing !important;
-  opacity: 0.85;
-}
-
-.draggable-selected, [data-drag-item].selected {
-  outline: 2px solid var(--color-primary, #3b82f6) !important;
-  outline-offset: 2px !important;
-}
-
-.draggable-swap-highlight {
-  outline: 2px dashed var(--color-warning, #f59e0b) !important;
-  outline-offset: 2px !important;
-  transition: outline 0.15s ease !important;
-}
-`;
+const DRAG_CSS = `[data-drag-item],[data-drag]:not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]){user-select:none;-webkit-user-select:none;touch-action:none}[data-drag-item]:not([data-drag-handle]),[data-drag]:not([data-drag-handle]):not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]){cursor:grab}[data-drag-item]:not([data-drag-handle]):active,[data-drag]:not([data-drag-handle]):not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]):active{cursor:grabbing}[data-drag-handle],.handle{cursor:grab;touch-action:none}[data-drag-handle]:active,.handle:active{cursor:grabbing}[data-drag-nodrag]{cursor:default !important;touch-action:auto !important;pointer-events:auto !important}.draggable-drag,.drag-active{opacity:1 !important;box-shadow:0 25px 50px -12px rgba(0,0,0,0.35) !important;transform:scale(1.03) !important;cursor:grabbing !important;z-index:9999 !important;pointer-events:none !important}.draggable-ghost,.drag-ghost{opacity:0.4 !important;pointer-events:none !important;border:2px dashed color-mix(in srgb,currentColor 25%,transparent) !important;background-color:color-mix(in srgb,currentColor 10%,transparent) !important}.draggable-chosen,.drag-chosen{cursor:grabbing !important;opacity:0.85}.draggable-selected,[data-drag-item].selected{outline:2px solid var(--color-primary,#3b82f6) !important;outline-offset:2px !important}.draggable-swap-highlight{outline:2px dashed var(--color-warning,#f59e0b) !important;outline-offset:2px !important;transition:outline 0.15s ease !important}`;
 
 const dragSheetRef: { sheet: CSSStyleSheet | null } = { sheet: null };
 
