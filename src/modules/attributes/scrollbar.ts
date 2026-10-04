@@ -278,6 +278,10 @@ export class OverlayScrollbarInstance {
       if (this.host !== this.el) {
         this.trackV.style.top = `${this.el.offsetTop}px`;
         this.trackV.style.height = `${this.el.clientHeight}px`;
+        this.trackV.style.bottom = 'auto';
+        const offsetRight = this.host.clientWidth - (this.el.offsetLeft + this.el.clientWidth);
+        this.trackV.style.right = `${Math.max(0, offsetRight)}px`;
+        this.trackV.style.left = 'auto';
       }
       const thumbHeight = Math.max(24, (clientHeight / scrollHeight) * clientHeight);
       const maxScroll = scrollHeight - clientHeight;
