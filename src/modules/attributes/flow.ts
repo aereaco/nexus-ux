@@ -9,27 +9,31 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 4;
 
-interface Viewport { x: number; y: number; zoom: number }
-type FlowElement = HTMLElement & { __flowViewport?: Viewport };
+export interface Viewport { x: number; y: number; zoom: number; tick?: number }
+export type FlowElement = HTMLElement & { __flowViewport?: Viewport };
 
 /** Elements that must not initiate a canvas pan when pressed. */
 const NO_PAN = '[data-flow-node],[data-flow-handle],[data-flow-nodrag],[data-flow-resizer],[data-flow-minimap],.flow-edge,.flow-edge-interaction,.flow-edge-label-group,button,a,input,textarea,select,label';
 
 /** Read the shared, live viewport state a [data-flow] element publishes. */
-const sharedViewport = (el: Element | null): Viewport => {
+export const sharedViewport = (el: Element | null): Viewport => {
   const flow = el?.closest('[data-flow]') as FlowElement | null;
   const vp = flow?.__flowViewport;
-  return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
+  if (vp) {
+    const _t = (vp as any).tick;
+    return vp;
+  }
+  return { x: 0, y: 0, zoom: 1 };
 };
 
-const toFlowCoords = (container: HTMLElement, clientX: number, clientY: number, vp?: Viewport) => {
+export const toFlowCoords = (container: HTMLElement, clientX: number, clientY: number, vp?: Viewport) => {
   const r = container.getBoundingClientRect();
   const v = vp || sharedViewport(container);
   const z = v.zoom || 1;
   return { x: (clientX - r.left - (v.x || 0)) / z, y: (clientY - r.top - (v.y || 0)) / z };
 };
 
-const simpleBezier = (x1: number, y1: number, x2: number, y2: number) => {
+export const simpleBezier = (x1: number, y1: number, x2: number, y2: number) => {
   const dx = Math.abs(x1 - x2) / 2;
   return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
 };
@@ -257,7 +261,7 @@ export const flowAttribute: AttributeModule = {
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const hasSelected = nodes.some(n => n.selected);
         let edges: any[] = [];
-        try { edges = runtime.evaluate(element, 'edges') || []; } catch {}
+        try { edges = (runtime.evaluate(element, 'edges') as any[]) || []; } catch {}
         const hasSelectedEdge = Array.isArray(edges) && edges.some((ed: any) => ed.selected);
 
         if (hasSelected || hasSelectedEdge) {
@@ -1269,7 +1273,7 @@ export const flowEdgeReconnectAttribute: AttributeModule = {
           || '';
         if (newId) {
           try {
-            const edge = runtime.evaluate(element, 'activeEdge');
+            const edge = runtime.evaluate(element, 'activeEdge') as any;
             if (edge) {
               if (terminal === 'target' && String(edge.source) !== String(newId)) {
                 edge.target = newId;

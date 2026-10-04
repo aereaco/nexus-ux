@@ -31,6 +31,7 @@ import { SpriteModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { reactive } from '../../engine/reactivity.ts';
 import { IS_TEMPLATE_KEY } from '../../engine/consts.ts';
+import { sharedViewport, toFlowCoords, FlowElement, Viewport } from '../attributes/flow.ts';
 
 /**
  * $flow Sprite.
@@ -44,15 +45,13 @@ import { IS_TEMPLATE_KEY } from '../../engine/consts.ts';
 /** xyflow handle sides. */
 type Side = 'left' | 'right' | 'top' | 'bottom';
 
-interface Viewport { x: number; y: number; zoom: number }
-
 export const flowModule: SpriteModule = {
   name: 'flow',
   key: '$flow',
   sprites: (context: RuntimeContext) => {
 
     // -----------------------------------------------------------------------
-    // Bezier geometry (xyflow parity: getBezierPath + getControlWithCurvature)
+    // Bezier & Orthogonal Path Geometry (xyflow parity)
     // -----------------------------------------------------------------------
     const calculateControlOffset = (distance: number, curvature: number): number =>
       distance >= 0 ? 0.5 * distance : curvature * 25 * Math.sqrt(-distance);
@@ -73,13 +72,6 @@ export const flowModule: SpriteModule = {
       right: { x: 1, y: 0 },
       top: { x: 0, y: -1 },
       bottom: { x: 0, y: 1 },
-    };
-
-    const getDirection = (source: { x: number; y: number }, sourcePosition: Side, target: { x: number; y: number }) => {
-      if (sourcePosition === 'left' || sourcePosition === 'right') {
-        return source.x < target.x ? { x: 1, y: 0 } : { x: -1, y: 0 };
-      }
-      return source.y < target.y ? { x: 0, y: 1 } : { x: 0, y: -1 };
     };
 
     const dist = (a: { x: number; y: number }, b: { x: number; y: number }) =>
@@ -116,7 +108,9 @@ export const flowModule: SpriteModule = {
       const sourceGapped = { x: source.x + sourceDir.x * offset, y: source.y + sourceDir.y * offset };
       const targetGapped = { x: target.x + targetDir.x * offset, y: target.y + targetDir.y * offset };
 
-      const dir = getDirection(sourceGapped, sSide, targetGapped);
+      const dir = (sSide === 'left' || sSide === 'right')
+        ? (sourceGapped.x < targetGapped.x ? { x: 1, y: 0 } : { x: -1, y: 0 })
+        : (sourceGapped.y < targetGapped.y ? { x: 0, y: 1 } : { x: 0, y: -1 });
       const dirAccessor: 'x' | 'y' = dir.x !== 0 ? 'x' : 'y';
       const currDir = dir[dirAccessor];
 
@@ -125,30 +119,17 @@ export const flowModule: SpriteModule = {
       let centerY = (sy + ty) / 2;
 
       if (sourceDir[dirAccessor] * targetDir[dirAccessor] === -1) {
-        if (dirAccessor === 'x') {
-          centerX = sourceGapped.x + (targetGapped.x - sourceGapped.x) * stepPosition;
-          centerY = (sourceGapped.y + targetGapped.y) / 2;
-        } else {
-          centerX = (sourceGapped.x + targetGapped.x) / 2;
-          centerY = sourceGapped.y + (targetGapped.y - sourceGapped.y) * stepPosition;
-        }
-        const verticalSplit = [
-          { x: centerX, y: sourceGapped.y },
-          { x: centerX, y: targetGapped.y },
-        ];
-        const horizontalSplit = [
-          { x: sourceGapped.x, y: centerY },
-          { x: targetGapped.x, y: centerY },
-        ];
-        points = sourceDir[dirAccessor] === currDir
-          ? (dirAccessor === 'x' ? verticalSplit : horizontalSplit)
-          : (dirAccessor === 'x' ? horizontalSplit : verticalSplit);
+        centerX = dirAccessor === 'x' ? sourceGapped.x + (targetGapped.x - sourceGapped.x) * stepPosition : (sourceGapped.x + targetGapped.x) / 2;
+        centerY = dirAccessor === 'y' ? sourceGapped.y + (targetGapped.y - sourceGapped.y) * stepPosition : (sourceGapped.y + targetGapped.y) / 2;
+        const isVert = (sourceDir[dirAccessor] === currDir) === (dirAccessor === 'x');
+        points = isVert
+          ? [{ x: centerX, y: sourceGapped.y }, { x: centerX, y: targetGapped.y }]
+          : [{ x: sourceGapped.x, y: centerY }, { x: targetGapped.x, y: centerY }];
       } else {
-        const sourceTarget = [{ x: sourceGapped.x, y: targetGapped.y }];
-        const targetSource = [{ x: targetGapped.x, y: sourceGapped.y }];
-        points = dirAccessor === 'x'
-          ? (sourceDir.x === currDir ? targetSource : sourceTarget)
-          : (sourceDir.y === currDir ? sourceTarget : targetSource);
+        const useTargetSource = (dirAccessor === 'x' ? sourceDir.x : sourceDir.y) === currDir;
+        points = useTargetSource
+          ? [{ x: targetGapped.x, y: sourceGapped.y }]
+          : [{ x: sourceGapped.x, y: targetGapped.y }];
       }
 
       const pathPoints = [source, sourceGapped, ...points, targetGapped, target];
@@ -156,9 +137,7 @@ export const flowModule: SpriteModule = {
       for (let i = 0; i < pathPoints.length; i++) {
         const p = pathPoints[i];
         const prev = deduped[deduped.length - 1];
-        if (!prev || prev.x !== p.x || prev.y !== p.y) {
-          deduped.push(p);
-        }
+        if (!prev || prev.x !== p.x || prev.y !== p.y) deduped.push(p);
       }
 
       let path = `M ${deduped[0].x} ${deduped[0].y}`;
@@ -166,7 +145,6 @@ export const flowModule: SpriteModule = {
         path += ' ' + getBend(deduped[i - 1], deduped[i], deduped[i + 1], borderRadius);
       }
       path += ` L ${deduped[deduped.length - 1].x} ${deduped[deduped.length - 1].y}`;
-
       return { path, labelX: centerX, labelY: centerY };
     };
 
@@ -188,44 +166,35 @@ export const flowModule: SpriteModule = {
     const straightPath = (x1: number, y1: number, x2: number, y2: number) =>
       `M ${x1} ${y1} L ${x2} ${y2}`;
 
-    // -----------------------------------------------------------------------
-    // Viewport / coordinate helpers
-    // -----------------------------------------------------------------------
-    /** The shared viewport state stashed on a [data-flow] element by the directive. */
-    const viewportOf = (el: Element | null): Viewport => {
-      const flow = el?.closest('[data-flow]') as (HTMLElement & { __flowViewport?: Viewport }) | null;
-      const vp = flow?.__flowViewport;
-      if (vp) {
-        // Touch reactive tick so any effect calling $flow.edge automatically tracks live node movements and pans
-        const _t = (vp as any).tick;
-        return vp;
-      }
-      return { x: 0, y: 0, zoom: 1 };
+    /** Unified edge geometry generator for bezier, step, smoothstep, and straight lines. */
+    const computeEdgePath = (
+      type: string,
+      sx: number, sy: number, sSide: Side,
+      tx: number, ty: number, tSide: Side,
+      opts: { curvature?: number; borderRadius?: number; offset?: number; stepPosition?: number } = {}
+    ) => {
+      if (type === 'straight') return { path: straightPath(sx, sy, tx, ty), labelX: (sx + tx) / 2, labelY: (sy + ty) / 2 };
+      if (type === 'step') return smoothStepPath(sx, sy, sSide, tx, ty, tSide, 0, opts.offset ?? 20, opts.stepPosition ?? 0.5);
+      if (type === 'smoothstep') return smoothStepPath(sx, sy, sSide, tx, ty, tSide, opts.borderRadius ?? 5, opts.offset ?? 20, opts.stepPosition ?? 0.5);
+      return bezierPath(sx, sy, sSide, tx, ty, tSide, opts.curvature ?? 0.25);
     };
 
-    const flowContainer = (el: Element | null): HTMLElement | null =>
-      (el?.closest('[data-flow]') as HTMLElement) || null;
+    // -----------------------------------------------------------------------
+    // Viewport & DOM Coordinates Helpers
+    // -----------------------------------------------------------------------
+    const flowContainer = (el: Element | null): FlowElement | null =>
+      (el?.closest('[data-flow]') as FlowElement) || null;
 
-    /** Convert a screen point to flow-space coordinates (pointToRendererPoint). */
-    const screenToFlow = (clientX: number, clientY: number, container: HTMLElement, vp: Viewport) => {
-      const r = container.getBoundingClientRect();
-      return {
-        x: (clientX - r.left - vp.x) / vp.zoom,
-        y: (clientY - r.top - vp.y) / vp.zoom
-      };
-    };
-
-    /** Center of an element in flow-space. */
-    const anchorFlow = (el: Element, container: HTMLElement, vp: Viewport) => {
+    const anchorFlow = (el: Element, container: HTMLElement, vp?: Viewport) => {
       const r = el.getBoundingClientRect();
-      return screenToFlow(r.left + r.width / 2, r.top + r.height / 2, container, vp);
+      return toFlowCoords(container, r.left + r.width / 2, r.top + r.height / 2, vp);
     };
 
-    /**
-     * Infer the xyflow handle side from geometry: compare the handle center to
-     * the node's bounding box. This keeps the HTML free of extra bookkeeping —
-     * any handle placed on an edge of the card resolves to the right Position.
-     */
+    const getVp = (target?: any): { container: FlowElement | null; vp: Viewport | null } => {
+      const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as FlowElement | null;
+      return { container, vp: container?.__flowViewport || null };
+    };
+
     const inferSide = (handle: Element, node: Element): Side => {
       const declared = (handle.getAttribute('data-flow-side') || '').toLowerCase();
       if (declared === 'left' || declared === 'right' || declared === 'top' || declared === 'bottom') {
@@ -233,37 +202,25 @@ export const flowModule: SpriteModule = {
       }
       const h = handle.getBoundingClientRect();
       const n = node.getBoundingClientRect();
-      const hx = h.left + h.width / 2;
-      const hy = h.top + h.height / 2;
-      const relX = (hx - n.left) / (n.width || 1);
-      const relY = (hy - n.top) / (n.height || 1);
-      // Distance to each edge (0 = on that edge).
+      const relX = (h.left + h.width / 2 - n.left) / (n.width || 1);
+      const relY = (h.top + h.height / 2 - n.top) / (n.height || 1);
       const dl = relX, dr = 1 - relX, dt = relY, db = 1 - relY;
       const min = Math.min(dl, dr, dt, db);
-      if (min === dl) return 'left';
-      if (min === dr) return 'right';
-      if (min === dt) return 'top';
-      return 'bottom';
+      return min === dl ? 'left' : min === dr ? 'right' : min === dt ? 'top' : 'bottom';
     };
 
-    /** Locate node element by exact ID, prefixed ID, or data attribute. */
     const findNode = (id: string, container?: HTMLElement | null): HTMLElement | null => {
       if (!id) return null;
-      let el = document.getElementById(id);
-      if (el) return el;
-      el = document.getElementById(`node-${id}`);
+      let el = document.getElementById(id) || document.getElementById(`node-${id}`);
       if (el) return el;
       if (id.startsWith('node-')) {
         el = document.getElementById(id.slice(5));
         if (el) return el;
       }
-      const root = container || document;
-      return (root.querySelector(`[data-id="${id}"], [data-node-id="${id}"]`) as HTMLElement | null);
+      return ((container || document).querySelector(`[data-id="${id}"], [data-node-id="${id}"]`) as HTMLElement | null);
     };
 
-    /** Find the best handle element on a node for a given role. */
     const findHandle = (node: HTMLElement, role: 'source' | 'target'): HTMLElement | null => {
-      // Exclude data-for template clones (hidden, not real geometry).
       const real = (sel: string) =>
         Array.from(node.querySelectorAll<HTMLElement>(sel))
           .find(el => !(el as any)[IS_TEMPLATE_KEY] && !el.hasAttribute('data-for')) || null;
@@ -272,10 +229,37 @@ export const flowModule: SpriteModule = {
         || real('[data-flow-handle]');
     };
 
+    const resolveNodeEndpoint = (node: any, handleId: string | undefined, defaultType: 'source' | 'target', defaultSide: Side) => {
+      const p = node.position || node;
+      const pos = { x: Number(p.x) || 0, y: Number(p.y) || 0 };
+      const w = Number(node.width || node.w) || 192;
+      const h = Number(node.height || node.h) || 90;
+      let handle: any = null;
+      let side: Side = defaultSide;
+      if (Array.isArray(node.handles) && node.handles.length > 0) {
+        handle = handleId
+          ? node.handles.find((item: any) => item.id === handleId)
+          : node.handles.find((item: any) => item.type === defaultType) || node.handles[0];
+        if (handle?.side) side = handle.side;
+      }
+      const sameSide = (node.handles || []).filter((item: any) => (item.side || (item.type === 'source' ? 'right' : 'left')) === side);
+      const idx = Math.max(0, sameSide.indexOf(handle));
+      const count = Math.max(1, sameSide.length);
+      const fraction = count === 1 ? 0.5 : (idx + 1) / (count + 1);
+
+      let pt: { x: number; y: number };
+      if (side === 'left') pt = { x: pos.x, y: pos.y + h * fraction };
+      else if (side === 'right') pt = { x: pos.x + w, y: pos.y + h * fraction };
+      else if (side === 'top') pt = { x: pos.x + w * fraction, y: pos.y };
+      else pt = { x: pos.x + w * fraction, y: pos.y + h };
+
+      return { pt, side };
+    };
+
     const $flow = {
       /** Screen coordinates -> flow-space (public, xyflow pointToRendererPoint). */
-      screenToFlow: (container: HTMLElement, x: number, y: number, state: Viewport) =>
-        screenToFlow(x, y, container, state),
+      screenToFlow: (container: HTMLElement, x: number, y: number, state?: Viewport) =>
+        toFlowCoords(container, x, y, state),
 
       /** Bounding box of a node collection in flow-space (supports parentId sub-flows). */
       getBounds: (nodes: any[]) => {
@@ -322,42 +306,31 @@ export const flowModule: SpriteModule = {
 
       /** Zoom in on canvas viewport */
       zoomIn: (target?: any, delta = 0.2) => {
-        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as (HTMLElement & { __flowViewport?: any }) | null;
-        const vp = container?.__flowViewport;
-        if (vp) {
-          vp.zoom = Math.min(4, (vp.zoom || 1) + delta);
-        }
+        const { vp } = getVp(target);
+        if (vp) vp.zoom = Math.min(4, (vp.zoom || 1) + delta);
       },
 
       /** Zoom out on canvas viewport */
       zoomOut: (target?: any, delta = 0.2) => {
-        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as (HTMLElement & { __flowViewport?: any }) | null;
-        const vp = container?.__flowViewport;
-        if (vp) {
-          vp.zoom = Math.max(0.2, (vp.zoom || 1) - delta);
-        }
+        const { vp } = getVp(target);
+        if (vp) vp.zoom = Math.max(0.2, (vp.zoom || 1) - delta);
       },
 
       /** Reset canvas viewport position and zoom */
       reset: (target?: any) => {
-        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as (HTMLElement & { __flowViewport?: any }) | null;
-        const vp = container?.__flowViewport;
-        if (vp) {
-          vp.x = 0;
-          vp.y = 0;
-          vp.zoom = 1;
-        }
+        const { vp } = getVp(target);
+        if (vp) { vp.x = 0; vp.y = 0; vp.zoom = 1; }
       },
 
       /** Fit canvas view to current nodes */
       fit: (target?: any, nodes?: any[], padding = 40) => {
-        const container = (target instanceof Element ? (flowContainer(target) || document.querySelector('[data-flow]')) : document.querySelector('[data-flow]')) as HTMLElement | null;
-        if (!container) return;
-        const flow = container as (HTMLElement & { __flowViewport?: any });
-        const vp = flow?.__flowViewport;
-        if (vp && nodes && nodes.length > 0) {
-          $flow.fitView(container, vp, nodes, padding);
+        const { container, vp } = getVp(target);
+        if (!container || !vp) return;
+        let list = nodes;
+        if (!list || list.length === 0) {
+          try { list = context.evaluate(container, 'nodes') as any[]; } catch {}
         }
+        if (list && list.length > 0) $flow.fitView(container, vp, list, padding);
       },
 
       /** Return SVG marker URL reference for arrowhead ends */
@@ -408,51 +381,10 @@ export const flowModule: SpriteModule = {
 
         // Fast-path: Calculate purely from in-memory reactive node proxies (Zero-Copy ZCZS)
         if (nodeA && nodeB) {
-          const getAbsoluteNodePos = (n: any): { x: number; y: number } => {
-            const p = n.position || n;
-            return { x: Number(p.x) || 0, y: Number(p.y) || 0 };
-          };
-
-          const posA = getAbsoluteNodePos(nodeA);
-          const posB = getAbsoluteNodePos(nodeB);
-          const wA = Number(nodeA.width || nodeA.w) || 192;
-          const hA = Number(nodeA.height || nodeA.h) || 90;
-          const wB = Number(nodeB.width || nodeB.w) || 192;
-          const hB = Number(nodeB.height || nodeB.h) || 90;
-
-          let handleA: any = null;
-          if (Array.isArray(nodeA.handles) && nodeA.handles.length > 0) {
-            handleA = options.sourceHandle
-              ? nodeA.handles.find((h: any) => h.id === options.sourceHandle)
-              : nodeA.handles.find((h: any) => h.type === 'source') || nodeA.handles[0];
-            if (handleA?.side) sSide = handleA.side;
-          }
-
-          let handleB: any = null;
-          if (Array.isArray(nodeB.handles) && nodeB.handles.length > 0) {
-            handleB = options.targetHandle
-              ? nodeB.handles.find((h: any) => h.id === options.targetHandle)
-              : nodeB.handles.find((h: any) => h.type === 'target') || nodeB.handles[0];
-            if (handleB?.side) tSide = handleB.side;
-          }
-
-          const getHandleAnchor = (pos: { x: number; y: number }, w: number, h: number, handle: any, allHandles: any[], defaultSide: Side) => {
-            const side: Side = handle?.side || defaultSide;
-            const sameSide = (allHandles || []).filter((item: any) => (item.side || (item.type === 'source' ? 'right' : 'left')) === side);
-            const idx = Math.max(0, sameSide.indexOf(handle));
-            const count = Math.max(1, sameSide.length);
-            const fraction = count === 1 ? 0.5 : (idx + 1) / (count + 1);
-
-            switch (side) {
-              case 'left': return { x: pos.x, y: pos.y + h * fraction };
-              case 'right': return { x: pos.x + w, y: pos.y + h * fraction };
-              case 'top': return { x: pos.x + w * fraction, y: pos.y };
-              case 'bottom': return { x: pos.x + w * fraction, y: pos.y + h };
-            }
-          };
-
-          s = getHandleAnchor(posA, wA, hA, handleA, nodeA.handles, sSide);
-          t = getHandleAnchor(posB, wB, hB, handleB, nodeB.handles, tSide);
+          const epA = resolveNodeEndpoint(nodeA, options.sourceHandle, 'source', 'right');
+          const epB = resolveNodeEndpoint(nodeB, options.targetHandle, 'target', 'left');
+          s = epA.pt; sSide = epA.side;
+          t = epB.pt; tSide = epB.side;
         }
 
         // Fallback: If not in memory map, query DOM (backwards-compatibility)
@@ -462,34 +394,20 @@ export const flowModule: SpriteModule = {
           if (!a || !b) return '';
           const container = options.container || flowContainer(a) || flowContainer(b);
           if (!container) return '';
-          const vp = viewportOf(a);
+          const vp = sharedViewport(a);
 
           const srcHandle = findHandle(a, 'source');
           const tgtHandle = findHandle(b, 'target');
 
-          const sAnchor = srcHandle || a;
-          const tAnchor = tgtHandle || b;
-          s = anchorFlow(sAnchor, container, vp);
-          t = anchorFlow(tAnchor, container, vp);
+          s = anchorFlow(srcHandle || a, container, vp);
+          t = anchorFlow(tgtHandle || b, container, vp);
 
           sSide = srcHandle ? inferSide(srcHandle, a) : 'right';
           tSide = tgtHandle ? inferSide(tgtHandle, b) : 'left';
         }
 
-        const type = options.type || 'bezier';
-        let res: { path: string; labelX: number; labelY: number };
-
-        if (type === 'straight') {
-          res = { path: straightPath(s.x, s.y, t.x, t.y), labelX: (s.x + t.x) / 2, labelY: (s.y + t.y) / 2 };
-        } else if (type === 'step') {
-          res = smoothStepPath(s.x, s.y, sSide, t.x, t.y, tSide, 0, options.offset ?? 20, options.stepPosition ?? 0.5);
-        } else if (type === 'smoothstep') {
-          res = smoothStepPath(s.x, s.y, sSide, t.x, t.y, tSide, options.borderRadius ?? 5, options.offset ?? 20, options.stepPosition ?? 0.5);
-        } else {
-          res = bezierPath(s.x, s.y, sSide, t.x, t.y, tSide, options.curvature ?? 0.25);
-        }
-
-        const out = {
+        const res = computeEdgePath(options.type || 'bezier', s.x, s.y, sSide, t.x, t.y, tSide, options);
+        return {
           d: res.path,
           labelX: res.labelX,
           labelY: res.labelY,
@@ -502,7 +420,6 @@ export const flowModule: SpriteModule = {
           toString() { return this.d; },
           valueOf() { return this.d; }
         };
-        return out;
       },
 
       /**
@@ -515,22 +432,12 @@ export const flowModule: SpriteModule = {
           if (!elA || !elB || typeof elA.getBoundingClientRect !== 'function') return;
           const container = flowContainer(elA) || flowContainer(elB);
           if (!container) return;
-          const vp = viewportOf(elA);
+          const vp = sharedViewport(elA);
           const s = anchorFlow(elA, container, vp);
           const t = anchorFlow(elB, container, vp);
           const sSide = inferSide(elA, elA.parentElement || elA);
           const tSide = inferSide(elB, elB.parentElement || elB);
-          const type = options.type || 'bezier';
-          let res: { path: string; labelX: number; labelY: number };
-          if (type === 'straight') {
-            res = { path: straightPath(s.x, s.y, t.x, t.y), labelX: (s.x + t.x) / 2, labelY: (s.y + t.y) / 2 };
-          } else if (type === 'step') {
-            res = smoothStepPath(s.x, s.y, sSide, t.x, t.y, tSide, 0);
-          } else if (type === 'smoothstep') {
-            res = smoothStepPath(s.x, s.y, sSide, t.x, t.y, tSide, options.borderRadius ?? 5);
-          } else {
-            res = bezierPath(s.x, s.y, sSide, t.x, t.y, tSide, options.curvature ?? 0.25);
-          }
+          const res = computeEdgePath(options.type || 'bezier', s.x, s.y, sSide, t.x, t.y, tSide, options);
           pathData.d = res.path;
           pathData.labelX = res.labelX;
           pathData.labelY = res.labelY;

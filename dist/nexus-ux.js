@@ -4686,7 +4686,10 @@ ${scripts}
     flowResizerAttribute: () => flowResizerAttribute,
     flowSideAttribute: () => flowSideAttribute,
     flowSnapAttribute: () => flowSnapAttribute,
-    flowViewportAttribute: () => flowViewportAttribute
+    flowViewportAttribute: () => flowViewportAttribute,
+    sharedViewport: () => sharedViewport,
+    simpleBezier: () => simpleBezier,
+    toFlowCoords: () => toFlowCoords
   });
 
   // src/engine/utils/pointer.ts
@@ -4763,7 +4766,11 @@ ${scripts}
   var sharedViewport = (el) => {
     const flow = el?.closest("[data-flow]");
     const vp = flow?.__flowViewport;
-    return vp ? { x: vp.x || 0, y: vp.y || 0, zoom: vp.zoom || 1 } : { x: 0, y: 0, zoom: 1 };
+    if (vp) {
+      const _t = vp.tick;
+      return vp;
+    }
+    return { x: 0, y: 0, zoom: 1 };
   };
   var toFlowCoords = (container, clientX, clientY, vp) => {
     const r = container.getBoundingClientRect();
@@ -10202,12 +10209,6 @@ ${match}</ul>
         top: { x: 0, y: -1 },
         bottom: { x: 0, y: 1 }
       };
-      const getDirection = (source, sourcePosition, target) => {
-        if (sourcePosition === "left" || sourcePosition === "right") {
-          return source.x < target.x ? { x: 1, y: 0 } : { x: -1, y: 0 };
-        }
-        return source.y < target.y ? { x: 0, y: 1 } : { x: 0, y: -1 };
-      };
       const dist = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
       const getBend = (a, b, c, size) => {
         const bendSize = Math.min(dist(a, b) / 2, dist(b, c) / 2, size);
@@ -10231,42 +10232,28 @@ ${match}</ul>
         const targetDir = handleDirections[tSide];
         const sourceGapped = { x: source.x + sourceDir.x * offset, y: source.y + sourceDir.y * offset };
         const targetGapped = { x: target.x + targetDir.x * offset, y: target.y + targetDir.y * offset };
-        const dir = getDirection(sourceGapped, sSide, targetGapped);
+        const dir = sSide === "left" || sSide === "right" ? sourceGapped.x < targetGapped.x ? { x: 1, y: 0 } : { x: -1, y: 0 } : sourceGapped.y < targetGapped.y ? { x: 0, y: 1 } : { x: 0, y: -1 };
         const dirAccessor = dir.x !== 0 ? "x" : "y";
         const currDir = dir[dirAccessor];
         let points = [];
         let centerX = (sx + tx) / 2;
         let centerY = (sy + ty) / 2;
         if (sourceDir[dirAccessor] * targetDir[dirAccessor] === -1) {
-          if (dirAccessor === "x") {
-            centerX = sourceGapped.x + (targetGapped.x - sourceGapped.x) * stepPosition;
-            centerY = (sourceGapped.y + targetGapped.y) / 2;
-          } else {
-            centerX = (sourceGapped.x + targetGapped.x) / 2;
-            centerY = sourceGapped.y + (targetGapped.y - sourceGapped.y) * stepPosition;
-          }
-          const verticalSplit = [
-            { x: centerX, y: sourceGapped.y },
-            { x: centerX, y: targetGapped.y }
-          ];
-          const horizontalSplit = [
-            { x: sourceGapped.x, y: centerY },
-            { x: targetGapped.x, y: centerY }
-          ];
-          points = sourceDir[dirAccessor] === currDir ? dirAccessor === "x" ? verticalSplit : horizontalSplit : dirAccessor === "x" ? horizontalSplit : verticalSplit;
+          centerX = dirAccessor === "x" ? sourceGapped.x + (targetGapped.x - sourceGapped.x) * stepPosition : (sourceGapped.x + targetGapped.x) / 2;
+          centerY = dirAccessor === "y" ? sourceGapped.y + (targetGapped.y - sourceGapped.y) * stepPosition : (sourceGapped.y + targetGapped.y) / 2;
+          const isVert = sourceDir[dirAccessor] === currDir === (dirAccessor === "x");
+          points = isVert ? [{ x: centerX, y: sourceGapped.y }, { x: centerX, y: targetGapped.y }] : [{ x: sourceGapped.x, y: centerY }, { x: targetGapped.x, y: centerY }];
         } else {
-          const sourceTarget = [{ x: sourceGapped.x, y: targetGapped.y }];
-          const targetSource = [{ x: targetGapped.x, y: sourceGapped.y }];
-          points = dirAccessor === "x" ? sourceDir.x === currDir ? targetSource : sourceTarget : sourceDir.y === currDir ? sourceTarget : targetSource;
+          const useTargetSource = (dirAccessor === "x" ? sourceDir.x : sourceDir.y) === currDir;
+          points = useTargetSource ? [{ x: targetGapped.x, y: sourceGapped.y }] : [{ x: sourceGapped.x, y: targetGapped.y }];
         }
         const pathPoints = [source, sourceGapped, ...points, targetGapped, target];
         const deduped = [];
         for (let i = 0; i < pathPoints.length; i++) {
           const p = pathPoints[i];
           const prev = deduped[deduped.length - 1];
-          if (!prev || prev.x !== p.x || prev.y !== p.y) {
+          if (!prev || prev.x !== p.x || prev.y !== p.y)
             deduped.push(p);
-          }
         }
         let path = `M ${deduped[0].x} ${deduped[0].y}`;
         for (let i = 1; i < deduped.length - 1; i++) {
@@ -10284,26 +10271,23 @@ ${match}</ul>
         return { path, labelX, labelY };
       };
       const straightPath = (x1, y1, x2, y2) => `M ${x1} ${y1} L ${x2} ${y2}`;
-      const viewportOf = (el) => {
-        const flow = el?.closest("[data-flow]");
-        const vp = flow?.__flowViewport;
-        if (vp) {
-          const _t = vp.tick;
-          return vp;
-        }
-        return { x: 0, y: 0, zoom: 1 };
+      const computeEdgePath = (type, sx, sy, sSide, tx, ty, tSide, opts = {}) => {
+        if (type === "straight")
+          return { path: straightPath(sx, sy, tx, ty), labelX: (sx + tx) / 2, labelY: (sy + ty) / 2 };
+        if (type === "step")
+          return smoothStepPath(sx, sy, sSide, tx, ty, tSide, 0, opts.offset ?? 20, opts.stepPosition ?? 0.5);
+        if (type === "smoothstep")
+          return smoothStepPath(sx, sy, sSide, tx, ty, tSide, opts.borderRadius ?? 5, opts.offset ?? 20, opts.stepPosition ?? 0.5);
+        return bezierPath(sx, sy, sSide, tx, ty, tSide, opts.curvature ?? 0.25);
       };
       const flowContainer = (el) => el?.closest("[data-flow]") || null;
-      const screenToFlow = (clientX, clientY, container, vp) => {
-        const r = container.getBoundingClientRect();
-        return {
-          x: (clientX - r.left - vp.x) / vp.zoom,
-          y: (clientY - r.top - vp.y) / vp.zoom
-        };
-      };
       const anchorFlow = (el, container, vp) => {
         const r = el.getBoundingClientRect();
-        return screenToFlow(r.left + r.width / 2, r.top + r.height / 2, container, vp);
+        return toFlowCoords(container, r.left + r.width / 2, r.top + r.height / 2, vp);
+      };
+      const getVp = (target) => {
+        const container = target instanceof Element ? flowContainer(target) || document.querySelector("[data-flow]") : document.querySelector("[data-flow]");
+        return { container, vp: container?.__flowViewport || null };
       };
       const inferSide = (handle, node) => {
         const declared = (handle.getAttribute("data-flow-side") || "").toLowerCase();
@@ -10312,27 +10296,16 @@ ${match}</ul>
         }
         const h = handle.getBoundingClientRect();
         const n = node.getBoundingClientRect();
-        const hx = h.left + h.width / 2;
-        const hy = h.top + h.height / 2;
-        const relX = (hx - n.left) / (n.width || 1);
-        const relY = (hy - n.top) / (n.height || 1);
+        const relX = (h.left + h.width / 2 - n.left) / (n.width || 1);
+        const relY = (h.top + h.height / 2 - n.top) / (n.height || 1);
         const dl = relX, dr = 1 - relX, dt = relY, db = 1 - relY;
         const min = Math.min(dl, dr, dt, db);
-        if (min === dl)
-          return "left";
-        if (min === dr)
-          return "right";
-        if (min === dt)
-          return "top";
-        return "bottom";
+        return min === dl ? "left" : min === dr ? "right" : min === dt ? "top" : "bottom";
       };
       const findNode = (id, container) => {
         if (!id)
           return null;
-        let el = document.getElementById(id);
-        if (el)
-          return el;
-        el = document.getElementById(`node-${id}`);
+        let el = document.getElementById(id) || document.getElementById(`node-${id}`);
         if (el)
           return el;
         if (id.startsWith("node-")) {
@@ -10340,16 +10313,42 @@ ${match}</ul>
           if (el)
             return el;
         }
-        const root = container || document;
-        return root.querySelector(`[data-id="${id}"], [data-node-id="${id}"]`);
+        return (container || document).querySelector(`[data-id="${id}"], [data-node-id="${id}"]`);
       };
       const findHandle = (node, role) => {
         const real = (sel) => Array.from(node.querySelectorAll(sel)).find((el) => !el[IS_TEMPLATE_KEY] && !el.hasAttribute("data-for")) || null;
         return real(`[data-flow-handle="${role}"]`) || real(`[data-flow-handle-type="${role}"]`) || real("[data-flow-handle]");
       };
+      const resolveNodeEndpoint = (node, handleId, defaultType, defaultSide) => {
+        const p = node.position || node;
+        const pos = { x: Number(p.x) || 0, y: Number(p.y) || 0 };
+        const w = Number(node.width || node.w) || 192;
+        const h = Number(node.height || node.h) || 90;
+        let handle = null;
+        let side = defaultSide;
+        if (Array.isArray(node.handles) && node.handles.length > 0) {
+          handle = handleId ? node.handles.find((item) => item.id === handleId) : node.handles.find((item) => item.type === defaultType) || node.handles[0];
+          if (handle?.side)
+            side = handle.side;
+        }
+        const sameSide = (node.handles || []).filter((item) => (item.side || (item.type === "source" ? "right" : "left")) === side);
+        const idx = Math.max(0, sameSide.indexOf(handle));
+        const count = Math.max(1, sameSide.length);
+        const fraction = count === 1 ? 0.5 : (idx + 1) / (count + 1);
+        let pt;
+        if (side === "left")
+          pt = { x: pos.x, y: pos.y + h * fraction };
+        else if (side === "right")
+          pt = { x: pos.x + w, y: pos.y + h * fraction };
+        else if (side === "top")
+          pt = { x: pos.x + w * fraction, y: pos.y };
+        else
+          pt = { x: pos.x + w * fraction, y: pos.y + h };
+        return { pt, side };
+      };
       const $flow = {
         /** Screen coordinates -> flow-space (public, xyflow pointToRendererPoint). */
-        screenToFlow: (container, x, y, state) => screenToFlow(x, y, container, state),
+        screenToFlow: (container, x, y, state) => toFlowCoords(container, x, y, state),
         /** Bounding box of a node collection in flow-space (supports parentId sub-flows). */
         getBounds: (nodes) => {
           if (!nodes || nodes.length === 0)
@@ -10398,24 +10397,19 @@ ${match}</ul>
         },
         /** Zoom in on canvas viewport */
         zoomIn: (target, delta = 0.2) => {
-          const container = target instanceof Element ? flowContainer(target) || document.querySelector("[data-flow]") : document.querySelector("[data-flow]");
-          const vp = container?.__flowViewport;
-          if (vp) {
+          const { vp } = getVp(target);
+          if (vp)
             vp.zoom = Math.min(4, (vp.zoom || 1) + delta);
-          }
         },
         /** Zoom out on canvas viewport */
         zoomOut: (target, delta = 0.2) => {
-          const container = target instanceof Element ? flowContainer(target) || document.querySelector("[data-flow]") : document.querySelector("[data-flow]");
-          const vp = container?.__flowViewport;
-          if (vp) {
+          const { vp } = getVp(target);
+          if (vp)
             vp.zoom = Math.max(0.2, (vp.zoom || 1) - delta);
-          }
         },
         /** Reset canvas viewport position and zoom */
         reset: (target) => {
-          const container = target instanceof Element ? flowContainer(target) || document.querySelector("[data-flow]") : document.querySelector("[data-flow]");
-          const vp = container?.__flowViewport;
+          const { vp } = getVp(target);
           if (vp) {
             vp.x = 0;
             vp.y = 0;
@@ -10424,14 +10418,18 @@ ${match}</ul>
         },
         /** Fit canvas view to current nodes */
         fit: (target, nodes, padding = 40) => {
-          const container = target instanceof Element ? flowContainer(target) || document.querySelector("[data-flow]") : document.querySelector("[data-flow]");
-          if (!container)
+          const { container, vp } = getVp(target);
+          if (!container || !vp)
             return;
-          const flow = container;
-          const vp = flow?.__flowViewport;
-          if (vp && nodes && nodes.length > 0) {
-            $flow.fitView(container, vp, nodes, padding);
+          let list = nodes;
+          if (!list || list.length === 0) {
+            try {
+              list = context.evaluate(container, "nodes");
+            } catch {
+            }
           }
+          if (list && list.length > 0)
+            $flow.fitView(container, vp, list, padding);
         },
         /** Return SVG marker URL reference for arrowhead ends */
         marker: (type = "arrow") => `url(#flow-${type === "arrowclosed" ? "arrow-closed" : "arrow"})`,
@@ -10460,47 +10458,12 @@ ${match}</ul>
           let sSide = "right";
           let tSide = "left";
           if (nodeA && nodeB) {
-            const getAbsoluteNodePos = (n) => {
-              const p = n.position || n;
-              return { x: Number(p.x) || 0, y: Number(p.y) || 0 };
-            };
-            const posA = getAbsoluteNodePos(nodeA);
-            const posB = getAbsoluteNodePos(nodeB);
-            const wA = Number(nodeA.width || nodeA.w) || 192;
-            const hA = Number(nodeA.height || nodeA.h) || 90;
-            const wB = Number(nodeB.width || nodeB.w) || 192;
-            const hB = Number(nodeB.height || nodeB.h) || 90;
-            let handleA = null;
-            if (Array.isArray(nodeA.handles) && nodeA.handles.length > 0) {
-              handleA = options.sourceHandle ? nodeA.handles.find((h) => h.id === options.sourceHandle) : nodeA.handles.find((h) => h.type === "source") || nodeA.handles[0];
-              if (handleA?.side)
-                sSide = handleA.side;
-            }
-            let handleB = null;
-            if (Array.isArray(nodeB.handles) && nodeB.handles.length > 0) {
-              handleB = options.targetHandle ? nodeB.handles.find((h) => h.id === options.targetHandle) : nodeB.handles.find((h) => h.type === "target") || nodeB.handles[0];
-              if (handleB?.side)
-                tSide = handleB.side;
-            }
-            const getHandleAnchor = (pos, w, h, handle, allHandles, defaultSide) => {
-              const side = handle?.side || defaultSide;
-              const sameSide = (allHandles || []).filter((item) => (item.side || (item.type === "source" ? "right" : "left")) === side);
-              const idx = Math.max(0, sameSide.indexOf(handle));
-              const count = Math.max(1, sameSide.length);
-              const fraction = count === 1 ? 0.5 : (idx + 1) / (count + 1);
-              switch (side) {
-                case "left":
-                  return { x: pos.x, y: pos.y + h * fraction };
-                case "right":
-                  return { x: pos.x + w, y: pos.y + h * fraction };
-                case "top":
-                  return { x: pos.x + w * fraction, y: pos.y };
-                case "bottom":
-                  return { x: pos.x + w * fraction, y: pos.y + h };
-              }
-            };
-            s = getHandleAnchor(posA, wA, hA, handleA, nodeA.handles, sSide);
-            t = getHandleAnchor(posB, wB, hB, handleB, nodeB.handles, tSide);
+            const epA = resolveNodeEndpoint(nodeA, options.sourceHandle, "source", "right");
+            const epB = resolveNodeEndpoint(nodeB, options.targetHandle, "target", "left");
+            s = epA.pt;
+            sSide = epA.side;
+            t = epB.pt;
+            tSide = epB.side;
           }
           if (!s || !t) {
             const a = findNode(sourceId, options.container);
@@ -10510,28 +10473,16 @@ ${match}</ul>
             const container = options.container || flowContainer(a) || flowContainer(b);
             if (!container)
               return "";
-            const vp = viewportOf(a);
+            const vp = sharedViewport(a);
             const srcHandle = findHandle(a, "source");
             const tgtHandle = findHandle(b, "target");
-            const sAnchor = srcHandle || a;
-            const tAnchor = tgtHandle || b;
-            s = anchorFlow(sAnchor, container, vp);
-            t = anchorFlow(tAnchor, container, vp);
+            s = anchorFlow(srcHandle || a, container, vp);
+            t = anchorFlow(tgtHandle || b, container, vp);
             sSide = srcHandle ? inferSide(srcHandle, a) : "right";
             tSide = tgtHandle ? inferSide(tgtHandle, b) : "left";
           }
-          const type = options.type || "bezier";
-          let res;
-          if (type === "straight") {
-            res = { path: straightPath(s.x, s.y, t.x, t.y), labelX: (s.x + t.x) / 2, labelY: (s.y + t.y) / 2 };
-          } else if (type === "step") {
-            res = smoothStepPath(s.x, s.y, sSide, t.x, t.y, tSide, 0, options.offset ?? 20, options.stepPosition ?? 0.5);
-          } else if (type === "smoothstep") {
-            res = smoothStepPath(s.x, s.y, sSide, t.x, t.y, tSide, options.borderRadius ?? 5, options.offset ?? 20, options.stepPosition ?? 0.5);
-          } else {
-            res = bezierPath(s.x, s.y, sSide, t.x, t.y, tSide, options.curvature ?? 0.25);
-          }
-          const out = {
+          const res = computeEdgePath(options.type || "bezier", s.x, s.y, sSide, t.x, t.y, tSide, options);
+          return {
             d: res.path,
             labelX: res.labelX,
             labelY: res.labelY,
@@ -10548,7 +10499,6 @@ ${match}</ul>
               return this.d;
             }
           };
-          return out;
         },
         /**
          * Reactive edge attached to two live DOM elements. Returns a reactive
@@ -10562,22 +10512,12 @@ ${match}</ul>
             const container = flowContainer(elA) || flowContainer(elB);
             if (!container)
               return;
-            const vp = viewportOf(elA);
+            const vp = sharedViewport(elA);
             const s = anchorFlow(elA, container, vp);
             const t = anchorFlow(elB, container, vp);
             const sSide = inferSide(elA, elA.parentElement || elA);
             const tSide = inferSide(elB, elB.parentElement || elB);
-            const type = options.type || "bezier";
-            let res;
-            if (type === "straight") {
-              res = { path: straightPath(s.x, s.y, t.x, t.y), labelX: (s.x + t.x) / 2, labelY: (s.y + t.y) / 2 };
-            } else if (type === "step") {
-              res = smoothStepPath(s.x, s.y, sSide, t.x, t.y, tSide, 0);
-            } else if (type === "smoothstep") {
-              res = smoothStepPath(s.x, s.y, sSide, t.x, t.y, tSide, options.borderRadius ?? 5);
-            } else {
-              res = bezierPath(s.x, s.y, sSide, t.x, t.y, tSide, options.curvature ?? 0.25);
-            }
+            const res = computeEdgePath(options.type || "bezier", s.x, s.y, sSide, t.x, t.y, tSide, options);
             pathData.d = res.path;
             pathData.labelX = res.labelX;
             pathData.labelY = res.labelY;
