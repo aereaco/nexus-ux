@@ -4802,6 +4802,7 @@ ${scripts}
       isTracking = false;
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
       if (callbacks.capture && currentPointerId !== null) {
         try {
           element.releasePointerCapture(currentPointerId);
@@ -4834,12 +4835,14 @@ ${scripts}
       }
       window.addEventListener("pointermove", onPointerMove);
       window.addEventListener("pointerup", onPointerUp);
+      window.addEventListener("pointercancel", onPointerUp);
     };
     element.addEventListener("pointerdown", onPointerDown);
     return () => {
       element.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
     };
   }
 

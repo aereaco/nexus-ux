@@ -42,6 +42,7 @@ export function trackPointerDrag(
     isTracking = false;
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
+    window.removeEventListener('pointercancel', onPointerUp);
     if (callbacks.capture && currentPointerId !== null) {
       try { element.releasePointerCapture(currentPointerId); } catch { /* ignore */ }
     }
@@ -68,6 +69,7 @@ export function trackPointerDrag(
     }
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
   };
 
   element.addEventListener('pointerdown', onPointerDown as EventListener);
@@ -76,5 +78,6 @@ export function trackPointerDrag(
     element.removeEventListener('pointerdown', onPointerDown as EventListener);
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
+    window.removeEventListener('pointercancel', onPointerUp);
   };
 }
