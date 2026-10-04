@@ -13,6 +13,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { ensureAdoptedStylesheet } from '../../engine/utils/styles.ts';
+import { trackPointerDrag } from '../../engine/utils/pointer.ts';
 
 export type ScrollbarMode = 'native' | 'overlay' | 'none';
 
@@ -184,6 +185,7 @@ export class OverlayScrollbarInstance {
   private thumbH: HTMLElement | null = null;
   private rafId: number | null = null;
   private scrollHandler: (() => void) | null = null;
+  private cleanups: (() => void)[] = [];
 
   constructor(el: HTMLElement) {
     this.el = el;
@@ -328,74 +330,60 @@ export class OverlayScrollbarInstance {
 
     // Vertical Thumb Drag
     if (this.thumbV) {
-      this.thumbV.addEventListener('pointerdown', (e: PointerEvent) => {
-        if (e.button !== 0) return;
-        e.stopPropagation();
-        e.preventDefault();
-        this.thumbV!.setPointerCapture(e.pointerId);
-        this.thumbV!.classList.add('is-dragging');
-        const startY = e.clientY;
-        const startScrollTop = this.el.scrollTop;
-
-        const onMove = (moveEvt: PointerEvent) => {
-          const deltaY = moveEvt.clientY - startY;
-          const { clientHeight, scrollHeight } = this.el;
-          const thumbH = Math.max(24, (clientHeight / scrollHeight) * clientHeight);
-          const maxThumb = clientHeight - thumbH;
-          const maxScroll = scrollHeight - clientHeight;
-          if (maxThumb > 0) {
-            this.el.scrollTop = startScrollTop + (deltaY / maxThumb) * maxScroll;
+      let startScrollTop = 0;
+      this.cleanups.push(
+        trackPointerDrag(this.thumbV, {
+          capture: true,
+          onStart: (e) => {
+            if (e.button !== 0) return false;
+            e.stopPropagation();
+            e.preventDefault();
+            this.thumbV!.classList.add('is-dragging');
+            startScrollTop = this.el.scrollTop;
+          },
+          onMove: (_e, delta) => {
+            const { clientHeight, scrollHeight } = this.el;
+            const thumbH = Math.max(24, (clientHeight / scrollHeight) * clientHeight);
+            const maxThumb = clientHeight - thumbH;
+            const maxScroll = scrollHeight - clientHeight;
+            if (maxThumb > 0) {
+              this.el.scrollTop = startScrollTop + (delta.dy / maxThumb) * maxScroll;
+            }
+          },
+          onEnd: () => {
+            this.thumbV?.classList.remove('is-dragging');
           }
-        };
-
-        const onUp = (upEvt: PointerEvent) => {
-          this.thumbV!.classList.remove('is-dragging');
-          try { this.thumbV!.releasePointerCapture(upEvt.pointerId); } catch {}
-          this.thumbV!.removeEventListener('pointermove', onMove);
-          this.thumbV!.removeEventListener('pointerup', onUp);
-          this.thumbV!.removeEventListener('pointercancel', onUp);
-        };
-
-        this.thumbV!.addEventListener('pointermove', onMove);
-        this.thumbV!.addEventListener('pointerup', onUp);
-        this.thumbV!.addEventListener('pointercancel', onUp);
-      });
+        })
+      );
     }
 
     // Horizontal Thumb Drag
     if (this.thumbH) {
-      this.thumbH.addEventListener('pointerdown', (e: PointerEvent) => {
-        if (e.button !== 0) return;
-        e.stopPropagation();
-        e.preventDefault();
-        this.thumbH!.setPointerCapture(e.pointerId);
-        this.thumbH!.classList.add('is-dragging');
-        const startX = e.clientX;
-        const startScrollLeft = this.el.scrollLeft;
-
-        const onMove = (moveEvt: PointerEvent) => {
-          const deltaX = moveEvt.clientX - startX;
-          const { clientWidth, scrollWidth } = this.el;
-          const thumbW = Math.max(24, (clientWidth / scrollWidth) * clientWidth);
-          const maxThumb = clientWidth - thumbW;
-          const maxScroll = scrollWidth - clientWidth;
-          if (maxThumb > 0) {
-            this.el.scrollLeft = startScrollLeft + (deltaX / maxThumb) * maxScroll;
+      let startScrollLeft = 0;
+      this.cleanups.push(
+        trackPointerDrag(this.thumbH, {
+          capture: true,
+          onStart: (e) => {
+            if (e.button !== 0) return false;
+            e.stopPropagation();
+            e.preventDefault();
+            this.thumbH!.classList.add('is-dragging');
+            startScrollLeft = this.el.scrollLeft;
+          },
+          onMove: (_e, delta) => {
+            const { clientWidth, scrollWidth } = this.el;
+            const thumbW = Math.max(24, (clientWidth / scrollWidth) * clientWidth);
+            const maxThumb = clientWidth - thumbW;
+            const maxScroll = scrollWidth - clientWidth;
+            if (maxThumb > 0) {
+              this.el.scrollLeft = startScrollLeft + (delta.dx / maxThumb) * maxScroll;
+            }
+          },
+          onEnd: () => {
+            this.thumbH?.classList.remove('is-dragging');
           }
-        };
-
-        const onUp = (upEvt: PointerEvent) => {
-          this.thumbH!.classList.remove('is-dragging');
-          try { this.thumbH!.releasePointerCapture(upEvt.pointerId); } catch {}
-          this.thumbH!.removeEventListener('pointermove', onMove);
-          this.thumbH!.removeEventListener('pointerup', onUp);
-          this.thumbH!.removeEventListener('pointercancel', onUp);
-        };
-
-        this.thumbH!.addEventListener('pointermove', onMove);
-        this.thumbH!.addEventListener('pointerup', onUp);
-        this.thumbH!.addEventListener('pointercancel', onUp);
-      });
+        })
+      );
     }
 
     // Vertical Track Click-to-Scroll
@@ -444,6 +432,8 @@ export class OverlayScrollbarInstance {
       this.el.removeEventListener('scroll', this.scrollHandler);
       this.scrollHandler = null;
     }
+    this.cleanups.forEach((fn) => fn());
+    this.cleanups = [];
     if (this.trackV) {
       this.trackV.remove();
       this.trackV = null;
