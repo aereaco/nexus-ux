@@ -3538,7 +3538,6 @@ ${scripts}
     _pointerDownBound;
     _pointerMoveBound;
     _pointerUpBound;
-    _touchStartBound;
     dragEl = null;
     parentEl = null;
     nextEl = null;

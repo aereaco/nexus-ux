@@ -224,7 +224,6 @@ export class Draggable {
   private _pointerDownBound: (e: PointerEvent) => void;
   private _pointerMoveBound: (e: PointerEvent) => void;
   private _pointerUpBound: (e: PointerEvent) => void;
-  private _touchStartBound: (e: TouchEvent) => void;
 
   private dragEl: HTMLElement | null = null;
   private parentEl: HTMLElement | null = null;
