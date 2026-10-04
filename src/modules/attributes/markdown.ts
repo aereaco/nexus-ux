@@ -21,6 +21,17 @@ if (typeof document !== 'undefined') {
   ensureMarkdownStyles();
 }
 
+const ALERT_CONFIGS: Record<string, [cls: string, icon: string, title: string]> = {
+  NOTE: ['nexus-alert-note', 'material-symbols-light:info-outline', 'Note'],
+  TIP: ['nexus-alert-tip', 'material-symbols-light:lightbulb-outline', 'Tip'],
+  IMPORTANT: ['nexus-alert-important', 'material-symbols-light:priority-high', 'Important'],
+  WARNING: ['nexus-alert-warning', 'material-symbols-light:warning-outline', 'Warning'],
+  CAUTION: ['nexus-alert-caution', 'material-symbols-light:dangerous-outline', 'Caution'],
+};
+
+const escapeHtml = (s: string): string =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
 // Helper to generate URL/anchor friendly slug IDs
 function slugify(text: string): string {
   return text
@@ -41,10 +52,7 @@ export function parseMarkdown(md: string): string {
   html = html.replace(/```([a-z0-9_-]*)\n([\s\S]*?)```/gim, (_match, rawLang, code) => {
     const id = `%%NEXUS_CODE_BLOCK_${codeBlocks.length}%%`;
     const lang = (rawLang || 'text').trim();
-    const escaped = code
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    const escaped = escapeHtml(code);
     
     codeBlocks.push(
       `<div class="nexus-code-block">` +
@@ -65,114 +73,50 @@ export function parseMarkdown(md: string): string {
   // 2. Isolate Inline Code (`code`)
   html = html.replace(/`([^`]+)`/g, (_m, code) => {
     const id = `%%NEXUS_INLINE_CODE_${inlineCodes.length}%%`;
-    const escaped = code
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-    inlineCodes.push(
-      `<code data-ignore class="nexus-inline-code">${escaped}</code>`
-    );
+    inlineCodes.push(`<code data-ignore class="nexus-inline-code">${escapeHtml(code)}</code>`);
     return id;
   });
 
   // 3. GFM Callout Alert Blocks & Blockquotes
-  // Matches consecutive blockquote lines starting with ">"
   html = html.replace(/(?:^>[^\n]*(?:\n>[^\n]*)*)/gm, (block) => {
-    const lines = block
-      .split('\n')
-      .map(l => l.replace(/^>\s?/, ''));
-    const firstLine = lines[0].trim();
-    const alertMatch = firstLine.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
+    const lines = block.split('\n').map(l => l.replace(/^>\s?/, ''));
+    const alertMatch = lines[0].trim().match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
 
     if (alertMatch) {
       const type = alertMatch[1].toUpperCase();
       const content = lines.slice(1).join('\n').trim();
-
-      const alertConfigs: Record<string, { cls: string; icon: string; title: string }> = {
-        NOTE: {
-          cls: 'nexus-alert-note',
-          icon: 'material-symbols-light:info-outline',
-          title: 'Note'
-        },
-        TIP: {
-          cls: 'nexus-alert-tip',
-          icon: 'material-symbols-light:lightbulb-outline',
-          title: 'Tip'
-        },
-        IMPORTANT: {
-          cls: 'nexus-alert-important',
-          icon: 'material-symbols-light:priority-high',
-          title: 'Important'
-        },
-        WARNING: {
-          cls: 'nexus-alert-warning',
-          icon: 'material-symbols-light:warning-outline',
-          title: 'Warning'
-        },
-        CAUTION: {
-          cls: 'nexus-alert-caution',
-          icon: 'material-symbols-light:dangerous-outline',
-          title: 'Caution'
-        }
-      };
-
-      const cfg = alertConfigs[type] || alertConfigs.NOTE;
+      const [cls, icon, title] = ALERT_CONFIGS[type] || ALERT_CONFIGS.NOTE;
       return (
-        `<div class="nexus-alert ${cfg.cls}">` +
-          `<iconify-icon icon="${cfg.icon}" class="nexus-alert-icon"></iconify-icon>` +
+        `<div class="nexus-alert ${cls}">` +
+          `<iconify-icon icon="${icon}" class="nexus-alert-icon"></iconify-icon>` +
           `<div class="nexus-alert-body">` +
-            `<div class="nexus-alert-title">${cfg.title}</div>` +
+            `<div class="nexus-alert-title">${title}</div>` +
             `<div class="nexus-alert-content">${content}</div>` +
           `</div>` +
         `</div>`
       );
     }
 
-    const standardBody = lines.join('\n').trim();
-    return `<blockquote class="nexus-blockquote">${standardBody}</blockquote>`;
+    return `<blockquote class="nexus-blockquote">${lines.join('\n').trim()}</blockquote>`;
   });
 
   // 4. GFM Tables
-  // Pattern matches table header, delimiter row (|:---|:---:|---:|), and body rows
   html = html.replace(/(?:^|\n)(\|[^\n]+\|\r?\n\|[ \t\-:|]+\|\r?\n(?:\|[^\n]+\|\r?\n?)+)/g, (_fullMatch, tableBlock) => {
-    const rows = tableBlock.trim().split('\n').map(r => r.trim());
+    const rows = tableBlock.trim().split('\n').map((r: string) => r.trim());
     if (rows.length < 2) return tableBlock;
 
-    const parseCells = (row: string) => {
-      return row
-        .replace(/^\|/, '')
-        .replace(/\|$/, '')
-        .split('|')
-        .map(c => c.trim());
-    };
+    const parseCells = (row: string) =>
+      row.replace(/^\|/, '').replace(/\|$/, '').split('|').map((c: string) => c.trim());
 
     const headers = parseCells(rows[0]);
-    const alignments = parseCells(rows[1]).map(d => {
-      const left = d.startsWith(':');
-      const right = d.endsWith(':');
-      if (left && right) return 'center';
-      if (right) return 'right';
-      return 'left';
-    });
-
-    const thead = `<thead><tr>` +
-      headers.map((h, i) => `<th class="nexus-align-${alignments[i] || 'left'}">${h}</th>`).join('') +
-      `</tr></thead>`;
-
-    const bodyRows = rows.slice(2).map(row => {
-      const cells = parseCells(row);
-      return `<tr>` +
-        cells.map((c, i) => `<td class="nexus-align-${alignments[i] || 'left'}">${c || ''}</td>`).join('') +
-        `</tr>`;
-    }).join('');
-
-    const tbody = `<tbody>${bodyRows}</tbody>`;
-
-    return (
-      `\n\n<div class="nexus-table-wrapper">` +
-        `<table class="nexus-table">${thead}${tbody}</table>` +
-      `</div>\n\n`
+    const alignments = parseCells(rows[1]).map((d: string) =>
+      d.startsWith(':') && d.endsWith(':') ? 'center' : d.endsWith(':') ? 'right' : 'left'
     );
+
+    const thead = `<thead><tr>${headers.map((h, i) => `<th class="nexus-align-${alignments[i]}">${h}</th>`).join('')}</tr></thead>`;
+    const tbody = `<tbody>${rows.slice(2).map((row: string) => `<tr>${parseCells(row).map((c, i) => `<td class="nexus-align-${alignments[i]}">${c || ''}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+    return `\n\n<div class="nexus-table-wrapper"><table class="nexus-table">${thead}${tbody}</table></div>\n\n`;
   });
 
   // 5. Headings with Slug IDs and Anchor Links
@@ -193,17 +137,9 @@ export function parseMarkdown(md: string): string {
   html = html.replace(/^(?:---|[*]{3}|_{3})\s*$/gm, '\n\n<hr class="nexus-divider" />\n\n');
 
   // 7. GFM Task Lists & Regular Lists
-  // Task lists: - [ ] or - [x]
   html = html.replace(/^\s*-\s+\[([ xX])\]\s+(.*$)/gm, (_m, check, text) => {
     const isChecked = check.toLowerCase() === 'x';
-    const checkedAttr = isChecked ? 'checked' : '';
-    const textCls = isChecked ? 'nexus-task-done' : '';
-    return (
-      `<li class="nexus-task-item">` +
-        `<input type="checkbox" ${checkedAttr} disabled class="nexus-checkbox" />` +
-        `<span class="${textCls}">${text}</span>` +
-      `</li>`
-    );
+    return `<li class="nexus-task-item"><input type="checkbox" ${isChecked ? 'checked' : ''} disabled class="nexus-checkbox" /><span class="${isChecked ? 'nexus-task-done' : ''}">${text}</span></li>`;
   });
 
   // Unordered lists (- or * or +)
@@ -218,38 +154,22 @@ export function parseMarkdown(md: string): string {
   html = html.replace(/(<li class="nexus-task-item">[\s\S]*?<\/li>\s*)+/g, match => `\n\n<ul class="nexus-task-list">\n${match}</ul>\n\n`);
 
   // 8. Inline Typography Formatting
-  // Strikethrough (~~text~~)
   html = html.replace(/~~(.*?)~~/g, '<del class="nexus-del">$1</del>');
-
-  // Bold & Italic (***text***)
   html = html.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
-
-  // Bold (**text** or __text__)
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
-
-  // Italic (*text* or _text_)
+  html = html.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
   html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
   html = html.replace(/(^|\s)_(.*?)_(\s|$)/g, '$1<em>$2</em>$3');
-
-  // Images (![alt](url))
   html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="nexus-img" loading="lazy" />');
-
-  // Standard Links ([text](url))
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text, url) => {
     const isExt = url.startsWith('http://') || url.startsWith('https://');
-    const target = isExt ? ' target="_blank" rel="noopener noreferrer"' : '';
-    return `<a href="${url}" class="nexus-link"${target}>${text}</a>`;
+    return `<a href="${url}" class="nexus-link"${isExt ? ' target="_blank" rel="noopener noreferrer"' : ''}>${text}</a>`;
   });
-
-  // GFM Autolinks for raw URLs
   html = html.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" class="nexus-link" target="_blank" rel="noopener noreferrer">$2</a>');
 
   // 9. Paragraph Processing
   html = html.split('\n\n').map(block => {
     const trimmed = block.trim();
     if (!trimmed) return '';
-    // Skip wrapping if block already starts with block-level HTML tags or code block placeholder
     if (/^<(\/?(?:div|h[1-6]|ul|ol|li|table|blockquote|pre|p|hr)|%%NEXUS_CODE_BLOCK_)/i.test(trimmed)) {
       return trimmed;
     }
@@ -274,16 +194,13 @@ const markdownModule: AttributeModule = {
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
     ensureMarkdownStyles(el.getRootNode() as Document | ShadowRoot);
 
-    // Idempotency guard: prevent double-processing on cold boots/refreshes
-    if (!value && (el as any).__nexusMarkdownDone) {
-      return () => {
-        delete (el as any).__nexusMarkdownDone;
-        delete (el as any).__nexusRawSource;
-      };
-    }
-    if (!value) {
-      (el as any).__nexusMarkdownDone = true;
-    }
+    const cleanupState = () => {
+      delete (el as any).__nexusMarkdownDone;
+      delete (el as any).__nexusRawSource;
+    };
+
+    if (!value && (el as any).__nexusMarkdownDone) return cleanupState;
+    if (!value) (el as any).__nexusMarkdownDone = true;
 
     if (!(el as any).__nexusRawSource) {
       (el as any).__nexusRawSource = value ? null : (el.textContent || el.innerText);
@@ -291,14 +208,11 @@ const markdownModule: AttributeModule = {
     const initialSource = (el as any).__nexusRawSource;
 
     const render = () => {
-      // Evaluate if value exists, else parse initial text content
       const content = value ? runtime.evaluate(el, value) : initialSource;
       const mdText = String(content || '').trim();
-      
       if (!el.classList.contains('nexus-markdown-body')) {
         el.classList.add('nexus-markdown-body');
       }
-      
       const transpiled = parseMarkdown(mdText);
       if (el.innerHTML !== transpiled) {
         el.innerHTML = transpiled;
@@ -306,19 +220,14 @@ const markdownModule: AttributeModule = {
     };
 
     if (value) {
-      const [_runner, cleanup] = runtime.elementBoundEffect(el, render);
+      const [_runner, effectCleanup] = runtime.elementBoundEffect(el, render);
       return () => {
-        delete (el as any).__nexusMarkdownDone;
-        delete (el as any).__nexusRawSource;
-        cleanup();
-      };
-    } else {
-      render();
-      return () => {
-        delete (el as any).__nexusMarkdownDone;
-        delete (el as any).__nexusRawSource;
+        cleanupState();
+        effectCleanup();
       };
     }
+    render();
+    return cleanupState;
   }
 };
 

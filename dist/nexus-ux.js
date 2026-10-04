@@ -6710,6 +6710,14 @@ ${scripts}
   if (typeof document !== "undefined") {
     ensureMarkdownStyles();
   }
+  var ALERT_CONFIGS = {
+    NOTE: ["nexus-alert-note", "material-symbols-light:info-outline", "Note"],
+    TIP: ["nexus-alert-tip", "material-symbols-light:lightbulb-outline", "Tip"],
+    IMPORTANT: ["nexus-alert-important", "material-symbols-light:priority-high", "Important"],
+    WARNING: ["nexus-alert-warning", "material-symbols-light:warning-outline", "Warning"],
+    CAUTION: ["nexus-alert-caution", "material-symbols-light:dangerous-outline", "Caution"]
+  };
+  var escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   function slugify(text) {
     return text.toLowerCase().replace(/<[^>]*>/g, "").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-");
   }
@@ -6720,7 +6728,7 @@ ${scripts}
     html = html.replace(/```([a-z0-9_-]*)\n([\s\S]*?)```/gim, (_match, rawLang, code) => {
       const id = `%%NEXUS_CODE_BLOCK_${codeBlocks.length}%%`;
       const lang = (rawLang || "text").trim();
-      const escaped = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const escaped = escapeHtml(code);
       codeBlocks.push(
         `<div class="nexus-code-block"><div class="nexus-code-header"><span class="nexus-code-lang">${lang}</span><button type="button" class="nexus-copy-btn" onclick="navigator.clipboard.writeText(this.closest('.nexus-code-block').querySelector('code').textContent).then(()=>{ const self=this; const prev=self.innerText; self.innerText='Copied!'; setTimeout(()=>self.innerText=prev, 1500); })"><svg width="14" height="14" style="display:inline-block; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> <span>Copy</span></button></div><pre data-ignore class="nexus-code-pre"><code data-ignore class="language-${lang}">${escaped}</code></pre></div>`
       );
@@ -6728,75 +6736,31 @@ ${scripts}
     });
     html = html.replace(/`([^`]+)`/g, (_m, code) => {
       const id = `%%NEXUS_INLINE_CODE_${inlineCodes.length}%%`;
-      const escaped = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      inlineCodes.push(
-        `<code data-ignore class="nexus-inline-code">${escaped}</code>`
-      );
+      inlineCodes.push(`<code data-ignore class="nexus-inline-code">${escapeHtml(code)}</code>`);
       return id;
     });
     html = html.replace(/(?:^>[^\n]*(?:\n>[^\n]*)*)/gm, (block) => {
       const lines = block.split("\n").map((l) => l.replace(/^>\s?/, ""));
-      const firstLine = lines[0].trim();
-      const alertMatch = firstLine.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
+      const alertMatch = lines[0].trim().match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
       if (alertMatch) {
         const type = alertMatch[1].toUpperCase();
         const content = lines.slice(1).join("\n").trim();
-        const alertConfigs = {
-          NOTE: {
-            cls: "nexus-alert-note",
-            icon: "material-symbols-light:info-outline",
-            title: "Note"
-          },
-          TIP: {
-            cls: "nexus-alert-tip",
-            icon: "material-symbols-light:lightbulb-outline",
-            title: "Tip"
-          },
-          IMPORTANT: {
-            cls: "nexus-alert-important",
-            icon: "material-symbols-light:priority-high",
-            title: "Important"
-          },
-          WARNING: {
-            cls: "nexus-alert-warning",
-            icon: "material-symbols-light:warning-outline",
-            title: "Warning"
-          },
-          CAUTION: {
-            cls: "nexus-alert-caution",
-            icon: "material-symbols-light:dangerous-outline",
-            title: "Caution"
-          }
-        };
-        const cfg = alertConfigs[type] || alertConfigs.NOTE;
-        return `<div class="nexus-alert ${cfg.cls}"><iconify-icon icon="${cfg.icon}" class="nexus-alert-icon"></iconify-icon><div class="nexus-alert-body"><div class="nexus-alert-title">${cfg.title}</div><div class="nexus-alert-content">${content}</div></div></div>`;
+        const [cls, icon, title] = ALERT_CONFIGS[type] || ALERT_CONFIGS.NOTE;
+        return `<div class="nexus-alert ${cls}"><iconify-icon icon="${icon}" class="nexus-alert-icon"></iconify-icon><div class="nexus-alert-body"><div class="nexus-alert-title">${title}</div><div class="nexus-alert-content">${content}</div></div></div>`;
       }
-      const standardBody = lines.join("\n").trim();
-      return `<blockquote class="nexus-blockquote">${standardBody}</blockquote>`;
+      return `<blockquote class="nexus-blockquote">${lines.join("\n").trim()}</blockquote>`;
     });
     html = html.replace(/(?:^|\n)(\|[^\n]+\|\r?\n\|[ \t\-:|]+\|\r?\n(?:\|[^\n]+\|\r?\n?)+)/g, (_fullMatch, tableBlock) => {
       const rows = tableBlock.trim().split("\n").map((r) => r.trim());
       if (rows.length < 2)
         return tableBlock;
-      const parseCells = (row) => {
-        return row.replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
-      };
+      const parseCells = (row) => row.replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
       const headers = parseCells(rows[0]);
-      const alignments = parseCells(rows[1]).map((d) => {
-        const left = d.startsWith(":");
-        const right = d.endsWith(":");
-        if (left && right)
-          return "center";
-        if (right)
-          return "right";
-        return "left";
-      });
-      const thead = `<thead><tr>` + headers.map((h, i) => `<th class="nexus-align-${alignments[i] || "left"}">${h}</th>`).join("") + `</tr></thead>`;
-      const bodyRows = rows.slice(2).map((row) => {
-        const cells = parseCells(row);
-        return `<tr>` + cells.map((c, i) => `<td class="nexus-align-${alignments[i] || "left"}">${c || ""}</td>`).join("") + `</tr>`;
-      }).join("");
-      const tbody = `<tbody>${bodyRows}</tbody>`;
+      const alignments = parseCells(rows[1]).map(
+        (d) => d.startsWith(":") && d.endsWith(":") ? "center" : d.endsWith(":") ? "right" : "left"
+      );
+      const thead = `<thead><tr>${headers.map((h, i) => `<th class="nexus-align-${alignments[i]}">${h}</th>`).join("")}</tr></thead>`;
+      const tbody = `<tbody>${rows.slice(2).map((row) => `<tr>${parseCells(row).map((c, i) => `<td class="nexus-align-${alignments[i]}">${c || ""}</td>`).join("")}</tr>`).join("")}</tbody>`;
       return `
 
 <div class="nexus-table-wrapper"><table class="nexus-table">${thead}${tbody}</table></div>
@@ -6816,9 +6780,7 @@ ${scripts}
     html = html.replace(/^(?:---|[*]{3}|_{3})\s*$/gm, '\n\n<hr class="nexus-divider" />\n\n');
     html = html.replace(/^\s*-\s+\[([ xX])\]\s+(.*$)/gm, (_m, check, text) => {
       const isChecked = check.toLowerCase() === "x";
-      const checkedAttr = isChecked ? "checked" : "";
-      const textCls = isChecked ? "nexus-task-done" : "";
-      return `<li class="nexus-task-item"><input type="checkbox" ${checkedAttr} disabled class="nexus-checkbox" /><span class="${textCls}">${text}</span></li>`;
+      return `<li class="nexus-task-item"><input type="checkbox" ${isChecked ? "checked" : ""} disabled class="nexus-checkbox" /><span class="${isChecked ? "nexus-task-done" : ""}">${text}</span></li>`;
     });
     html = html.replace(/^\s*[-*+]\s+(.*$)/gm, '<li class="nexus-list-item">$1</li>');
     html = html.replace(/^\s*(\d+)\.\s+(.*$)/gm, '<li class="nexus-list-item-ordered">$2</li>');
@@ -6842,15 +6804,13 @@ ${match}</ul>
 `);
     html = html.replace(/~~(.*?)~~/g, '<del class="nexus-del">$1</del>');
     html = html.replace(/\*\*\*(.*?)\*\*\*/g, "<strong><em>$1</em></strong>");
-    html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-    html = html.replace(/__(.*?)__/g, "<strong>$1</strong>");
+    html = html.replace(/(\*\*|__)(.*?)\1/g, "<strong>$2</strong>");
     html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
     html = html.replace(/(^|\s)_(.*?)_(\s|$)/g, "$1<em>$2</em>$3");
     html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="nexus-img" loading="lazy" />');
     html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text, url) => {
       const isExt = url.startsWith("http://") || url.startsWith("https://");
-      const target = isExt ? ' target="_blank" rel="noopener noreferrer"' : "";
-      return `<a href="${url}" class="nexus-link"${target}>${text}</a>`;
+      return `<a href="${url}" class="nexus-link"${isExt ? ' target="_blank" rel="noopener noreferrer"' : ""}>${text}</a>`;
     });
     html = html.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" class="nexus-link" target="_blank" rel="noopener noreferrer">$2</a>');
     html = html.split("\n\n").map((block) => {
@@ -6876,15 +6836,14 @@ ${match}</ul>
     },
     handle: (el, value, runtime) => {
       ensureMarkdownStyles(el.getRootNode());
-      if (!value && el.__nexusMarkdownDone) {
-        return () => {
-          delete el.__nexusMarkdownDone;
-          delete el.__nexusRawSource;
-        };
-      }
-      if (!value) {
+      const cleanupState = () => {
+        delete el.__nexusMarkdownDone;
+        delete el.__nexusRawSource;
+      };
+      if (!value && el.__nexusMarkdownDone)
+        return cleanupState;
+      if (!value)
         el.__nexusMarkdownDone = true;
-      }
       if (!el.__nexusRawSource) {
         el.__nexusRawSource = value ? null : el.textContent || el.innerText;
       }
@@ -6901,19 +6860,14 @@ ${match}</ul>
         }
       };
       if (value) {
-        const [_runner, cleanup] = runtime.elementBoundEffect(el, render);
+        const [_runner, effectCleanup] = runtime.elementBoundEffect(el, render);
         return () => {
-          delete el.__nexusMarkdownDone;
-          delete el.__nexusRawSource;
-          cleanup();
-        };
-      } else {
-        render();
-        return () => {
-          delete el.__nexusMarkdownDone;
-          delete el.__nexusRawSource;
+          cleanupState();
+          effectCleanup();
         };
       }
+      render();
+      return cleanupState;
     }
   };
   var markdown_default = markdownModule;
