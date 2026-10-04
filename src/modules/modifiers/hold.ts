@@ -7,92 +7,52 @@
  * Usage:
  *   `data-on-pointerdown_hold="expression"` — default 500ms hold
  *   `data-on-pointerdown_hold-750="expression"` — 750ms hold
- *
- * ZCZS Guarantees:
- *   - Zero-copy: Timer references are tracked directly in closure.
- *   - Zero-serialization: Clean event listener wrappers without string serialization.
+ *   `data-on-click_hold.cancel="expression"` — cancel active hold timer
  */
 
-import { ModifierModule } from '../../engine/modules.ts';
-import { RuntimeContext } from '../../engine/composition.ts';
-import { getTimerMap, parseCommandArg } from '../../engine/utils/timer.ts';
-import { resolveTargetElements } from '../sprites/selector.ts';
+import { createTimerModifier, clearTimer } from '../../engine/utils/timer.ts';
 
-export const holdModifier: ModifierModule = {
-  name: 'hold',
-  handle: (payload: any, el: HTMLElement, arg: string, _runtime: RuntimeContext) => {
-    const cmd = parseCommandArg(arg);
+export const holdModifier = createTimerModifier(
+  'hold',
+  500,
+  (run, wait, _el, rec, map) => {
+    clearTimer(rec);
 
-    if (cmd.command === 'cancel') {
-      if (typeof payload === 'function') {
-        return (e: Event) => {
-          const targets = resolveTargetElements(el, cmd.targetSelector);
-          targets.forEach(target => {
-            const map = getTimerMap(target);
-            const rec = map.get('hold');
-            if (rec && rec.cleanup) {
-              rec.cleanup();
-              map.delete('hold');
-            }
-          });
-          return payload(e);
-        };
+    const cleanup = () => {
+      if (rec.timer) {
+        clearTimeout(rec.timer);
+        rec.timer = null;
       }
+      map.delete('hold');
+      window.removeEventListener('pointerup', cleanup);
+      window.removeEventListener('pointercancel', cleanup);
+      window.removeEventListener('pointerleave', cleanup);
+      window.removeEventListener('touchend', cleanup);
+      window.removeEventListener('touchcancel', cleanup);
+    };
 
-      return (...args: any[]) => {
-        const targets = resolveTargetElements(el, cmd.targetSelector);
-        targets.forEach(target => {
-          const map = getTimerMap(target);
-          const rec = map.get('hold');
-          if (rec && rec.cleanup) {
-            rec.cleanup();
-            map.delete('hold');
-          }
-        });
-        return typeof payload === 'function' ? payload(...args) : payload;
-      };
+    rec.timer = setTimeout(() => {
+      cleanup();
+      run();
+    }, wait) as unknown as number;
+    rec.cleanup = cleanup;
+    map.set('hold', rec);
+
+    window.addEventListener('pointerup', cleanup, { once: true });
+    window.addEventListener('pointercancel', cleanup, { once: true });
+    window.addEventListener('pointerleave', cleanup, { once: true });
+    window.addEventListener('touchend', cleanup, { once: true });
+    window.addEventListener('touchcancel', cleanup, { once: true });
+  },
+  {
+    onCancel: (_target, map) => {
+      const rec = map.get('hold');
+      if (rec?.cleanup) {
+        rec.cleanup();
+      }
+      map.delete('hold');
     }
-
-    const wait = parseInt(arg, 10) || 500;
-
-    if (typeof payload === 'function') {
-      return (e: Event) => {
-        const map = getTimerMap(el);
-        const existing = map.get('hold');
-        if (existing && existing.cleanup) existing.cleanup();
-
-        let timer: any = null;
-
-        const cleanup = () => {
-          if (timer) {
-            clearTimeout(timer);
-            timer = null;
-          }
-          map.delete('hold');
-          window.removeEventListener('pointerup', cleanup);
-          window.removeEventListener('pointercancel', cleanup);
-          window.removeEventListener('pointerleave', cleanup);
-          window.removeEventListener('touchend', cleanup);
-          window.removeEventListener('touchcancel', cleanup);
-        };
-
-        timer = setTimeout(() => {
-          cleanup();
-          payload(e);
-        }, wait);
-
-        map.set('hold', { timer, cleanup });
-
-        window.addEventListener('pointerup', cleanup, { once: true });
-        window.addEventListener('pointercancel', cleanup, { once: true });
-        window.addEventListener('pointerleave', cleanup, { once: true });
-        window.addEventListener('touchend', cleanup, { once: true });
-        window.addEventListener('touchcancel', cleanup, { once: true });
-      };
-    }
-
-    return payload;
   }
-};
+);
 
 export default holdModifier;
