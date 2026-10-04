@@ -8,7 +8,7 @@
  * Storage Tiers:
  *   - Web Storage (sessionStorage / localStorage) for text, HTML, CSS, JS, JSON
  *   - IndexedDB ('nexus-media-cache') for binary media (images, videos, audio, PDFs, blobs)
- */
+import { isSameOriginUrl } from './utils/url.ts';
 
 export interface CacheOptions {
   storage?: 'session' | 'local' | 'db';
@@ -101,7 +101,7 @@ export class UniversalCacheEngine {
    */
   async fetchWithCache(url: string, options: CacheOptions = {}): Promise<unknown> {
     const {
-      storage = url.startsWith('http') && !url.includes(location?.host || '') ? 'local' : 'session',
+      storage = !isSameOriginUrl(url) ? 'local' : 'session',
       responseType = 'text',
       timeoutMs = 5000,
       onUpdate
@@ -162,7 +162,7 @@ export class UniversalCacheEngine {
   ): void {
     setTimeout(async () => {
       try {
-        const isSameOrigin = typeof location === 'undefined' || !url.startsWith('http') || url.startsWith(location.origin);
+        const isSameOrigin = isSameOriginUrl(url);
         const headers: Record<string, string> = {};
         if (cachedEntry.etag && isSameOrigin) {
           headers['If-None-Match'] = cachedEntry.etag;
@@ -220,7 +220,7 @@ export class UniversalCacheEngine {
     options: CacheOptions,
     etagHeader?: string
   ): Promise<CacheEntry> {
-    const isSameOrigin = typeof location === 'undefined' || !url.startsWith('http') || url.startsWith(location.origin);
+    const isSameOrigin = isSameOriginUrl(url);
     const headers: Record<string, string> = {};
     if (etagHeader && isSameOrigin) headers['If-None-Match'] = etagHeader;
 
