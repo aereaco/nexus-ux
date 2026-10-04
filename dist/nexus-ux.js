@@ -12817,7 +12817,7 @@ ${match}</ul>
   __export(selector_exports, {
     default: () => selector_default,
     resolveSelector: () => resolveSelector,
-    resolveTargetElements: () => resolveTargetElements
+    resolveTargetElements: () => resolveTargetElements2
   });
 
   // src/engine/agent.ts
@@ -13324,7 +13324,7 @@ ${match}</ul>
       }
     });
   }
-  function resolveTargetElements(contextEl, selector) {
+  function resolveTargetElements2(contextEl, selector) {
     if (!selector || !selector.trim())
       return [contextEl];
     const clean = selector.trim();
@@ -14171,9 +14171,15 @@ ${match}</ul>
     return parseInt(arg, 10) || defaultDuration;
   }
   function clearTimer(rec) {
-    if (rec && typeof rec.timer === "number") {
-      clearTimeout(rec.timer);
-      rec.timer = null;
+    if (rec) {
+      if (rec.cleanup) {
+        rec.cleanup();
+        rec.cleanup = void 0;
+      }
+      if (typeof rec.timer === "number") {
+        clearTimeout(rec.timer);
+        rec.timer = null;
+      }
     }
   }
 
@@ -14185,7 +14191,7 @@ ${match}</ul>
       if (cmd.command === "cancel") {
         if (typeof payload === "function") {
           return (e) => {
-            const targets = resolveTargetElements(el, cmd.targetSelector);
+            const targets = resolveTargetElements2(el, cmd.targetSelector);
             targets.forEach((target) => {
               const map = getTimerMap(target);
               const rec = map.get("debounce");
@@ -14198,7 +14204,7 @@ ${match}</ul>
           };
         }
         return (...args) => {
-          const targets = resolveTargetElements(el, cmd.targetSelector);
+          const targets = resolveTargetElements2(el, cmd.targetSelector);
           targets.forEach((target) => {
             const map = getTimerMap(target);
             const rec = map.get("debounce");
@@ -14213,7 +14219,7 @@ ${match}</ul>
       if (cmd.command === "flush") {
         if (typeof payload === "function") {
           return (e) => {
-            const targets = resolveTargetElements(el, cmd.targetSelector);
+            const targets = resolveTargetElements2(el, cmd.targetSelector);
             targets.forEach((target) => {
               const map = getTimerMap(target);
               const rec = map.get("debounce");
@@ -14228,7 +14234,7 @@ ${match}</ul>
           };
         }
         return (...args) => {
-          const targets = resolveTargetElements(el, cmd.targetSelector);
+          const targets = resolveTargetElements2(el, cmd.targetSelector);
           targets.forEach((target) => {
             const map = getTimerMap(target);
             const rec = map.get("debounce");
@@ -14290,7 +14296,7 @@ ${match}</ul>
       if (cmd.command === "cancel") {
         if (typeof payload === "function") {
           return (e) => {
-            const targets = resolveTargetElements(el, cmd.targetSelector);
+            const targets = resolveTargetElements2(el, cmd.targetSelector);
             targets.forEach((target) => {
               const map = getTimerMap(target);
               const rec = map.get("delay");
@@ -14303,7 +14309,7 @@ ${match}</ul>
           };
         }
         return (...args) => {
-          const targets = resolveTargetElements(el, cmd.targetSelector);
+          const targets = resolveTargetElements2(el, cmd.targetSelector);
           targets.forEach((target) => {
             const map = getTimerMap(target);
             const rec = map.get("delay");
@@ -14434,7 +14440,7 @@ ${match}</ul>
       if (cmd.command === "cancel") {
         if (typeof payload === "function") {
           return (e) => {
-            const targets = resolveTargetElements(el, cmd.targetSelector);
+            const targets = resolveTargetElements2(el, cmd.targetSelector);
             targets.forEach((target) => {
               const map = getTimerMap(target);
               const rec = map.get("hold");
@@ -14447,7 +14453,7 @@ ${match}</ul>
           };
         }
         return (...args) => {
-          const targets = resolveTargetElements(el, cmd.targetSelector);
+          const targets = resolveTargetElements2(el, cmd.targetSelector);
           targets.forEach((target) => {
             const map = getTimerMap(target);
             const rec = map.get("hold");
@@ -14691,7 +14697,7 @@ ${match}</ul>
       if (cmd.command === "cancel" || cmd.command === "reset") {
         if (typeof payload === "function") {
           return (e) => {
-            const targets = resolveTargetElements(el, cmd.targetSelector);
+            const targets = resolveTargetElements2(el, cmd.targetSelector);
             targets.forEach((target) => {
               const map = getTimerMap(target);
               map.delete("throttle");
@@ -14700,7 +14706,7 @@ ${match}</ul>
           };
         }
         return (...args) => {
-          const targets = resolveTargetElements(el, cmd.targetSelector);
+          const targets = resolveTargetElements2(el, cmd.targetSelector);
           targets.forEach((target) => {
             const map = getTimerMap(target);
             map.delete("throttle");
