@@ -668,6 +668,22 @@ export const routerAttributeModule: AttributeModule = {
         }
       };
 
+      const formatRouteTitle = (path: string, fallback?: string): string => {
+        if (!path || path === '/') return 'Home';
+        return path.replace(/^\/+/, '').replace(/\.html$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) || (fallback || 'Home');
+      };
+
+      const findPageDeep = (pages: DiscoveredPage[], predicate: (p: DiscoveredPage) => boolean): DiscoveredPage | null => {
+        for (const p of pages) {
+          if (predicate(p)) return p;
+          if (p.children) {
+            const ch = findPageDeep(p.children, predicate);
+            if (ch) return ch;
+          }
+        }
+        return null;
+      };
+
       // 1. Create Reactive State
       // shallowReactive prevents deep proxying of HTMLElements held in routes.
       state = runtime.shallowReactive<RouterState>({
@@ -697,7 +713,6 @@ export const routerAttributeModule: AttributeModule = {
 
           const pDir = (state.config.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
           const manifestUrl = state.config.manifest || `/${pDir}/manifest.json`;
-          const dirUrl = `/${pDir}/`;
           let rawList: any[] = [];
 
           // 1. Try fetching manifest.json
@@ -713,28 +728,6 @@ export const routerAttributeModule: AttributeModule = {
             }
           } catch {
             /* ignore manifest fetch error */
-          }
-
-          // 2. If no manifest, try directory index
-          if (rawList.length === 0) {
-            try {
-              const dirRes = await fetchFn(applyBase(dirUrl));
-              if (dirRes && dirRes.ok) {
-                const dirHtml = await dirRes.text();
-                const doc = new DOMParser().parseFromString(dirHtml, 'text/html');
-                const links = Array.from(doc.querySelectorAll('a[href]'));
-                const validExts = ['.html', '.htm', '.md', '.markdown'];
-                for (const a of links) {
-                  const hrefAttr = a.getAttribute('href') || '';
-                  const fname = hrefAttr.split('/').pop()?.split('?')[0] || '';
-                  if (fname && validExts.some((ext) => fname.endsWith(ext)) && !rawList.some((e) => (typeof e === 'string' ? e : e.path)?.endsWith(fname))) {
-                    rawList.push(fname);
-                  }
-                }
-              }
-            } catch {
-              /* ignore directory fetch error */
-            }
           }
 
           const discovered: DiscoveredPage[] = [];
@@ -758,9 +751,7 @@ export const routerAttributeModule: AttributeModule = {
               const order = isObj ? (item.order !== undefined ? item.order : item.meta?.order) : undefined;
               const category = isObj ? (item.category !== undefined ? item.category : item.meta?.category) : undefined;
 
-              const defaultTitle = href === '/'
-                ? 'Home'
-                : (href ? href.replace(/^\/+/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : cleanName);
+              const defaultTitle = formatRouteTitle(href, cleanName);
               const finalTitle = title || defaultTitle;
               const finalIcon = icon || (parent ? undefined : 'material-symbols-light:article-outline');
 
@@ -888,7 +879,7 @@ export const routerAttributeModule: AttributeModule = {
             discovered.length = 0;
             discovered.push(...rootPages);
           } else {
-            // Fallback to routeList if neither manifest nor directory listing was available
+            // Fallback to routeList if manifest was not available
             const publicRoutes = routeList.filter((r) => {
               const p = r.path || '';
               const comp = r.component || '';
@@ -900,26 +891,8 @@ export const routerAttributeModule: AttributeModule = {
             for (const r of publicRoutes) {
               const href = r.path || '/';
               const compPath = r.component || (href === '/' ? `/${pDir}/home.html` : `/${pDir}/${href.replace(/^\/+/, '')}.html`);
-              let title = (r.meta as any)?.title;
-              let icon = (r.meta as any)?.icon;
-
-              try {
-                const res = await fetchFn(compPath);
-                if (res && res.ok) {
-                  const html = await res.text();
-                  const doc = new DOMParser().parseFromString(html, 'text/html');
-                  const t = doc.querySelector('title')?.textContent?.trim();
-                  const ic = doc.querySelector('meta[name="icon"]')?.getAttribute('content')?.trim();
-                  if (t) title = t;
-                  if (ic) icon = ic;
-                }
-              } catch {
-                /* ignore */
-              }
-
-              const defaultTitle = href === '/' ? 'Home' : href.replace(/^\/+/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-              const finalTitle = title || defaultTitle;
-              const finalIcon = icon || 'material-symbols-light:article-outline';
+              const finalTitle = (r.meta as any)?.title || r.name || formatRouteTitle(href);
+              const finalIcon = (r.meta as any)?.icon || 'material-symbols-light:article-outline';
 
               discovered.push({
                 href,
@@ -940,17 +913,7 @@ export const routerAttributeModule: AttributeModule = {
           // Re-sync initial pageTab source if resolved from discovered manifest
           const activeTab = state.pageTabs.find((t) => t.id === state.activePageTabId);
           if (activeTab && activeTab.route) {
-            const findDeep = (pages: DiscoveredPage[]): DiscoveredPage | null => {
-              for (const p of pages) {
-                if (p.href === activeTab.route) return p;
-                if (p.children) {
-                  const ch = findDeep(p.children);
-                  if (ch) return ch;
-                }
-              }
-              return null;
-            };
-            const resolvedPage = findDeep(state.pages);
+            const resolvedPage = findPageDeep(state.pages, (p) => p.href === activeTab.route);
             if (resolvedPage && resolvedPage.path && activeTab.source !== resolvedPage.path) {
               activeTab.source = resolvedPage.path;
               if (resolvedPage.title && !activeTab.title) activeTab.title = resolvedPage.title;
@@ -963,20 +926,10 @@ export const routerAttributeModule: AttributeModule = {
         lineage: [] as Array<{ title: string; href: string; icon?: string }>,
         getLineage(targetHref?: string): Array<{ title: string; href: string; icon?: string }> {
           const raw = targetHref || state.path || state.route || '/';
-          const currentHref = raw.startsWith('/_pages/') ? (raw.replace('/_pages/', '/').replace(/\.html$/, '') === '/home' ? '/' : raw.replace('/_pages/', '/').replace(/\.html$/, '')) : raw;
+          const stripped = raw.startsWith('/_pages/') ? raw.slice(8).replace(/\.html$/, '') : raw;
+          const currentHref = (stripped === 'home' || stripped === '/home' || stripped === '') ? '/' : (stripped.startsWith('/') ? stripped : `/${stripped}`);
           const chain: Array<{ title: string; href: string; icon?: string }> = [];
           const visited = new Set<string>();
-
-          const findPageDeep = (pages: DiscoveredPage[], predicate: (p: DiscoveredPage) => boolean): DiscoveredPage | null => {
-            for (const p of pages) {
-              if (predicate(p)) return p;
-              if (p.children) {
-                const ch = findPageDeep(p.children, predicate);
-                if (ch) return ch;
-              }
-            }
-            return null;
-          };
 
           let curr: string | null = currentHref;
           while (curr && !visited.has(curr)) {
@@ -989,7 +942,7 @@ export const routerAttributeModule: AttributeModule = {
               found = state.activePageTab;
             }
 
-            const title = found?.tabTitle || found?.title || found?.meta?.title || (curr === '/' ? 'Home' : curr.replace(/^\/+/, '').replace(/\.html$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()));
+            const title = found?.tabTitle || found?.title || found?.meta?.title || formatRouteTitle(curr);
             const icon = found?.tabIcon || found?.icon || found?.meta?.icon || (curr === '/' ? 'material-symbols-light:home-outline' : undefined);
             const parent: string | null = (found as any)?.parent !== undefined ? (found as any).parent : ((found as any)?.meta?.parent !== undefined ? (found as any).meta.parent : (curr === '/' ? null : '/'));
 
