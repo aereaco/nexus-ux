@@ -8120,24 +8120,10 @@ ${match}</ul>
       out = out.slice(0, -1);
     return out || "/";
   }
-  function parseQuery(queryOrUrl) {
-    const query = {};
-    if (!queryOrUrl)
-      return query;
-    const search = typeof queryOrUrl === "string" ? queryOrUrl.includes("?") ? queryOrUrl.slice(queryOrUrl.indexOf("?")) : queryOrUrl.startsWith("?") ? queryOrUrl : "" : queryOrUrl.search;
-    if (!search)
-      return query;
-    const usp = new URLSearchParams(search);
-    usp.forEach((val, key) => {
-      query[key] = val;
-    });
-    return query;
-  }
-  function matchRoute(path, routeList, matchMeta) {
-    const exact = routeList.find((r) => !r.internal && r.path && r.path === path);
+  function findRoute(path, routeList, matchMeta, params) {
+    const exact = routeList.find((r) => !r.internal && r.path === path);
     if (exact)
-      return { matched: exact, params: {} };
-    const params = {};
+      return exact;
     for (const route of routeList) {
       if (route.internal || !route.path)
         continue;
@@ -8151,10 +8137,10 @@ ${match}</ul>
         });
         if (meta.hasWildcard)
           params.wildcard = m[meta.keys.length + 1] || "";
-        return { matched: route, params };
+        return route;
       }
     }
-    return { matched: null, params };
+    return null;
   }
   function autoDetectBasePath() {
     const baseEl = document.querySelector("base[href]");
@@ -8996,7 +8982,8 @@ ${match}</ul>
           // would use — without navigating. Useful for guards/preview UI.
           match(path) {
             const p = path ? stripBase(path) : state.path;
-            const { matched, params } = matchRoute(p, routeList, matchMeta);
+            const params = {};
+            const matched = findRoute(p, routeList, matchMeta, params);
             if (matched) {
               return buildInfo(matched, p, params, state.query, state.hash);
             }
@@ -9031,8 +9018,10 @@ ${match}</ul>
             }
             const fakeUrl = new URL(applyBase(path), globalThis.location.origin);
             const switchPath = path;
-            const query = parseQuery(fakeUrl);
-            const { matched, params } = matchRoute(switchPath, routeList, matchMeta);
+            const query = {};
+            fakeUrl.searchParams.forEach((val, key) => query[key] = val);
+            const params = {};
+            let matched = findRoute(switchPath, routeList, matchMeta, params);
             let staticComponent = null;
             if (!matched && (mode === "static" || mode === "hybrid")) {
               staticComponent = resolveStaticComponent(switchPath);
@@ -9217,9 +9206,10 @@ ${match}</ul>
             state.navigate(defaultPath, { replace: true });
             return;
           }
-          const query = parseQuery(url);
-          const { matched: routeMatched, params } = matchRoute(path, routeList, matchMeta);
-          let matched = routeMatched;
+          const query = {};
+          url.searchParams.forEach((val, key) => query[key] = val);
+          const params = {};
+          let matched = findRoute(path, routeList, matchMeta, params);
           if (matched) {
             runtime.debug(`Matched route: ${matched.path} via path ${path}`);
           }
