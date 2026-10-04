@@ -272,35 +272,18 @@ export class Draggable {
     this._pointerMoveBound = this._onPointerMove.bind(this);
     this._pointerUpBound = this._onPointerUp.bind(this);
 
-    this._touchStartBound = (e: TouchEvent) => {
-      const target = e.target as HTMLElement;
-      const dragEl = target.closest(this.options.draggable!) as HTMLElement | null;
-      if (dragEl && this.el.contains(dragEl)) {
-        const closestContainer = getClosestContainer(dragEl);
-        if (closestContainer !== this.el) return;
-        if (dragEl.getAttribute('draggable') === 'false') return;
-        if (target.closest('[data-drag-nodrag]')) return;
-
-        const itemHasHandle = dragEl.querySelector('[data-drag-handle]');
-        if (this.options.handle && !target.closest(this.options.handle)) return;
-        else if (itemHasHandle && !target.closest('[data-drag-handle]')) return;
-
-        if (this.options.filter && target.closest(this.options.filter)) return;
-
-        const tagName = target.tagName.toUpperCase();
-        if (['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(tagName)) return;
-
-        e.preventDefault();
+    if (this.options.handle) {
+      const handles = this.el.querySelectorAll<HTMLElement>(this.options.handle);
+      for (let i = 0; i < handles.length; i++) {
+        if (!handles[i].style.touchAction) handles[i].style.touchAction = 'none';
       }
-    };
+    }
 
     this.el.addEventListener('pointerdown', this._pointerDownBound);
-    this.el.addEventListener('touchstart', this._touchStartBound, { passive: false });
   }
 
   public destroy() {
     this.el.removeEventListener('pointerdown', this._pointerDownBound);
-    this.el.removeEventListener('touchstart', this._touchStartBound);
     this._cleanupDragListeners();
   }
 
