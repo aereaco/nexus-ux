@@ -14,7 +14,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
-import { initError, errMsg } from '../../engine/debug.ts';
 
 const ALL_DAISYUI_THEMES = [
   'light', 'dark', 'cupcake', 'bumblebee', 'emerald', 'corporate', 'synthwave', 'retro',
@@ -164,31 +163,27 @@ const themeModule: AttributeModule = {
 
     addScopeToNode(el, helpers);
 
-    try {
-        const [_runner, cleanupEffect] = runtime.elementBoundEffect(el, () => {
-            const themeToApply = currentTheme.value;
-            const isDark = activeModeName.value === 'dark' || (activeModeName.value === 'system' && systemDark.value);
+    const cleanupEffect = runtime.bind(el, '', () => {
+        const themeToApply = currentTheme.value;
+        const isDark = activeModeName.value === 'dark' || (activeModeName.value === 'system' && systemDark.value);
 
-            if (themeToApply) {
-                el.setAttribute('data-theme', themeToApply);
-            }
+        if (themeToApply) {
+            el.setAttribute('data-theme', themeToApply);
+        }
 
-            if (isDark) {
-                el.classList.add('dark');
-                el.classList.remove('light');
-            } else {
-                el.classList.add('light');
-                el.classList.remove('dark');
-            }
-        });
+        if (isDark) {
+            el.classList.add('dark');
+            el.classList.remove('light');
+        } else {
+            el.classList.add('light');
+            el.classList.remove('dark');
+        }
+    }, { raw: true });
 
-        return () => {
-            if (mq && listener) mq.removeEventListener('change', listener);
-            cleanupEffect();
-        };
-    } catch (e) {
-        initError('theme', `Failed to bind theme: ${errMsg(e)}`, el, expression);
-    }
+    return () => {
+        if (mq && listener) mq.removeEventListener('change', listener);
+        if (cleanupEffect) cleanupEffect();
+    };
   }
 };
 

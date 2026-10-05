@@ -207,7 +207,7 @@ ${suggestion}`);
       element?.dispatchEvent(errorEvent) || typeof document !== "undefined" && document.dispatchEvent(errorEvent);
     }
   }
-  function initError(moduleName, message, element, expression) {
+  function initError2(moduleName, message, element, expression) {
     const error = new UXError(`Initialization failed for ${moduleName}: ${message}`, element, expression);
     reportError(error, element, expression);
   }
@@ -1479,10 +1479,10 @@ ${suggestion}`);
         if (!result) {
           const msg = `Assertion failed: "${value}" evaluated to falsy value based on ${result}`;
           console.error(msg, el);
-          initError("assert", msg, el, value);
+          initError2("assert", msg, el, value);
         }
       } catch (e) {
-        initError("assert", `Assertion error: ${errMsg(e)}`, el, value);
+        initError2("assert", `Assertion error: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -1701,7 +1701,7 @@ ${suggestion}`);
           cleanupFns4.push(() => el.removeEventListener(eventName, inputHandler));
         }
       } catch (e) {
-        initError("bind", `Failed to bind ${target}: ${errMsg(e)}`, el, value);
+        initError2("bind", `Failed to bind ${target}: ${errMsg(e)}`, el, value);
       }
       return () => cleanupFns4.forEach((fn) => fn());
     }
@@ -2597,7 +2597,6 @@ ${scripts}
   __export(class_exports, {
     default: () => class_default
   });
-  init_debug();
   var classModule = {
     name: "class",
     attribute: "class",
@@ -2605,24 +2604,18 @@ ${scripts}
       const parsed = parsedAttr || runtime.parseAttribute("data-class", runtime, el);
       if (!parsed)
         return;
-      try {
-        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-          const result = runtime.evaluate(el, value);
-          if (parsed.argument) {
-            if (result) {
-              stylesheet.adoptClass(parsed.argument, el, runtime);
-              el.classList.add(parsed.argument);
-            } else {
-              el.classList.remove(parsed.argument);
-            }
+      return runtime.bind(el, value, (result) => {
+        if (parsed.argument) {
+          if (result) {
+            stylesheet.adoptClass(parsed.argument, el, runtime);
+            el.classList.add(parsed.argument);
           } else {
-            runtime.reconcileClass(el, result);
+            el.classList.remove(parsed.argument);
           }
-        });
-        return cleanup;
-      } catch (e) {
-        initError("class", `Failed to reconcile class: ${errMsg(e)}`, el, value);
-      }
+        } else {
+          runtime.reconcileClass(el, result);
+        }
+      });
     }
   };
   var class_default = classModule;
@@ -3030,7 +3023,7 @@ ${scripts}
             } catch (e) {
               componentState.hasError = true;
               componentState.errorMessage = errMsg(e);
-              initError("component", componentState.errorMessage, el, value);
+              initError2("component", componentState.errorMessage, el, value);
               if (config.fallback) {
                 const fb = runtime.evaluate(el, config.fallback);
                 runtime.morphDOM(el, String(fb));
@@ -3059,7 +3052,7 @@ ${scripts}
           }
         };
       } catch (e) {
-        initError(
+        initError2(
           "component",
           `Failed to init component: ${errMsg(e)}`,
           el,
@@ -4614,27 +4607,21 @@ ${scripts}
   __export(effect_exports, {
     default: () => effect_default
   });
-  init_debug();
   var effectModule = {
     name: "effect",
     attribute: "effect",
     handle: (el, value, runtime) => {
-      try {
-        let isEvaluating = false;
-        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-          if (isEvaluating)
-            return;
-          isEvaluating = true;
-          try {
-            runtime.evaluate(el, value);
-          } finally {
-            isEvaluating = false;
-          }
-        });
-        return cleanup;
-      } catch (e) {
-        initError("effect", `Failed to run effect: ${errMsg(e)}`, el, value);
-      }
+      let isEvaluating = false;
+      return runtime.bind(el, value, () => {
+        if (isEvaluating)
+          return;
+        isEvaluating = true;
+        try {
+          runtime.evaluate(el, value);
+        } finally {
+          isEvaluating = false;
+        }
+      }, { raw: true });
     }
   };
   var effect_default = effectModule;
@@ -5995,7 +5982,7 @@ ${scripts}
       let itemsExpr = "";
       const inIdx = value.indexOf(" in ");
       if (inIdx === -1) {
-        initError("for", `Invalid syntax: ${value}. Expected "item in items"`, el, value);
+        initError2("for", `Invalid syntax: ${value}. Expected "item in items"`, el, value);
         return;
       }
       const lhs = value.substring(0, inIdx).trim();
@@ -6150,7 +6137,7 @@ ${scripts}
           anchor.remove();
         };
       } catch (e) {
-        initError("for", `Failed to initialize for: ${errMsg(e)}`, el, value);
+        initError2("for", `Failed to initialize for: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -6161,30 +6148,23 @@ ${scripts}
   __export(html_exports, {
     default: () => html_default
   });
-  init_debug();
   var htmlModule = {
     name: "html",
     attribute: "html",
     handle: (el, value, runtime) => {
-      try {
-        let lastContent = Symbol();
-        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-          const content = runtime.evaluate(el, value);
-          if (content !== lastContent) {
-            lastContent = content;
-            const html = content === void 0 || content === null ? "" : String(content);
-            el.innerHTML = html;
-            Array.from(el.children).forEach((child) => {
-              if (child instanceof HTMLElement || child instanceof SVGElement) {
-                runtime.processElement(child, true);
-              }
-            });
-          }
-        });
-        return cleanup;
-      } catch (e) {
-        initError("html", `Failed to bind html: ${errMsg(e)}`, el, value);
-      }
+      let lastContent = Symbol();
+      return runtime.bind(el, value, (content) => {
+        if (content !== lastContent) {
+          lastContent = content;
+          const html = content === void 0 || content === null ? "" : String(content);
+          el.innerHTML = html;
+          Array.from(el.children).forEach((child) => {
+            if (child instanceof HTMLElement || child instanceof SVGElement) {
+              runtime.processElement(child, true);
+            }
+          });
+        }
+      });
     }
   };
   var html_default = htmlModule;
@@ -6278,7 +6258,7 @@ ${scripts}
             anchor.remove();
         };
       } catch (e) {
-        initError("if", `Failed to initialize if: ${errMsg(e)}`, el, value);
+        initError2("if", `Failed to initialize if: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -6851,9 +6831,9 @@ ${match}</ul>
         el.__nexusRawSource = value ? null : el.textContent || el.innerText;
       }
       const initialSource = el.__nexusRawSource;
-      const render = () => {
-        const content = value ? runtime.evaluate(el, value) : initialSource;
-        const mdText = String(content || "").trim();
+      const render = (content) => {
+        const raw = value ? content : initialSource;
+        const mdText = String(raw || "").trim();
         if (!el.classList.contains("nexus-markdown-body")) {
           el.classList.add("nexus-markdown-body");
         }
@@ -6863,10 +6843,11 @@ ${match}</ul>
         }
       };
       if (value) {
-        const [_runner, effectCleanup] = runtime.elementBoundEffect(el, render);
+        const effectCleanup = runtime.bind(el, value, render);
         return () => {
           cleanupState();
-          effectCleanup();
+          if (effectCleanup)
+            effectCleanup();
         };
       }
       render();
@@ -7061,7 +7042,7 @@ ${match}</ul>
         }
         return () => target.removeEventListener(eventName, handler, options);
       } catch (e) {
-        initError("on", `Failed to attach listener ${eventName}: ${errMsg(e)}`, el, value);
+        initError2("on", `Failed to attach listener ${eventName}: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -9201,29 +9182,22 @@ ${match}</ul>
   __export(show_exports, {
     default: () => show_default
   });
-  init_debug();
   var showModule = {
     name: "show",
     attribute: "show",
     handle: (el, value, runtime) => {
       const originalDisplay = el.style.display === "none" ? "" : el.style.display;
-      try {
-        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-          const show = Boolean(runtime.evaluate(el, value));
-          if (show) {
-            if (originalDisplay) {
-              el.style.display = originalDisplay;
-            } else {
-              el.style.removeProperty("display");
-            }
+      return runtime.bind(el, value, (result) => {
+        if (result) {
+          if (originalDisplay) {
+            el.style.display = originalDisplay;
           } else {
-            el.style.display = "none";
+            el.style.removeProperty("display");
           }
-        });
-        return cleanup;
-      } catch (e) {
-        initError("show", `Failed to initialize show: ${errMsg(e)}`, el, value);
-      }
+        } else {
+          el.style.display = "none";
+        }
+      });
     }
   };
   var show_default = showModule;
@@ -9302,7 +9276,6 @@ ${match}</ul>
   __export(style_exports, {
     default: () => style_default
   });
-  init_debug();
   var styleModule = {
     name: "style",
     attribute: "style",
@@ -9310,15 +9283,7 @@ ${match}</ul>
       const parsed = parsedAttr || runtime.parseAttribute("data-style", runtime, el);
       if (!parsed || parsed.argument)
         return;
-      try {
-        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-          const result = runtime.evaluate(el, value);
-          runtime.reconcileStyle(el, result);
-        });
-        return cleanup;
-      } catch (e) {
-        initError("style", `Failed to reconcile style: ${errMsg(e)}`, el, value);
-      }
+      return runtime.bind(el, value, (result) => runtime.reconcileStyle(el, result));
     }
   };
   var style_default = styleModule;
@@ -9328,7 +9293,6 @@ ${match}</ul>
   __export(switcher_exports, {
     default: () => switcher_default
   });
-  init_debug();
   var switcherModule = {
     name: "switcher",
     attribute: "switcher",
@@ -9378,28 +9342,22 @@ ${match}</ul>
       };
       runtime.log(`Nexus Switcher [${expression}]: Injecting helpers on`, el);
       addScopeToNode(el, helpers);
-      try {
-        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-          const currentVal = runtime.evaluate(el, expression);
-          const items = runtime.evaluate(el, optionsAttr);
-          runtime.log(`Nexus Switcher [${expression}]: Active state changed to:`, currentVal, "options:", items);
-          Array.from(el.children).forEach((child) => {
-            if (child instanceof HTMLElement) {
-              child.classList.add("switcher-transitioning");
-              const onEnd = () => {
-                child.classList.remove("switcher-transitioning");
-                child.removeEventListener("transitionend", onEnd);
-                clearTimeout(fallback);
-              };
-              child.addEventListener("transitionend", onEnd, { once: true });
-              const fallback = setTimeout(onEnd, 1e3);
-            }
-          });
+      return runtime.bind(el, expression, (currentVal) => {
+        const items = runtime.evaluate(el, optionsAttr);
+        runtime.log(`Nexus Switcher [${expression}]: Active state changed to:`, currentVal, "options:", items);
+        Array.from(el.children).forEach((child) => {
+          if (child instanceof HTMLElement) {
+            child.classList.add("switcher-transitioning");
+            const onEnd = () => {
+              child.classList.remove("switcher-transitioning");
+              child.removeEventListener("transitionend", onEnd);
+              clearTimeout(fallback);
+            };
+            child.addEventListener("transitionend", onEnd, { once: true });
+            const fallback = setTimeout(onEnd, 1e3);
+          }
         });
-        return cleanup;
-      } catch (e) {
-        initError("switcher", `Failed to initialize switcher: ${errMsg(e)}`, el, expression);
-      }
+      });
     }
   };
   var switcher_default = switcherModule;
@@ -9640,7 +9598,6 @@ ${match}</ul>
   __export(theme_exports, {
     default: () => theme_default
   });
-  init_debug();
   var ALL_DAISYUI_THEMES = [
     "light",
     "dark",
@@ -9831,29 +9788,26 @@ ${match}</ul>
         }
       };
       addScopeToNode(el, helpers);
-      try {
-        const [_runner, cleanupEffect2] = runtime.elementBoundEffect(el, () => {
-          const themeToApply = currentTheme.value;
-          const isDark = activeModeName.value === "dark" || activeModeName.value === "system" && systemDark.value;
-          if (themeToApply) {
-            el.setAttribute("data-theme", themeToApply);
-          }
-          if (isDark) {
-            el.classList.add("dark");
-            el.classList.remove("light");
-          } else {
-            el.classList.add("light");
-            el.classList.remove("dark");
-          }
-        });
-        return () => {
-          if (mq && listener)
-            mq.removeEventListener("change", listener);
+      const cleanupEffect2 = runtime.bind(el, "", () => {
+        const themeToApply = currentTheme.value;
+        const isDark = activeModeName.value === "dark" || activeModeName.value === "system" && systemDark.value;
+        if (themeToApply) {
+          el.setAttribute("data-theme", themeToApply);
+        }
+        if (isDark) {
+          el.classList.add("dark");
+          el.classList.remove("light");
+        } else {
+          el.classList.add("light");
+          el.classList.remove("dark");
+        }
+      }, { raw: true });
+      return () => {
+        if (mq && listener)
+          mq.removeEventListener("change", listener);
+        if (cleanupEffect2)
           cleanupEffect2();
-        };
-      } catch (e) {
-        initError("theme", `Failed to bind theme: ${errMsg(e)}`, el, expression);
-      }
+      };
     }
   };
   var theme_default = themeModule;
@@ -15632,7 +15586,7 @@ ${bridge}`, {
             });
             return cleanup;
           } catch (e) {
-            initError("bind", `Reactive bind failed on <${el.tagName}>: ${errMsg(e)}`, el, value);
+            initError2("bind", `Reactive bind failed on <${el.tagName}>: ${errMsg(e)}`, el, value);
           }
         },
         morphDOM,

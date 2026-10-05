@@ -1,31 +1,22 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError, errMsg } from '../../engine/debug.ts';
 
 const showModule: AttributeModule = {
   name: 'show',
   attribute: 'show',
   handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
-    // Capture the original display value before Nexus touches it
     const originalDisplay = el.style.display === 'none' ? '' : el.style.display;
-
-    try {
-      const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        const show = Boolean(runtime.evaluate(el, value));
-        if (show) {
-          if (originalDisplay) {
-            el.style.display = originalDisplay;
-          } else {
-            el.style.removeProperty('display');
-          }
+    return runtime.bind(el, value, result => {
+      if (result) {
+        if (originalDisplay) {
+          el.style.display = originalDisplay;
         } else {
-          el.style.display = 'none';
+          el.style.removeProperty('display');
         }
-      });
-      return cleanup;
-    } catch (e) {
-      initError('show', `Failed to initialize show: ${errMsg(e)}`, el, value);
-    }
+      } else {
+        el.style.display = 'none';
+      }
+    });
   }
 };
 

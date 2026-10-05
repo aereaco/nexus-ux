@@ -26,7 +26,6 @@
 
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError, errMsg } from '../../engine/debug.ts';
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
 import { stylesheet } from './stylesheet.ts';
 
@@ -37,27 +36,20 @@ const classModule: AttributeModule = {
     const parsed = parsedAttr || runtime.parseAttribute('data-class', runtime, el);
     if (!parsed) return;
 
-    try {
-      const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        const result = runtime.evaluate(el, value);
-        
-        if (parsed.argument) {
-           // Handle suffixed class binding (e.g. data-class-active="isActive")
-           if (result) {
-             stylesheet.adoptClass(parsed.argument, el, runtime);
-             el.classList.add(parsed.argument);
-           } else {
-             el.classList.remove(parsed.argument);
-           }
+    return runtime.bind(el, value, result => {
+      if (parsed.argument) {
+        // Handle suffixed class binding (e.g. data-class-active="isActive")
+        if (result) {
+          stylesheet.adoptClass(parsed.argument, el, runtime);
+          el.classList.add(parsed.argument);
         } else {
-           // Handle standard class binding
-           runtime.reconcileClass(el, result);
+          el.classList.remove(parsed.argument);
         }
-      });
-      return cleanup;
-    } catch (e) {
-      initError('class', `Failed to reconcile class: ${errMsg(e)}`, el, value);
-    }
+      } else {
+        // Handle standard class binding
+        runtime.reconcileClass(el, result);
+      }
+    });
   }
 };
 

@@ -1,6 +1,5 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError, errMsg } from '../../engine/debug.ts';
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
 
 const styleModule: AttributeModule = {
@@ -10,15 +9,7 @@ const styleModule: AttributeModule = {
     const parsed = parsedAttr || runtime.parseAttribute('data-style', runtime, el);
     if (!parsed || parsed.argument) return;
 
-    try {
-      const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        const result = runtime.evaluate(el, value);
-        runtime.reconcileStyle(el, result);
-      });
-      return cleanup;
-    } catch (e) {
-      initError('style', `Failed to reconcile style: ${errMsg(e)}`, el, value);
-    }
+    return runtime.bind(el, value, result => runtime.reconcileStyle(el, result));
   }
 };
 

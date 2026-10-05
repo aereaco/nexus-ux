@@ -1,6 +1,5 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError, errMsg } from '../../engine/debug.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
 
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
@@ -69,34 +68,27 @@ const switcherModule: AttributeModule = {
     addScopeToNode(el, helpers);
 
     // Watch for changes to trigger animations if requested
-    try {
-      const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        const currentVal = runtime.evaluate(el, expression);
-        const items = runtime.evaluate(el, optionsAttr);
-        runtime.log(`Nexus Switcher [${expression}]: Active state changed to:`, currentVal, 'options:', items);
-        
-        // Simple animation hook: toggle a class on children
-        // Animation hook: toggle a transition class on children
-        Array.from(el.children).forEach(child => {
-          if (child instanceof HTMLElement) {
-            child.classList.add('switcher-transitioning');
-            // Use transitionend event instead of hardcoded timeout — adapts to any CSS duration.
-            // Safety fallback after 1s if no transition is defined on the element.
-            const onEnd = () => {
-              child.classList.remove('switcher-transitioning');
-              child.removeEventListener('transitionend', onEnd);
-              clearTimeout(fallback);
-            };
-            child.addEventListener('transitionend', onEnd, { once: true });
-            const fallback = setTimeout(onEnd, 1000);
-          }
-        });
+    return runtime.bind(el, expression, currentVal => {
+      const items = runtime.evaluate(el, optionsAttr);
+      runtime.log(`Nexus Switcher [${expression}]: Active state changed to:`, currentVal, 'options:', items);
+      
+      // Simple animation hook: toggle a class on children
+      // Animation hook: toggle a transition class on children
+      Array.from(el.children).forEach(child => {
+        if (child instanceof HTMLElement) {
+          child.classList.add('switcher-transitioning');
+          // Use transitionend event instead of hardcoded timeout — adapts to any CSS duration.
+          // Safety fallback after 1s if no transition is defined on the element.
+          const onEnd = () => {
+            child.classList.remove('switcher-transitioning');
+            child.removeEventListener('transitionend', onEnd);
+            clearTimeout(fallback);
+          };
+          child.addEventListener('transitionend', onEnd, { once: true });
+          const fallback = setTimeout(onEnd, 1000);
+        }
       });
-
-      return cleanup;
-    } catch (e) {
-      initError('switcher', `Failed to initialize switcher: ${errMsg(e)}`, el, expression);
-    }
+    });
   }
 };
 

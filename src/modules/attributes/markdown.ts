@@ -207,9 +207,9 @@ const markdownModule: AttributeModule = {
     }
     const initialSource = (el as any).__nexusRawSource;
 
-    const render = () => {
-      const content = value ? runtime.evaluate(el, value) : initialSource;
-      const mdText = String(content || '').trim();
+    const render = (content?: unknown) => {
+      const raw = value ? content : initialSource;
+      const mdText = String(raw || '').trim();
       if (!el.classList.contains('nexus-markdown-body')) {
         el.classList.add('nexus-markdown-body');
       }
@@ -220,10 +220,10 @@ const markdownModule: AttributeModule = {
     };
 
     if (value) {
-      const [_runner, effectCleanup] = runtime.elementBoundEffect(el, render);
+      const effectCleanup = runtime.bind(el, value, render);
       return () => {
         cleanupState();
-        effectCleanup();
+        if (effectCleanup) effectCleanup();
       };
     }
     render();
