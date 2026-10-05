@@ -295,9 +295,9 @@
                     </div>
                 </div>
 
-                <div class="p-6 flex-1 flex flex-col min-h-0 overflow-hidden">
+                <div class="flex-1 flex flex-col min-h-0 overflow-hidden relative">
                     <!-- Sub-Tab 1: Syntax & API Usage -->
-                    <div data-show="specTab === 'usage'" class="space-y-6 overflow-y-auto flex-1 min-h-0">
+                    <div data-show="specTab === 'usage'" data-scrollbar="overlay" class="p-6 space-y-6 overflow-y-auto flex-1 min-h-0">
                         <div>
                             <!-- Module Description -->
                             <p class="text-sm text-base-content/70 mb-6 leading-relaxed border-b border-base-content/10 pb-4"
@@ -350,7 +350,7 @@
 
                     <!-- Sub-Tab 2: Module Source -->
                     <div data-show="specTab === 'source'" style="display:none;"
-                        class="space-y-4 h-full flex-1 flex flex-col min-h-0 overflow-hidden">
+                        class="p-6 space-y-4 h-full flex-1 flex flex-col min-h-0 overflow-hidden">
                         <div
                             class="nx-editor-container border border-base-content/10 rounded-xl overflow-hidden flex-1 min-h-0">
                             <div id="source-editor" class="nx-editor h-full" data-preserve></div>

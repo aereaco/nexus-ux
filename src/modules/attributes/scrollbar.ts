@@ -547,6 +547,7 @@ const scrollbarModule: AttributeModule = {
       const overlayInst = ensureOverlayInstance(el);
       overlayInst.scheduleUpdate();
       requestAnimationFrame(() => overlayInst.update());
+      setTimeout(() => overlayInst.update(), 100);
       return () => {
         overlayInst.destroy();
       };
