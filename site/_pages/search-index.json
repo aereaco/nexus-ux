@@ -9,7 +9,7 @@
     "content": "Home Nexus-UX Engine 2.0 Public Beta Ready Modern HTML-First Reactive Architecture A high-performance reactive user experience framework coordinating declarative HTML directives with web-native browser APIs. Built for Zero-Copy Zero-Serialization ZCZS execution directly across the DOM namespace. Explore Interactive Labs Visual Node Graph Specification Docs Live Runtime Engine 60 FPS Reactive Signal Binding Count 1 Count -1 Zero serialization Zero-copy live proxy heap Core Architectural Pillars Engineered from the ground up for maximum browser performance zero memory churn and pure HTML-first expressiveness. Declarative HTML-First DOM-as-State composition without imperative scripting Application logic state bindings dynamic templates and animations are expressed directly in HTML markup. No build step required to run templates parse natively in the browser s DOM parser. Implementation Features 30 Native Attribute Directives data-signal data-bind data-for data-if data-show data-on data-flow and more. Constructable CSSStyleSheets Direct CSSOM integration via document.adoptedStyleSheets and data-stylesheet . Single Observer Context Exactly one universal MutationObserver orchestrating all DOM insertions diffing and deterministic teardowns. Zero-Copy Zero-Serialization Strictly eliminates JSON serialization and memory copy overhead State is held in shared memory references and typed heaps. Web Workers and main thread communicate via SharedArrayBuffer completely avoiding expensive JS"
   },
   {
-    "id": "index",
+    "id": "builder",
     "route": "/builder",
     "path": "/_pages/apps/builder/index.html",
     "title": "Visual Builder",
@@ -30,7 +30,7 @@
     "content": "Visual Builder body w-full body h-full body flex body flex-1 body min-w-0 body m-0 body bg-transparent"
   },
   {
-    "id": "index",
+    "id": "drag",
     "route": "/drag",
     "path": "/_pages/apps/drag/index.html",
     "title": "Drag and Drop",
@@ -39,7 +39,7 @@
     "content": "Drag and Drop Nexus-UX Drag and Drop Complete 14-Pattern Native Drag Drop Engine Suite 01. Simple DraggableJS Parity 02. Shared Cross-Container 03. Cloning teleport-mode clone SOURCE TARGET 04. Sorting Toggle State 05. Handles data-drag-handle 06. Filter Selective Drag 07. MultiDrag Batch Select Click items to select several then drag them as one group. 08. Grid Layout Spatial Hit-Test 09. Nested Infinite Recursive Hierarchy 10. Auto-Scroll Constrained VERTICAL AUTO-SCROLL HORIZONTAL AUTO-SCROLL 11. Ghost Styling CSS Feedback R G B A Preview 12. Direction Horizontal 13. Swap Index Exchange 14. Swap Thresholds VERTICAL SWAP THRESHOLD V-Threshold HORIZONTAL SWAP THRESHOLD H-Threshold Nexus-UX Drag Engine 14/14 Verification Patterns"
   },
   {
-    "id": "index",
+    "id": "flow",
     "route": "/flow",
     "path": "/_pages/apps/flow/index.html",
     "title": "Flow Canvas",

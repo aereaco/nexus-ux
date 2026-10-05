@@ -9,7 +9,7 @@
     "keywords": []
   },
   {
-    "id": "index",
+    "id": "builder",
     "route": "/builder",
     "path": "/_pages/apps/builder/index.html",
     "title": "Visual Builder",
@@ -30,7 +30,7 @@
     ]
   },
   {
-    "id": "index",
+    "id": "drag",
     "route": "/drag",
     "path": "/_pages/apps/drag/index.html",
     "title": "Drag and Drop",
@@ -39,7 +39,7 @@
     "keywords": []
   },
   {
-    "id": "index",
+    "id": "flow",
     "route": "/flow",
     "path": "/_pages/apps/flow/index.html",
     "title": "Flow Canvas",

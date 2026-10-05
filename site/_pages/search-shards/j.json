@@ -10,7 +10,7 @@
     "icon": "material-symbols-light:home-outline"
   },
   {
-    "id": "index",
+    "id": "flow",
     "route": "/flow",
     "path": "/_pages/apps/flow/index.html",
     "title": "Flow Canvas",

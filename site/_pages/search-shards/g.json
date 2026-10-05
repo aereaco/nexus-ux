@@ -10,7 +10,7 @@
     "icon": "material-symbols-light:home-outline"
   },
   {
-    "id": "index",
+    "id": "drag",
     "route": "/drag",
     "path": "/_pages/apps/drag/index.html",
     "title": "Drag and Drop",
@@ -20,7 +20,7 @@
     "icon": "material-symbols-light:move-selection-down-outline"
   },
   {
-    "id": "index",
+    "id": "flow",
     "route": "/flow",
     "path": "/_pages/apps/flow/index.html",
     "title": "Flow Canvas",

@@ -1,6 +1,6 @@
 [
   {
-    "id": "index",
+    "id": "drag",
     "route": "/drag",
     "path": "/_pages/apps/drag/index.html",
     "title": "Drag and Drop",
