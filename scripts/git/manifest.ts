@@ -187,8 +187,11 @@ function scanDirectory(
   const list: RawManifestEntry[] = [];
   try {
     const entries = Array.from(Deno.readDirSync(dir));
-    const fileEntries = entries.filter((e) => e.isFile);
-    const dirEntries = entries.filter((e) => e.isDirectory);
+    // Filter out private partials/components starting with _
+    const fileEntries = entries.filter((e) => e.isFile && !e.name.startsWith("_"));
+    const dirEntries = entries.filter((e) => e.isDirectory && !e.name.startsWith("_"));
+
+    const isTopCategoryDir = dir === PAGES_DIR;
 
     // 1. Process files in current directory
     for (const entry of fileEntries) {
@@ -198,14 +201,16 @@ function scanDirectory(
         const content = Deno.readTextFileSync(filePath);
         const meta = parseHeadMetadata(content);
 
-        const id = meta.id || nameWithoutExt;
+        const id = meta.id || (nameWithoutExt === "index" && dir !== PAGES_DIR ? (dir.split("/").pop() || nameWithoutExt) : nameWithoutExt);
         const internal = meta.internal !== undefined ? meta.internal : (isInternalDefault ? true : undefined);
 
         // Derive category if not explicitly declared
         let category = meta.category || inheritedCategory;
-        if (!category) {
-          if (baseWebPath.includes("/docs")) category = "Docs";
-          else if (baseWebPath.includes("/labs")) category = "Labs";
+        if (!category && baseWebPath.startsWith("/_pages/")) {
+          const parts = baseWebPath.replace(/^\/_pages\/?/, "").split("/");
+          if (parts[0]) {
+            category = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+          }
         }
 
         const item: RawManifestEntry = {
@@ -235,24 +240,45 @@ function scanDirectory(
       const subEntries = Array.from(Deno.readDirSync(subDirPath));
 
       // Determine default category for subdirectory
-      const isTopCategoryDir = dir === PAGES_DIR && (subDir.name === "docs" || subDir.name === "labs");
       let subCategory = inheritedCategory;
       if (isTopCategoryDir) {
-        subCategory = subDir.name === "docs" ? "Docs" : "Labs";
+        subCategory = subDir.name.charAt(0).toUpperCase() + subDir.name.slice(1);
       }
 
-      // Check if folder contains index.html / index.md (Case A)
-      const hasIndex = subEntries.some((e) => e.isFile && (e.name === "index.html" || e.name === "index.md"));
-      // Or if parent folder has a matching page file (e.g. attributes.html alongside attributes/ folder)
-      const hasMatchingRootFile = fileEntries.some((e) => e.isFile && e.name.replace(/\.[^.]+$/, "") === subDir.name);
+      // Check valid page files directly inside this subfolder (excluding _* partials)
+      const validSubFiles = subEntries.filter(
+        (e) => e.isFile && !e.name.startsWith("_") && VALID_EXTENSIONS.some((ext) => e.name.endsWith(ext))
+      );
+      const hasIndex = validSubFiles.some((e) => e.name === "index.html" || e.name === "index.md");
+      const hasMatchingRootFile = fileEntries.some((e) => e.name.replace(/\.[^.]+$/, "") === subDir.name);
 
       let currentDirRoute: string | undefined = undefined;
 
       if (isTopCategoryDir) {
-        // Top-level category folder: items inside are direct children of the category
+        // Top-level category folder (e.g. _pages/apps, _pages/labs, _pages/docs)
+        // Items directly inside or packages inside inherit this category
         currentDirRoute = undefined;
-      } else if (!hasIndex && !hasMatchingRootFile && subCategory !== undefined) {
-        // Case B: Nested directory WITHOUT index.html -> Emit routeless DaisyUI collapsible submenu
+      } else if (hasIndex) {
+        // Find index file metadata
+        const indexFile = validSubFiles.find((e) => e.name === "index.html" || e.name === "index.md")!;
+        const indexMeta = parseHeadMetadata(Deno.readTextFileSync(`${subDirPath}/${indexFile.name}`));
+        const rootRoute = indexMeta.route || (parentRoute ? `${parentRoute}/${subDir.name}` : `/${subDir.name}`);
+
+        // Pattern 3 vs Pattern 2:
+        // If there are other valid page files in the subfolder besides index, index represents the parent route
+        if (validSubFiles.length > 1) {
+          currentDirRoute = rootRoute;
+        } else {
+          // Single-entry package (Pattern 2): index.html is the only root page, no child pages beneath it
+          currentDirRoute = undefined;
+        }
+      } else if (hasMatchingRootFile) {
+        // Legacy sibling root file pattern (e.g. attributes.html alongside attributes/ folder)
+        const rootEntry = fileEntries.find((e) => e.name.replace(/\.[^.]+$/, "") === subDir.name);
+        const rootMeta = rootEntry ? parseHeadMetadata(Deno.readTextFileSync(`${dir}/${rootEntry.name}`)) : {};
+        currentDirRoute = rootMeta.route || (parentRoute ? `${parentRoute}/${subDir.name}` : `/${subDir.name}`);
+      } else if (subCategory !== undefined) {
+        // Directory WITHOUT index.html -> Emit routeless collapsible submenu
         const submenuId = `${subDir.name}-menu`;
         const submenuTitle = subDir.name.charAt(0).toUpperCase() + subDir.name.slice(1);
         list.push({
@@ -265,11 +291,6 @@ function scanDirectory(
           category: subCategory,
         });
         currentDirRoute = submenuId;
-      } else if (hasMatchingRootFile) {
-        // Current directory has a sibling page representing its root (e.g. attributes.html -> /labs/attributes)
-        const rootEntry = fileEntries.find((e) => e.name.replace(/\.[^.]+$/, "") === subDir.name);
-        const rootMeta = rootEntry ? parseHeadMetadata(Deno.readTextFileSync(`${dir}/${rootEntry.name}`)) : {};
-        currentDirRoute = rootMeta.route || (parentRoute ? `${parentRoute}/${subDir.name}` : `/${subDir.name}`);
       } else {
         currentDirRoute = parentRoute ? `${parentRoute}/${subDir.name}` : `/${subDir.name}`;
       }
