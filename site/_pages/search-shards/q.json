@@ -20,26 +20,6 @@
     "icon": "material-symbols-light:menu-book-outline"
   },
   {
-    "id": "labs-scopes",
-    "route": "/labs/scopes",
-    "path": "/_pages/labs/scopes.html",
-    "title": "Scopes",
-    "category": "Labs",
-    "keywords": [],
-    "content": "Scopes Labs Category 6 Reactive Scopes Reactive Scopes Query Rules NEG query rules rule param ... providing responsive queries container queries authentication gating and runtime platform inspection. media Viewport Reactive viewport media queries e.g. media min-width 768px updating without listeners. Open Lab rarr container Container Evaluates container dimension queries relative to immediate parent element dimensions and bounds. Open Lab rarr auth Security Enforces role-based authentication rules and permission gates directly in the DOM data stack. Open Lab rarr native Bridge Verifies presence of native mobile or desktop app shell bridges Capacitor Electron WebKit . Open Lab rarr os Platform Runtime platform detection macos windows linux ios android . Open Lab rarr view Geometry Live geometry metrics exposing view.width view.height view.isPortrait and view.isLandscape. Open Lab rarr",
-    "icon": "material-symbols-light:alternate-email"
-  },
-  {
-    "id": "labs-sprites",
-    "route": "/labs/sprites",
-    "path": "/_pages/labs/sprites.html",
-    "title": "Sprites",
-    "category": "Labs",
-    "keywords": [],
-    "content": "Sprites Labs Category 14 Injected Sprites Injected Sprites Utilities Built-in framework utilities and native runtime clients accessible directly inside any HTML expression without imports or boilerplate. animate Animation Web Animations API runner with spring physics and zero-layout-shift FLIP list transitions. Open Lab rarr bgFetch Offline Background Fetch API wrapper executing large persistent file downloads across tab closures. Open Lab rarr bgSync Sync Background Sync API for deferred requests guaranteeing delivery when network recovers. Open Lab rarr flow Canvas Spatial canvas node link coordinator and Bezier connector engine for node graphs. Open Lab rarr gql GraphQL Zero-dependency GraphQL query and mutation client returning fine-grained reactive refs. Open Lab rarr mask Utility Programmatic string formatting and pattern masking utility for non-input expressions. Open Lab rarr mcp AI Agent Model Context Protocol AI assistant client for direct LLM sampling and runtime diagnostics. Open Lab rarr periodicSync Sync Periodic Background Sync manager for background data polling and silent cache updates. Open Lab rarr predictive Predictive Quadtree predictive engine forecasting user pointer trajectories and pre-fetching assets. Open Lab rarr push Notifications Web Push notification subscription manager and permission controller. Open Lab rarr ... Selector Contextual DOM selector engine with directional combinators closest child next - prev . Open Lab rarr sql Database SurrealD",
-    "icon": "material-symbols-light:attach-money"
-  },
-  {
     "id": "lab-attr-computed",
     "route": "/labs/attributes/computed",
     "path": "/_pages/labs/attributes/computed.html",
@@ -78,6 +58,16 @@
     ],
     "content": "container Evaluates component-level container queries reactively via ResizeObserver allowing components to adapt based on their parent container width rather than full viewport width. div data-show container min-width 400px /div container p class opacity-80 leading-relaxed Located in code src/modules/scopes/container.ts /code container queries decouple responsive component layout from the global browser window enabling truly modular design. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong ResizeObserver Backed /strong Monitors container element dimensions with zero polling overhead /li li strong True Component Isolation /strong Adapts layout whether embedded in a narrow sidebar or a wide main pane /li /ul",
     "icon": "material-symbols-light:aspect-ratio"
+  },
+  {
+    "id": "labs-scopes",
+    "route": "/labs/scopes",
+    "path": "/_pages/labs/scopes/index.html",
+    "title": "Scopes",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Scopes Labs Category 6 Reactive Scopes Reactive Scopes Query Rules NEG query rules rule param ... providing responsive queries container queries authentication gating and runtime platform inspection. media Viewport Reactive viewport media queries e.g. media min-width 768px updating without listeners. Open Lab rarr container Container Evaluates container dimension queries relative to immediate parent element dimensions and bounds. Open Lab rarr auth Security Enforces role-based authentication rules and permission gates directly in the DOM data stack. Open Lab rarr native Bridge Verifies presence of native mobile or desktop app shell bridges Capacitor Electron WebKit . Open Lab rarr os Platform Runtime platform detection macos windows linux ios android . Open Lab rarr view Geometry Live geometry metrics exposing view.width view.height view.isPortrait and view.isLandscape. Open Lab rarr",
+    "icon": "material-symbols-light:alternate-email"
   },
   {
     "id": "lab-scope-media",
@@ -134,6 +124,16 @@
     ],
     "content": "gql Zero-dependency GraphQL query and mutation client with automated cacheEngine response caching and live WebSocket subscription bindings. gql.query user id 1 name email gql.query query variables gql.mutate mutation variables p class opacity-80 leading-relaxed Located in code src/modules/sprites/gql.ts /code this sprite provides GraphQL capabilities without heavy Apollo or Relay bundles. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Zero-Dependency Client /strong Lightweight fetch-based client under 2KB /li li strong CacheEngine Integration /strong Automatically persists query snapshots in IndexedDB /li /ul",
     "icon": "mdi:graphql"
+  },
+  {
+    "id": "labs-sprites",
+    "route": "/labs/sprites",
+    "path": "/_pages/labs/sprites/index.html",
+    "title": "Sprites",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Sprites Labs Category 14 Injected Sprites Injected Sprites Utilities Built-in framework utilities and native runtime clients accessible directly inside any HTML expression without imports or boilerplate. animate Animation Web Animations API runner with spring physics and zero-layout-shift FLIP list transitions. Open Lab rarr bgFetch Offline Background Fetch API wrapper executing large persistent file downloads across tab closures. Open Lab rarr bgSync Sync Background Sync API for deferred requests guaranteeing delivery when network recovers. Open Lab rarr flow Canvas Spatial canvas node link coordinator and Bezier connector engine for node graphs. Open Lab rarr gql GraphQL Zero-dependency GraphQL query and mutation client returning fine-grained reactive refs. Open Lab rarr mask Utility Programmatic string formatting and pattern masking utility for non-input expressions. Open Lab rarr mcp AI Agent Model Context Protocol AI assistant client for direct LLM sampling and runtime diagnostics. Open Lab rarr periodicSync Sync Periodic Background Sync manager for background data polling and silent cache updates. Open Lab rarr predictive Predictive Quadtree predictive engine forecasting user pointer trajectories and pre-fetching assets. Open Lab rarr push Notifications Web Push notification subscription manager and permission controller. Open Lab rarr ... Selector Contextual DOM selector engine with directional combinators closest child next - prev . Open Lab rarr sql Database SurrealD",
+    "icon": "material-symbols-light:attach-money"
   },
   {
     "id": "lab-sprite-selector",

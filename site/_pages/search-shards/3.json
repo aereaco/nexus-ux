@@ -10,41 +10,11 @@
     "icon": "material-symbols-light:home-outline"
   },
   {
-    "id": "_canvas",
-    "route": "/builder/_canvas",
-    "path": "/_pages/builder/_canvas.html",
-    "title": "_canvas",
-    "category": "General",
-    "keywords": [],
-    "content": "Left Center Right Justify Size 12px 14px 16px 18px 20px 24px 32px 48px Add Component / Section After Inside Hero Section Features Grid Pricing Table CTA Banner",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_right-panel",
-    "route": "/builder/_right-panel",
-    "path": "/_pages/builder/_right-panel.html",
-    "title": "_right-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_top-panel",
-    "route": "/builder/_top-panel",
-    "path": "/_pages/builder/_top-panel.html",
-    "title": "_top-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Nexus Builder Desktop Tablet 768 Mobile 375 Design Preview 50 75 100 125 Save Save Draft Ctrl S Export HTML Download File Code Editor Templates Clear Canvas",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
     "id": "landing",
-    "route": "/landing",
+    "route": "/templates-menu/landing",
     "path": "/_pages/builder/templates/landing.html",
     "title": "landing",
-    "category": "General",
+    "category": "Builder",
     "keywords": [],
     "content": "Overview Components Templates Pricing N Nexus Studio Overview Components Templates Pricing Sign In Get Started New DaisyUI 5 Native Components Tokens Next-Generation Visual Website Builder Assemble lightning-fast reactive web interfaces directly in the browser with declarative HTML bindings zero compilation lag and deep component inspection. Start Building Free Explore Templates Components 87 DaisyUI 5 Web Native Themes 32 Instant Canvas Sync Overhead 0 kb Zero-Serialization Heap Architecture Engineered for Velocity Everything you need to craft production web applications with zero friction. Dynamic Component Inspectors Click any element heading button or section to instantly inspect and modify variants layouts and responsive breakpoints. Learn More rarr Theme-Adaptive Styling Switch themes live on the canvas. High-contrast dark modes vibrant synthwave palettes and clean business layouts update instantly. Learn More rarr Zero-Serialization Pipeline DOM morphing reconcilers diff elements in-place while keeping user focus and input states completely intact. Learn More rarr N Nexus-UX Studio Copyright copy 2026 - All rights reserved Documentation Components Changelog GitHub",
     "icon": "material-symbols-light:description-outline"
@@ -52,7 +22,7 @@
   {
     "id": "labs-attributes",
     "route": "/labs/attributes",
-    "path": "/_pages/labs/attributes.html",
+    "path": "/_pages/labs/attributes/index.html",
     "title": "Attributes",
     "category": "Labs",
     "keywords": [],

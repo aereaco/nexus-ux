@@ -1,35 +1,5 @@
 [
   {
-    "id": "_right-panel",
-    "route": "/builder/_right-panel",
-    "path": "/_pages/builder/_right-panel.html",
-    "title": "_right-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_top-panel",
-    "route": "/builder/_top-panel",
-    "path": "/_pages/builder/_top-panel.html",
-    "title": "_top-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Nexus Builder Desktop Tablet 768 Mobile 375 Design Preview 50 75 100 125 Save Save Draft Ctrl S Export HTML Download File Code Editor Templates Clear Canvas",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "labs-scopes",
-    "route": "/labs/scopes",
-    "path": "/_pages/labs/scopes.html",
-    "title": "Scopes",
-    "category": "Labs",
-    "keywords": [],
-    "content": "Scopes Labs Category 6 Reactive Scopes Reactive Scopes Query Rules NEG query rules rule param ... providing responsive queries container queries authentication gating and runtime platform inspection. media Viewport Reactive viewport media queries e.g. media min-width 768px updating without listeners. Open Lab rarr container Container Evaluates container dimension queries relative to immediate parent element dimensions and bounds. Open Lab rarr auth Security Enforces role-based authentication rules and permission gates directly in the DOM data stack. Open Lab rarr native Bridge Verifies presence of native mobile or desktop app shell bridges Capacitor Electron WebKit . Open Lab rarr os Platform Runtime platform detection macos windows linux ios android . Open Lab rarr view Geometry Live geometry metrics exposing view.width view.height view.isPortrait and view.isLandscape. Open Lab rarr",
-    "icon": "material-symbols-light:alternate-email"
-  },
-  {
     "id": "lab-mod-debounce",
     "route": "/labs/modifiers/debounce",
     "path": "/_pages/labs/modifiers/debounce.html",
@@ -40,6 +10,16 @@
     ],
     "content": "_debounce Pipes an event listener through an auto-clearing timer delaying execution until the specified milliseconds have elapsed since the user last triggered the event. input data-on-input_debounce.300 query newValue / n input data-on-input_debounce.500 searchDatabase / _debounce. ms p class opacity-80 leading-relaxed Located in code src/modules/modifiers/debounce.ts /code this modifier manages timer handles directly on the hosting element. Each incoming event cancels any existing pending timeout and restarts the timer preventing network spam on rapid keystrokes. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Micro-Timer Management /strong Automatically cancels previous timer IDs without memory leaks /li li strong Customizable Latency /strong Specify any millisecond integer suffix e.g. code _debounce.150 /code code _debounce.750 /code /li li strong Injected Values /strong Passes the latest code newValue /code and code evt /code to the deferred handler /li /ul",
     "icon": "material-symbols-light:hourglass-empty"
+  },
+  {
+    "id": "labs-scopes",
+    "route": "/labs/scopes",
+    "path": "/_pages/labs/scopes/index.html",
+    "title": "Scopes",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Scopes Labs Category 6 Reactive Scopes Reactive Scopes Query Rules NEG query rules rule param ... providing responsive queries container queries authentication gating and runtime platform inspection. media Viewport Reactive viewport media queries e.g. media min-width 768px updating without listeners. Open Lab rarr container Container Evaluates container dimension queries relative to immediate parent element dimensions and bounds. Open Lab rarr auth Security Enforces role-based authentication rules and permission gates directly in the DOM data stack. Open Lab rarr native Bridge Verifies presence of native mobile or desktop app shell bridges Capacitor Electron WebKit . Open Lab rarr os Platform Runtime platform detection macos windows linux ios android . Open Lab rarr view Geometry Live geometry metrics exposing view.width view.height view.isPortrait and view.isLandscape. Open Lab rarr",
+    "icon": "material-symbols-light:alternate-email"
   },
   {
     "id": "lab-scope-media",

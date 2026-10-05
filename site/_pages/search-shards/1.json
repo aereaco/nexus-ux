@@ -10,46 +10,6 @@
     "icon": "material-symbols-light:move-selection-down-outline"
   },
   {
-    "id": "_bottom-panel",
-    "route": "/builder/_bottom-panel",
-    "path": "/_pages/builder/_bottom-panel.html",
-    "title": "_bottom-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Select an element to view DOM hierarchy / Code editor Html Css -- / Html Css Run JS on edit Apply 1 2 3 4 5 6 7 8 9 10 11 12 13 14 1 2 3 4 5 6 7 8 9 10",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_canvas",
-    "route": "/builder/_canvas",
-    "path": "/_pages/builder/_canvas.html",
-    "title": "_canvas",
-    "category": "General",
-    "keywords": [],
-    "content": "Left Center Right Justify Size 12px 14px 16px 18px 20px 24px 32px 48px Add Component / Section After Inside Hero Section Features Grid Pricing Table CTA Banner",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_right-panel",
-    "route": "/builder/_right-panel",
-    "path": "/_pages/builder/_right-panel.html",
-    "title": "_right-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_top-panel",
-    "route": "/builder/_top-panel",
-    "path": "/_pages/builder/_top-panel.html",
-    "title": "_top-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Nexus Builder Desktop Tablet 768 Mobile 375 Design Preview 50 75 100 125 Save Save Draft Ctrl S Export HTML Download File Code Editor Templates Clear Canvas",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
     "id": "doc-readme",
     "route": "/docs/readme",
     "path": "/_pages/docs/readme.md",
@@ -78,26 +38,6 @@
     "keywords": [],
     "content": "--- id doc-spec title Architecture Spec route /docs/spec icon material-symbols-light architecture order 2 category Docs --- Nexus-UX The Definitive Technical Specification Signal-Driven Universal Reactivity The Unified Signal Graph The best state management is Universal Reactivity. --- Table of Contents 1. Chapter 1 Philosophy Vision chapter-1-philosophy--vision 2. Chapter 2 The Language NEG Grammar Selectors chapter-2-the-language-neg-grammar--selectors 3. Chapter 3 Unified Architecture ESSL chapter-3-unified-architecture--essl 4. Chapter 4 Systemic Coordination The Handshake Logic chapter-4-systemic-coordination-the-handshake-logic 5. Chapter 5 The Engine Mechanics The Brain chapter-5-the-engine-mechanics-the-brain 6. Chapter 6 Security Persistence chapter-6-security--persistence 7. Chapter 7 Project Anatomy Ecosystem chapter-7-project-anatomy--ecosystem 8. Chapter 8 AI Strategy Agentic Support chapter-8-ai-strategy--agentic-support 9. Chapter 9 Validation Migration Real-World Proof chapter-9-validation-migration--real-world-proof 10. Chapter 10 Community Sponsorship chapter-10-community--sponsorship --- Chapter 1 Philosophy Vision Nexus-UX is more than a library it is a strategic response to the excessive abstraction of the modern web. This chapter outlines the philosophy of the Omni-State DOM-as-State and our vision for an AI-native web development experience. 1.1. The Call of the Nexus Reclaiming the Web s Soul The web is evolving. The era of monolithic JavaScript-heavy ",
     "icon": "material-symbols-light:architecture"
-  },
-  {
-    "id": "labs-modifiers",
-    "route": "/labs/modifiers",
-    "path": "/_pages/labs/modifiers.html",
-    "title": "Modifiers",
-    "category": "Labs",
-    "keywords": [],
-    "content": "Modifiers Labs Category 15 Event Modifiers Event Modifiers Filters Pipeline event modifiers that attach directly to event directives e.g. data-on-click_outside or input_debounce.250 to intercept throttle filter and coordinate interactions. _debounce Timing Delays execution until specified milliseconds have elapsed since the last invocation. Open Lab rarr _delay Timing Delays handler execution by a fixed millisecond timeout before firing. Open Lab rarr _document Target Attaches event listener to document root rather than the local HTMLElement. Open Lab rarr _drag Pointer Injects delta movement coordinates drag.dx drag.dy into pointer handlers. Open Lab rarr _hold Gesture Fires only when user presses and holds the pointer for the specified millisecond duration. Open Lab rarr _keys Keyboard Filters keyboard events by key code or combination enter escape space ctrl shift . Open Lab rarr _morph Morph Morphs return string from evaluation directly into the element using morphDOM diffing. Open Lab rarr _once Lifecycle Executes event listener exactly once automatically unbinding itself afterwards. Open Lab rarr _outside Outside Fires handler only when pointer click or tap occurs outside the element boundary bounds. Open Lab rarr _prevent Default Invokes event.preventDefault to halt native browser default submission and navigation. Open Lab rarr _self Target Executes handler only if event.target is the element itself ignoring child bubbled events. Open Lab rarr _stop Propagation Calls ",
-    "icon": "material-symbols-light:remove"
-  },
-  {
-    "id": "labs-sprites",
-    "route": "/labs/sprites",
-    "path": "/_pages/labs/sprites.html",
-    "title": "Sprites",
-    "category": "Labs",
-    "keywords": [],
-    "content": "Sprites Labs Category 14 Injected Sprites Injected Sprites Utilities Built-in framework utilities and native runtime clients accessible directly inside any HTML expression without imports or boilerplate. animate Animation Web Animations API runner with spring physics and zero-layout-shift FLIP list transitions. Open Lab rarr bgFetch Offline Background Fetch API wrapper executing large persistent file downloads across tab closures. Open Lab rarr bgSync Sync Background Sync API for deferred requests guaranteeing delivery when network recovers. Open Lab rarr flow Canvas Spatial canvas node link coordinator and Bezier connector engine for node graphs. Open Lab rarr gql GraphQL Zero-dependency GraphQL query and mutation client returning fine-grained reactive refs. Open Lab rarr mask Utility Programmatic string formatting and pattern masking utility for non-input expressions. Open Lab rarr mcp AI Agent Model Context Protocol AI assistant client for direct LLM sampling and runtime diagnostics. Open Lab rarr periodicSync Sync Periodic Background Sync manager for background data polling and silent cache updates. Open Lab rarr predictive Predictive Quadtree predictive engine forecasting user pointer trajectories and pre-fetching assets. Open Lab rarr push Notifications Web Push notification subscription manager and permission controller. Open Lab rarr ... Selector Contextual DOM selector engine with directional combinators closest child next - prev . Open Lab rarr sql Database SurrealD",
-    "icon": "material-symbols-light:attach-money"
   },
   {
     "id": "lab-attr-raf",
@@ -152,6 +92,16 @@
     "icon": "material-symbols-light:hourglass-empty"
   },
   {
+    "id": "labs-modifiers",
+    "route": "/labs/modifiers",
+    "path": "/_pages/labs/modifiers/index.html",
+    "title": "Modifiers",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Modifiers Labs Category 15 Event Modifiers Event Modifiers Filters Pipeline event modifiers that attach directly to event directives e.g. data-on-click_outside or input_debounce.250 to intercept throttle filter and coordinate interactions. _debounce Timing Delays execution until specified milliseconds have elapsed since the last invocation. Open Lab rarr _delay Timing Delays handler execution by a fixed millisecond timeout before firing. Open Lab rarr _document Target Attaches event listener to document root rather than the local HTMLElement. Open Lab rarr _drag Pointer Injects delta movement coordinates drag.dx drag.dy into pointer handlers. Open Lab rarr _hold Gesture Fires only when user presses and holds the pointer for the specified millisecond duration. Open Lab rarr _keys Keyboard Filters keyboard events by key code or combination enter escape space ctrl shift . Open Lab rarr _morph Morph Morphs return string from evaluation directly into the element using morphDOM diffing. Open Lab rarr _once Lifecycle Executes event listener exactly once automatically unbinding itself afterwards. Open Lab rarr _outside Outside Fires handler only when pointer click or tap occurs outside the element boundary bounds. Open Lab rarr _prevent Default Invokes event.preventDefault to halt native browser default submission and navigation. Open Lab rarr _self Target Executes handler only if event.target is the element itself ignoring child bubbled events. Open Lab rarr _stop Propagation Calls ",
+    "icon": "material-symbols-light:remove"
+  },
+  {
     "id": "lab-scope-media",
     "route": "/labs/scopes/media",
     "path": "/_pages/labs/scopes/media.html",
@@ -162,6 +112,16 @@
     ],
     "content": "media Scoped reactive media query rule evaluating code window.matchMedia /code directly in NEG expressions updating dynamically as viewport dimensions cross CSS breakpoints. media min-width 768px isDesktop true n div data-show media min-width 1024px /div media p class opacity-80 leading-relaxed Located in code src/modules/scopes/media.ts /code the media scope provider links code window.matchMedia /code change listeners directly into the reactive dependency graph. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Native MediaQueryList /strong Backed directly by browser native C matchMedia implementation /li li strong Zero Polling /strong Updates trigger strictly on change events when breakpoint thresholds cross /li li strong Universal Scope Rule /strong Usable in any NEG attribute expression /li /ul",
     "icon": "material-symbols-light:devices"
+  },
+  {
+    "id": "labs-sprites",
+    "route": "/labs/sprites",
+    "path": "/_pages/labs/sprites/index.html",
+    "title": "Sprites",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Sprites Labs Category 14 Injected Sprites Injected Sprites Utilities Built-in framework utilities and native runtime clients accessible directly inside any HTML expression without imports or boilerplate. animate Animation Web Animations API runner with spring physics and zero-layout-shift FLIP list transitions. Open Lab rarr bgFetch Offline Background Fetch API wrapper executing large persistent file downloads across tab closures. Open Lab rarr bgSync Sync Background Sync API for deferred requests guaranteeing delivery when network recovers. Open Lab rarr flow Canvas Spatial canvas node link coordinator and Bezier connector engine for node graphs. Open Lab rarr gql GraphQL Zero-dependency GraphQL query and mutation client returning fine-grained reactive refs. Open Lab rarr mask Utility Programmatic string formatting and pattern masking utility for non-input expressions. Open Lab rarr mcp AI Agent Model Context Protocol AI assistant client for direct LLM sampling and runtime diagnostics. Open Lab rarr periodicSync Sync Periodic Background Sync manager for background data polling and silent cache updates. Open Lab rarr predictive Predictive Quadtree predictive engine forecasting user pointer trajectories and pre-fetching assets. Open Lab rarr push Notifications Web Push notification subscription manager and permission controller. Open Lab rarr ... Selector Contextual DOM selector engine with directional combinators closest child next - prev . Open Lab rarr sql Database SurrealD",
+    "icon": "material-symbols-light:attach-money"
   },
   {
     "id": "lab-sprite-periodicsync",

@@ -10,66 +10,6 @@
     "icon": "material-symbols-light:home-outline"
   },
   {
-    "id": "_bottom-panel",
-    "route": "/builder/_bottom-panel",
-    "path": "/_pages/builder/_bottom-panel.html",
-    "title": "_bottom-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Select an element to view DOM hierarchy / Code editor Html Css -- / Html Css Run JS on edit Apply 1 2 3 4 5 6 7 8 9 10 11 12 13 14 1 2 3 4 5 6 7 8 9 10",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_canvas",
-    "route": "/builder/_canvas",
-    "path": "/_pages/builder/_canvas.html",
-    "title": "_canvas",
-    "category": "General",
-    "keywords": [],
-    "content": "Left Center Right Justify Size 12px 14px 16px 18px 20px 24px 32px 48px Add Component / Section After Inside Hero Section Features Grid Pricing Table CTA Banner",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_left-panel",
-    "route": "/builder/_left-panel",
-    "path": "/_pages/builder/_left-panel.html",
-    "title": "_left-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "1. Files Add Landing Page Active Blank Canvas Empty Scratchpad 2. Navigation Page Sections Click refresh to inspect DOM hierarchy No landmark sections detected. 3. Components Blocks Sections All Actions Display Nav Feedback Inputs Layout Actions Button btn btn-primary Join Buttons Segmented group Dropdown Menu flyout Modal Dialog popup Swap Rotate state icon Theme Switch theme-controller Data Display Card card card-body Collapse collapse-arrow Alert alert-info/warning Badge Status pill Avatar Rounded profile Stats KPI card Table table-zebra Chat Bubble chat-start/end Countdown countdown Diff Side-by-side Timeline Step sequence Kbd Key chip Navigation Navbar Responsive header Tabs tabs-bordered Breadcrumbs Path navigation Menu Sidebar menu list Pagination Numbered pager Steps Multi-step flow Feedback Loading Spinner / dots Progress Horizontal bar Radial Gauge Circular progress Skeleton Shimmer placeholder Tooltip Hover hint Toast Corner popup Data Inputs Input Field input-bordered Select select-bordered Textarea textarea-bordered Checkbox checkbox-primary Radio radio-primary Toggle toggle-primary Range range-primary Rating mask-star File Input file-input-bordered Fieldset fieldset-legend Input Group join input btn Button Group join-item btn Contact Form Container form with inputs and submit Layout Hero Banner hero hero-content Divider divider Indicator Corner badge Footer Multi-column Stack Layered pile Mask mask-squircle Container container mx-auto Header Sticky header Drawer",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_modals",
-    "route": "/builder/_modals",
-    "path": "/_pages/builder/_modals.html",
-    "title": "_modals",
-    "category": "General",
-    "keywords": [],
-    "content": "Export Standalone HTML Production-ready self-contained HTML with Tailwind CSS DaisyUI and Nexus-UX scripts. Zero build step required. Works in any standard web server or browser. Download .html Choose Starter Template Select a pre-designed layout or start from a blank canvas. Blank Canvas An empty canvas with a drop zone. Perfect for building custom layouts from scratch. Select Modern Landing Page Complete high-converting page with Navbar Hero CTA Stats Feature cards and Footer. Select",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_right-panel",
-    "route": "/builder/_right-panel",
-    "path": "/_pages/builder/_right-panel.html",
-    "title": "_right-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_top-panel",
-    "route": "/builder/_top-panel",
-    "path": "/_pages/builder/_top-panel.html",
-    "title": "_top-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Nexus Builder Desktop Tablet 768 Mobile 375 Design Preview 50 75 100 125 Save Save Draft Ctrl S Export HTML Download File Code Editor Templates Clear Canvas",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
     "id": "doc-changelog",
     "route": "/docs/changelog",
     "path": "/_pages/docs/changelog.md",
@@ -118,16 +58,6 @@
     "keywords": [],
     "content": "--- id doc-spec title Architecture Spec route /docs/spec icon material-symbols-light architecture order 2 category Docs --- Nexus-UX The Definitive Technical Specification Signal-Driven Universal Reactivity The Unified Signal Graph The best state management is Universal Reactivity. --- Table of Contents 1. Chapter 1 Philosophy Vision chapter-1-philosophy--vision 2. Chapter 2 The Language NEG Grammar Selectors chapter-2-the-language-neg-grammar--selectors 3. Chapter 3 Unified Architecture ESSL chapter-3-unified-architecture--essl 4. Chapter 4 Systemic Coordination The Handshake Logic chapter-4-systemic-coordination-the-handshake-logic 5. Chapter 5 The Engine Mechanics The Brain chapter-5-the-engine-mechanics-the-brain 6. Chapter 6 Security Persistence chapter-6-security--persistence 7. Chapter 7 Project Anatomy Ecosystem chapter-7-project-anatomy--ecosystem 8. Chapter 8 AI Strategy Agentic Support chapter-8-ai-strategy--agentic-support 9. Chapter 9 Validation Migration Real-World Proof chapter-9-validation-migration--real-world-proof 10. Chapter 10 Community Sponsorship chapter-10-community--sponsorship --- Chapter 1 Philosophy Vision Nexus-UX is more than a library it is a strategic response to the excessive abstraction of the modern web. This chapter outlines the philosophy of the Omni-State DOM-as-State and our vision for an AI-native web development experience. 1.1. The Call of the Nexus Reclaiming the Web s Soul The web is evolving. The era of monolithic JavaScript-heavy ",
     "icon": "material-symbols-light:architecture"
-  },
-  {
-    "id": "labs-modifiers",
-    "route": "/labs/modifiers",
-    "path": "/_pages/labs/modifiers.html",
-    "title": "Modifiers",
-    "category": "Labs",
-    "keywords": [],
-    "content": "Modifiers Labs Category 15 Event Modifiers Event Modifiers Filters Pipeline event modifiers that attach directly to event directives e.g. data-on-click_outside or input_debounce.250 to intercept throttle filter and coordinate interactions. _debounce Timing Delays execution until specified milliseconds have elapsed since the last invocation. Open Lab rarr _delay Timing Delays handler execution by a fixed millisecond timeout before firing. Open Lab rarr _document Target Attaches event listener to document root rather than the local HTMLElement. Open Lab rarr _drag Pointer Injects delta movement coordinates drag.dx drag.dy into pointer handlers. Open Lab rarr _hold Gesture Fires only when user presses and holds the pointer for the specified millisecond duration. Open Lab rarr _keys Keyboard Filters keyboard events by key code or combination enter escape space ctrl shift . Open Lab rarr _morph Morph Morphs return string from evaluation directly into the element using morphDOM diffing. Open Lab rarr _once Lifecycle Executes event listener exactly once automatically unbinding itself afterwards. Open Lab rarr _outside Outside Fires handler only when pointer click or tap occurs outside the element boundary bounds. Open Lab rarr _prevent Default Invokes event.preventDefault to halt native browser default submission and navigation. Open Lab rarr _self Target Executes handler only if event.target is the element itself ignoring child bubbled events. Open Lab rarr _stop Propagation Calls ",
-    "icon": "material-symbols-light:remove"
   },
   {
     "id": "lab-attr-component",
@@ -257,6 +187,16 @@
     ],
     "content": "_hold Requires continuous pointer or key depression for the specified millisecond duration before triggering the event handler press-and-hold confirmation . button data-on-pointerdown_hold.800 confirmErase Hold to Erase 800ms /button _hold. ms p class opacity-80 leading-relaxed Located in code src/modules/modifiers/hold.ts /code this modifier manages pointer down and release listeners. If the user lifts or moves pointer beyond threshold before duration expires the timer cancels automatically. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Destructive Confirmations /strong Prevent accidental clicks on delete reboot or wipe actions /li li strong Auto-Cancel on Early Release /strong Aborts immediately if pointerup occurs prematurely /li /ul",
     "icon": "material-symbols-light:touch-long"
+  },
+  {
+    "id": "labs-modifiers",
+    "route": "/labs/modifiers",
+    "path": "/_pages/labs/modifiers/index.html",
+    "title": "Modifiers",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Modifiers Labs Category 15 Event Modifiers Event Modifiers Filters Pipeline event modifiers that attach directly to event directives e.g. data-on-click_outside or input_debounce.250 to intercept throttle filter and coordinate interactions. _debounce Timing Delays execution until specified milliseconds have elapsed since the last invocation. Open Lab rarr _delay Timing Delays handler execution by a fixed millisecond timeout before firing. Open Lab rarr _document Target Attaches event listener to document root rather than the local HTMLElement. Open Lab rarr _drag Pointer Injects delta movement coordinates drag.dx drag.dy into pointer handlers. Open Lab rarr _hold Gesture Fires only when user presses and holds the pointer for the specified millisecond duration. Open Lab rarr _keys Keyboard Filters keyboard events by key code or combination enter escape space ctrl shift . Open Lab rarr _morph Morph Morphs return string from evaluation directly into the element using morphDOM diffing. Open Lab rarr _once Lifecycle Executes event listener exactly once automatically unbinding itself afterwards. Open Lab rarr _outside Outside Fires handler only when pointer click or tap occurs outside the element boundary bounds. Open Lab rarr _prevent Default Invokes event.preventDefault to halt native browser default submission and navigation. Open Lab rarr _self Target Executes handler only if event.target is the element itself ignoring child bubbled events. Open Lab rarr _stop Propagation Calls ",
+    "icon": "material-symbols-light:remove"
   },
   {
     "id": "lab-mod-keys",

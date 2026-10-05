@@ -57,66 +57,12 @@
     "keywords": []
   },
   {
-    "id": "_bottom-panel",
-    "route": "/builder/_bottom-panel",
-    "path": "/_pages/builder/_bottom-panel.html",
-    "title": "_bottom-panel",
-    "icon": "material-symbols-light:description-outline",
-    "category": "General",
-    "keywords": []
-  },
-  {
-    "id": "_canvas",
-    "route": "/builder/_canvas",
-    "path": "/_pages/builder/_canvas.html",
-    "title": "_canvas",
-    "icon": "material-symbols-light:description-outline",
-    "category": "General",
-    "keywords": []
-  },
-  {
-    "id": "_left-panel",
-    "route": "/builder/_left-panel",
-    "path": "/_pages/builder/_left-panel.html",
-    "title": "_left-panel",
-    "icon": "material-symbols-light:description-outline",
-    "category": "General",
-    "keywords": []
-  },
-  {
-    "id": "_modals",
-    "route": "/builder/_modals",
-    "path": "/_pages/builder/_modals.html",
-    "title": "_modals",
-    "icon": "material-symbols-light:description-outline",
-    "category": "General",
-    "keywords": []
-  },
-  {
-    "id": "_right-panel",
-    "route": "/builder/_right-panel",
-    "path": "/_pages/builder/_right-panel.html",
-    "title": "_right-panel",
-    "icon": "material-symbols-light:description-outline",
-    "category": "General",
-    "keywords": []
-  },
-  {
-    "id": "_top-panel",
-    "route": "/builder/_top-panel",
-    "path": "/_pages/builder/_top-panel.html",
-    "title": "_top-panel",
-    "icon": "material-symbols-light:description-outline",
-    "category": "General",
-    "keywords": []
-  },
-  {
     "id": "landing",
-    "route": "/landing",
+    "route": "/templates-menu/landing",
     "path": "/_pages/builder/templates/landing.html",
     "title": "landing",
     "icon": "material-symbols-light:description-outline",
-    "category": "General",
+    "category": "Builder",
     "keywords": []
   },
   {
@@ -162,42 +108,6 @@
     "title": "Architecture Spec",
     "icon": "material-symbols-light:architecture",
     "category": "Docs",
-    "keywords": []
-  },
-  {
-    "id": "labs-attributes",
-    "route": "/labs/attributes",
-    "path": "/_pages/labs/attributes.html",
-    "title": "Attributes",
-    "icon": "material-symbols-light:code",
-    "category": "Labs",
-    "keywords": []
-  },
-  {
-    "id": "labs-modifiers",
-    "route": "/labs/modifiers",
-    "path": "/_pages/labs/modifiers.html",
-    "title": "Modifiers",
-    "icon": "material-symbols-light:remove",
-    "category": "Labs",
-    "keywords": []
-  },
-  {
-    "id": "labs-scopes",
-    "route": "/labs/scopes",
-    "path": "/_pages/labs/scopes.html",
-    "title": "Scopes",
-    "icon": "material-symbols-light:alternate-email",
-    "category": "Labs",
-    "keywords": []
-  },
-  {
-    "id": "labs-sprites",
-    "route": "/labs/sprites",
-    "path": "/_pages/labs/sprites.html",
-    "title": "Sprites",
-    "icon": "material-symbols-light:attach-money",
-    "category": "Labs",
     "keywords": []
   },
   {
@@ -397,6 +307,15 @@
       "module",
       "adopt"
     ]
+  },
+  {
+    "id": "labs-attributes",
+    "route": "/labs/attributes",
+    "path": "/_pages/labs/attributes/index.html",
+    "title": "Attributes",
+    "icon": "material-symbols-light:code",
+    "category": "Labs",
+    "keywords": []
   },
   {
     "id": "lab-attr-markdown",
@@ -672,6 +591,15 @@
     ]
   },
   {
+    "id": "labs-modifiers",
+    "route": "/labs/modifiers",
+    "path": "/_pages/labs/modifiers/index.html",
+    "title": "Modifiers",
+    "icon": "material-symbols-light:remove",
+    "category": "Labs",
+    "keywords": []
+  },
+  {
     "id": "lab-mod-keys",
     "route": "/labs/modifiers/keys",
     "path": "/_pages/labs/modifiers/keys.html",
@@ -810,6 +738,15 @@
     ]
   },
   {
+    "id": "labs-scopes",
+    "route": "/labs/scopes",
+    "path": "/_pages/labs/scopes/index.html",
+    "title": "Scopes",
+    "icon": "material-symbols-light:alternate-email",
+    "category": "Labs",
+    "keywords": []
+  },
+  {
     "id": "lab-scope-media",
     "route": "/labs/scopes/media",
     "path": "/_pages/labs/scopes/media.html",
@@ -924,6 +861,15 @@
       "mutate",
       "mutation"
     ]
+  },
+  {
+    "id": "labs-sprites",
+    "route": "/labs/sprites",
+    "path": "/_pages/labs/sprites/index.html",
+    "title": "Sprites",
+    "icon": "material-symbols-light:attach-money",
+    "category": "Labs",
+    "keywords": []
   },
   {
     "id": "lab-sprite-mask",

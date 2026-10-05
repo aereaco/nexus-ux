@@ -20,46 +20,6 @@
     "icon": "material-symbols-light:home-outline"
   },
   {
-    "id": "_bottom-panel",
-    "route": "/builder/_bottom-panel",
-    "path": "/_pages/builder/_bottom-panel.html",
-    "title": "_bottom-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Select an element to view DOM hierarchy / Code editor Html Css -- / Html Css Run JS on edit Apply 1 2 3 4 5 6 7 8 9 10 11 12 13 14 1 2 3 4 5 6 7 8 9 10",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_canvas",
-    "route": "/builder/_canvas",
-    "path": "/_pages/builder/_canvas.html",
-    "title": "_canvas",
-    "category": "General",
-    "keywords": [],
-    "content": "Left Center Right Justify Size 12px 14px 16px 18px 20px 24px 32px 48px Add Component / Section After Inside Hero Section Features Grid Pricing Table CTA Banner",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_left-panel",
-    "route": "/builder/_left-panel",
-    "path": "/_pages/builder/_left-panel.html",
-    "title": "_left-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "1. Files Add Landing Page Active Blank Canvas Empty Scratchpad 2. Navigation Page Sections Click refresh to inspect DOM hierarchy No landmark sections detected. 3. Components Blocks Sections All Actions Display Nav Feedback Inputs Layout Actions Button btn btn-primary Join Buttons Segmented group Dropdown Menu flyout Modal Dialog popup Swap Rotate state icon Theme Switch theme-controller Data Display Card card card-body Collapse collapse-arrow Alert alert-info/warning Badge Status pill Avatar Rounded profile Stats KPI card Table table-zebra Chat Bubble chat-start/end Countdown countdown Diff Side-by-side Timeline Step sequence Kbd Key chip Navigation Navbar Responsive header Tabs tabs-bordered Breadcrumbs Path navigation Menu Sidebar menu list Pagination Numbered pager Steps Multi-step flow Feedback Loading Spinner / dots Progress Horizontal bar Radial Gauge Circular progress Skeleton Shimmer placeholder Tooltip Hover hint Toast Corner popup Data Inputs Input Field input-bordered Select select-bordered Textarea textarea-bordered Checkbox checkbox-primary Radio radio-primary Toggle toggle-primary Range range-primary Rating mask-star File Input file-input-bordered Fieldset fieldset-legend Input Group join input btn Button Group join-item btn Contact Form Container form with inputs and submit Layout Hero Banner hero hero-content Divider divider Indicator Corner badge Footer Multi-column Stack Layered pile Mask mask-squircle Container container mx-auto Header Sticky header Drawer",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_right-panel",
-    "route": "/builder/_right-panel",
-    "path": "/_pages/builder/_right-panel.html",
-    "title": "_right-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
     "id": "doc-readme",
     "route": "/docs/readme",
     "path": "/_pages/docs/readme.md",

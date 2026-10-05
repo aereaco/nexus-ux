@@ -40,61 +40,11 @@
     "icon": "material-symbols-light:checklist"
   },
   {
-    "id": "_bottom-panel",
-    "route": "/builder/_bottom-panel",
-    "path": "/_pages/builder/_bottom-panel.html",
-    "title": "_bottom-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Select an element to view DOM hierarchy / Code editor Html Css -- / Html Css Run JS on edit Apply 1 2 3 4 5 6 7 8 9 10 11 12 13 14 1 2 3 4 5 6 7 8 9 10",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_canvas",
-    "route": "/builder/_canvas",
-    "path": "/_pages/builder/_canvas.html",
-    "title": "_canvas",
-    "category": "General",
-    "keywords": [],
-    "content": "Left Center Right Justify Size 12px 14px 16px 18px 20px 24px 32px 48px Add Component / Section After Inside Hero Section Features Grid Pricing Table CTA Banner",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_left-panel",
-    "route": "/builder/_left-panel",
-    "path": "/_pages/builder/_left-panel.html",
-    "title": "_left-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "1. Files Add Landing Page Active Blank Canvas Empty Scratchpad 2. Navigation Page Sections Click refresh to inspect DOM hierarchy No landmark sections detected. 3. Components Blocks Sections All Actions Display Nav Feedback Inputs Layout Actions Button btn btn-primary Join Buttons Segmented group Dropdown Menu flyout Modal Dialog popup Swap Rotate state icon Theme Switch theme-controller Data Display Card card card-body Collapse collapse-arrow Alert alert-info/warning Badge Status pill Avatar Rounded profile Stats KPI card Table table-zebra Chat Bubble chat-start/end Countdown countdown Diff Side-by-side Timeline Step sequence Kbd Key chip Navigation Navbar Responsive header Tabs tabs-bordered Breadcrumbs Path navigation Menu Sidebar menu list Pagination Numbered pager Steps Multi-step flow Feedback Loading Spinner / dots Progress Horizontal bar Radial Gauge Circular progress Skeleton Shimmer placeholder Tooltip Hover hint Toast Corner popup Data Inputs Input Field input-bordered Select select-bordered Textarea textarea-bordered Checkbox checkbox-primary Radio radio-primary Toggle toggle-primary Range range-primary Rating mask-star File Input file-input-bordered Fieldset fieldset-legend Input Group join input btn Button Group join-item btn Contact Form Container form with inputs and submit Layout Hero Banner hero hero-content Divider divider Indicator Corner badge Footer Multi-column Stack Layered pile Mask mask-squircle Container container mx-auto Header Sticky header Drawer",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_modals",
-    "route": "/builder/_modals",
-    "path": "/_pages/builder/_modals.html",
-    "title": "_modals",
-    "category": "General",
-    "keywords": [],
-    "content": "Export Standalone HTML Production-ready self-contained HTML with Tailwind CSS DaisyUI and Nexus-UX scripts. Zero build step required. Works in any standard web server or browser. Download .html Choose Starter Template Select a pre-designed layout or start from a blank canvas. Blank Canvas An empty canvas with a drop zone. Perfect for building custom layouts from scratch. Select Modern Landing Page Complete high-converting page with Navbar Hero CTA Stats Feature cards and Footer. Select",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
-    "id": "_right-panel",
-    "route": "/builder/_right-panel",
-    "path": "/_pages/builder/_right-panel.html",
-    "title": "_right-panel",
-    "category": "General",
-    "keywords": [],
-    "content": "Content Style Advanced No element selected Click any element in the canvas or the Navigator tree to inspect and style it. Element Component Add Col Mobile XS None Full 12 Half 6 1/3 4 Desktop MD None Full 12 Half 6 1/3 4 1/4 3 Applied Classes Click to remove times No custom classes Add Layout Flexbox Grid Display Flex Grid Block Inline Flex Direction Justify Content Align Items Gap Spacing Box Model margin padding margin padding Typography Font Size Font Weight Default Light 300 Regular 400 Medium 500 Semibold 600 Bold 700 Black 900 Text Color Bg Color Dimensions Opacity Width Height Opacity Nexus Reactive Directives ZCZS data-signal Local State data-bind Two-Way Binding data-show Visibility Toggle data-on-click Event Handler data-for Keyed Loop Style Themes Variables Canvas Theme Theme Tokens Border Radius 0.5rem Default 0.25rem Sharp 1rem Rounded 9999px Pill Primary Color 570df8",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
     "id": "landing",
-    "route": "/landing",
+    "route": "/templates-menu/landing",
     "path": "/_pages/builder/templates/landing.html",
     "title": "landing",
-    "category": "General",
+    "category": "Builder",
     "keywords": [],
     "content": "Overview Components Templates Pricing N Nexus Studio Overview Components Templates Pricing Sign In Get Started New DaisyUI 5 Native Components Tokens Next-Generation Visual Website Builder Assemble lightning-fast reactive web interfaces directly in the browser with declarative HTML bindings zero compilation lag and deep component inspection. Start Building Free Explore Templates Components 87 DaisyUI 5 Web Native Themes 32 Instant Canvas Sync Overhead 0 kb Zero-Serialization Heap Architecture Engineered for Velocity Everything you need to craft production web applications with zero friction. Dynamic Component Inspectors Click any element heading button or section to instantly inspect and modify variants layouts and responsive breakpoints. Learn More rarr Theme-Adaptive Styling Switch themes live on the canvas. High-contrast dark modes vibrant synthwave palettes and clean business layouts update instantly. Learn More rarr Zero-Serialization Pipeline DOM morphing reconcilers diff elements in-place while keeping user focus and input states completely intact. Learn More rarr N Nexus-UX Studio Copyright copy 2026 - All rights reserved Documentation Components Changelog GitHub",
     "icon": "material-symbols-light:description-outline"
@@ -148,46 +98,6 @@
     "keywords": [],
     "content": "--- id doc-spec title Architecture Spec route /docs/spec icon material-symbols-light architecture order 2 category Docs --- Nexus-UX The Definitive Technical Specification Signal-Driven Universal Reactivity The Unified Signal Graph The best state management is Universal Reactivity. --- Table of Contents 1. Chapter 1 Philosophy Vision chapter-1-philosophy--vision 2. Chapter 2 The Language NEG Grammar Selectors chapter-2-the-language-neg-grammar--selectors 3. Chapter 3 Unified Architecture ESSL chapter-3-unified-architecture--essl 4. Chapter 4 Systemic Coordination The Handshake Logic chapter-4-systemic-coordination-the-handshake-logic 5. Chapter 5 The Engine Mechanics The Brain chapter-5-the-engine-mechanics-the-brain 6. Chapter 6 Security Persistence chapter-6-security--persistence 7. Chapter 7 Project Anatomy Ecosystem chapter-7-project-anatomy--ecosystem 8. Chapter 8 AI Strategy Agentic Support chapter-8-ai-strategy--agentic-support 9. Chapter 9 Validation Migration Real-World Proof chapter-9-validation-migration--real-world-proof 10. Chapter 10 Community Sponsorship chapter-10-community--sponsorship --- Chapter 1 Philosophy Vision Nexus-UX is more than a library it is a strategic response to the excessive abstraction of the modern web. This chapter outlines the philosophy of the Omni-State DOM-as-State and our vision for an AI-native web development experience. 1.1. The Call of the Nexus Reclaiming the Web s Soul The web is evolving. The era of monolithic JavaScript-heavy ",
     "icon": "material-symbols-light:architecture"
-  },
-  {
-    "id": "labs-attributes",
-    "route": "/labs/attributes",
-    "path": "/_pages/labs/attributes.html",
-    "title": "Attributes",
-    "category": "Labs",
-    "keywords": [],
-    "content": "Attributes Labs Category 30 Active Directives Reactive Attributes Directives Declarative HTML directives governing state initialization two-way bindings physical and visual rendering keyed loops and lifecycle hooks. data-signal State Declares local or global fine-grained reactive state blocks directly in the DOM namespace. Open Lab rarr data-bind Binding Two-way native browser API binding and HTML attribute synchronization. Open Lab rarr data-for Loop Zero-allocation keyed list rendering with in-place DOM morphing. Open Lab rarr data-if Conditional Physical conditional DOM mounting with anchor comments and deterministic teardown. Open Lab rarr data-show Toggle Visual visibility toggle via display styles without structural DOM teardown. Open Lab rarr data-on Events Declarative event handling with modifiers evt and pipeline execution. Open Lab rarr data-class Styling Reconciles dynamic Tailwind / DaisyUI class lists or boolean toggles. Open Lab rarr data-style Styling Reconciles dynamic inline styles with unit formatting and camelCase support. Open Lab rarr data-effect Reactivity Continuous reactive side-effect runner tracking dependencies automatically. Open Lab rarr data-computed Computed Memoized derived getters caching reactive computations with lazy evaluation. Open Lab rarr data-drag Interaction Zero-configuration drag-and-drop list reordering with FLIP animations. Open Lab rarr data-flow Canvas Interactive node-graph canvas supporting zoom pan and SVG edge connections. O",
-    "icon": "material-symbols-light:code"
-  },
-  {
-    "id": "labs-modifiers",
-    "route": "/labs/modifiers",
-    "path": "/_pages/labs/modifiers.html",
-    "title": "Modifiers",
-    "category": "Labs",
-    "keywords": [],
-    "content": "Modifiers Labs Category 15 Event Modifiers Event Modifiers Filters Pipeline event modifiers that attach directly to event directives e.g. data-on-click_outside or input_debounce.250 to intercept throttle filter and coordinate interactions. _debounce Timing Delays execution until specified milliseconds have elapsed since the last invocation. Open Lab rarr _delay Timing Delays handler execution by a fixed millisecond timeout before firing. Open Lab rarr _document Target Attaches event listener to document root rather than the local HTMLElement. Open Lab rarr _drag Pointer Injects delta movement coordinates drag.dx drag.dy into pointer handlers. Open Lab rarr _hold Gesture Fires only when user presses and holds the pointer for the specified millisecond duration. Open Lab rarr _keys Keyboard Filters keyboard events by key code or combination enter escape space ctrl shift . Open Lab rarr _morph Morph Morphs return string from evaluation directly into the element using morphDOM diffing. Open Lab rarr _once Lifecycle Executes event listener exactly once automatically unbinding itself afterwards. Open Lab rarr _outside Outside Fires handler only when pointer click or tap occurs outside the element boundary bounds. Open Lab rarr _prevent Default Invokes event.preventDefault to halt native browser default submission and navigation. Open Lab rarr _self Target Executes handler only if event.target is the element itself ignoring child bubbled events. Open Lab rarr _stop Propagation Calls ",
-    "icon": "material-symbols-light:remove"
-  },
-  {
-    "id": "labs-scopes",
-    "route": "/labs/scopes",
-    "path": "/_pages/labs/scopes.html",
-    "title": "Scopes",
-    "category": "Labs",
-    "keywords": [],
-    "content": "Scopes Labs Category 6 Reactive Scopes Reactive Scopes Query Rules NEG query rules rule param ... providing responsive queries container queries authentication gating and runtime platform inspection. media Viewport Reactive viewport media queries e.g. media min-width 768px updating without listeners. Open Lab rarr container Container Evaluates container dimension queries relative to immediate parent element dimensions and bounds. Open Lab rarr auth Security Enforces role-based authentication rules and permission gates directly in the DOM data stack. Open Lab rarr native Bridge Verifies presence of native mobile or desktop app shell bridges Capacitor Electron WebKit . Open Lab rarr os Platform Runtime platform detection macos windows linux ios android . Open Lab rarr view Geometry Live geometry metrics exposing view.width view.height view.isPortrait and view.isLandscape. Open Lab rarr",
-    "icon": "material-symbols-light:alternate-email"
-  },
-  {
-    "id": "labs-sprites",
-    "route": "/labs/sprites",
-    "path": "/_pages/labs/sprites.html",
-    "title": "Sprites",
-    "category": "Labs",
-    "keywords": [],
-    "content": "Sprites Labs Category 14 Injected Sprites Injected Sprites Utilities Built-in framework utilities and native runtime clients accessible directly inside any HTML expression without imports or boilerplate. animate Animation Web Animations API runner with spring physics and zero-layout-shift FLIP list transitions. Open Lab rarr bgFetch Offline Background Fetch API wrapper executing large persistent file downloads across tab closures. Open Lab rarr bgSync Sync Background Sync API for deferred requests guaranteeing delivery when network recovers. Open Lab rarr flow Canvas Spatial canvas node link coordinator and Bezier connector engine for node graphs. Open Lab rarr gql GraphQL Zero-dependency GraphQL query and mutation client returning fine-grained reactive refs. Open Lab rarr mask Utility Programmatic string formatting and pattern masking utility for non-input expressions. Open Lab rarr mcp AI Agent Model Context Protocol AI assistant client for direct LLM sampling and runtime diagnostics. Open Lab rarr periodicSync Sync Periodic Background Sync manager for background data polling and silent cache updates. Open Lab rarr predictive Predictive Quadtree predictive engine forecasting user pointer trajectories and pre-fetching assets. Open Lab rarr push Notifications Web Push notification subscription manager and permission controller. Open Lab rarr ... Selector Contextual DOM selector engine with directional combinators closest child next - prev . Open Lab rarr sql Database SurrealD",
-    "icon": "material-symbols-light:attach-money"
   },
   {
     "id": "lab-attr-assert",
@@ -400,6 +310,16 @@
     ],
     "content": "data-import Declarative external dependency loader for scripts stylesheets ESM modules HTML patterns and theme assets with automated deduplication. div data-import script https //cdn.jsdelivr.net/npm/canvas-confetti 1.6.0/dist/confetti.browser.js /div script link module adopt p class opacity-80 leading-relaxed Located in code src/modules/attributes/import.ts /code the import directive eliminates imperative code script /code tags from template files. Dependencies load asynchronously deduplicate automatically and fire readiness callbacks. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Automatic Deduplication /strong Simultaneous requests for identical libraries resolve to a single network fetch /li li strong Constructable Adoption /strong The code adopt /code key compiles remote CSS into code adoptedStyleSheets /code /li li strong Pure HTML Declarative /strong Zero imperative loader scripts required anywhere in page markup /li /ul",
     "icon": "material-symbols-light:cloud-download"
+  },
+  {
+    "id": "labs-attributes",
+    "route": "/labs/attributes",
+    "path": "/_pages/labs/attributes/index.html",
+    "title": "Attributes",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Attributes Labs Category 30 Active Directives Reactive Attributes Directives Declarative HTML directives governing state initialization two-way bindings physical and visual rendering keyed loops and lifecycle hooks. data-signal State Declares local or global fine-grained reactive state blocks directly in the DOM namespace. Open Lab rarr data-bind Binding Two-way native browser API binding and HTML attribute synchronization. Open Lab rarr data-for Loop Zero-allocation keyed list rendering with in-place DOM morphing. Open Lab rarr data-if Conditional Physical conditional DOM mounting with anchor comments and deterministic teardown. Open Lab rarr data-show Toggle Visual visibility toggle via display styles without structural DOM teardown. Open Lab rarr data-on Events Declarative event handling with modifiers evt and pipeline execution. Open Lab rarr data-class Styling Reconciles dynamic Tailwind / DaisyUI class lists or boolean toggles. Open Lab rarr data-style Styling Reconciles dynamic inline styles with unit formatting and camelCase support. Open Lab rarr data-effect Reactivity Continuous reactive side-effect runner tracking dependencies automatically. Open Lab rarr data-computed Computed Memoized derived getters caching reactive computations with lazy evaluation. Open Lab rarr data-drag Interaction Zero-configuration drag-and-drop list reordering with FLIP animations. Open Lab rarr data-flow Canvas Interactive node-graph canvas supporting zoom pan and SVG edge connections. O",
+    "icon": "material-symbols-light:code"
   },
   {
     "id": "lab-attr-markdown",
@@ -671,6 +591,16 @@
     "icon": "material-symbols-light:touch-long"
   },
   {
+    "id": "labs-modifiers",
+    "route": "/labs/modifiers",
+    "path": "/_pages/labs/modifiers/index.html",
+    "title": "Modifiers",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Modifiers Labs Category 15 Event Modifiers Event Modifiers Filters Pipeline event modifiers that attach directly to event directives e.g. data-on-click_outside or input_debounce.250 to intercept throttle filter and coordinate interactions. _debounce Timing Delays execution until specified milliseconds have elapsed since the last invocation. Open Lab rarr _delay Timing Delays handler execution by a fixed millisecond timeout before firing. Open Lab rarr _document Target Attaches event listener to document root rather than the local HTMLElement. Open Lab rarr _drag Pointer Injects delta movement coordinates drag.dx drag.dy into pointer handlers. Open Lab rarr _hold Gesture Fires only when user presses and holds the pointer for the specified millisecond duration. Open Lab rarr _keys Keyboard Filters keyboard events by key code or combination enter escape space ctrl shift . Open Lab rarr _morph Morph Morphs return string from evaluation directly into the element using morphDOM diffing. Open Lab rarr _once Lifecycle Executes event listener exactly once automatically unbinding itself afterwards. Open Lab rarr _outside Outside Fires handler only when pointer click or tap occurs outside the element boundary bounds. Open Lab rarr _prevent Default Invokes event.preventDefault to halt native browser default submission and navigation. Open Lab rarr _self Target Executes handler only if event.target is the element itself ignoring child bubbled events. Open Lab rarr _stop Propagation Calls ",
+    "icon": "material-symbols-light:remove"
+  },
+  {
     "id": "lab-mod-morph",
     "route": "/labs/modifiers/morph",
     "path": "/_pages/labs/modifiers/morph.html",
@@ -789,6 +719,16 @@
     ],
     "content": "container Evaluates component-level container queries reactively via ResizeObserver allowing components to adapt based on their parent container width rather than full viewport width. div data-show container min-width 400px /div container p class opacity-80 leading-relaxed Located in code src/modules/scopes/container.ts /code container queries decouple responsive component layout from the global browser window enabling truly modular design. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong ResizeObserver Backed /strong Monitors container element dimensions with zero polling overhead /li li strong True Component Isolation /strong Adapts layout whether embedded in a narrow sidebar or a wide main pane /li /ul",
     "icon": "material-symbols-light:aspect-ratio"
+  },
+  {
+    "id": "labs-scopes",
+    "route": "/labs/scopes",
+    "path": "/_pages/labs/scopes/index.html",
+    "title": "Scopes",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Scopes Labs Category 6 Reactive Scopes Reactive Scopes Query Rules NEG query rules rule param ... providing responsive queries container queries authentication gating and runtime platform inspection. media Viewport Reactive viewport media queries e.g. media min-width 768px updating without listeners. Open Lab rarr container Container Evaluates container dimension queries relative to immediate parent element dimensions and bounds. Open Lab rarr auth Security Enforces role-based authentication rules and permission gates directly in the DOM data stack. Open Lab rarr native Bridge Verifies presence of native mobile or desktop app shell bridges Capacitor Electron WebKit . Open Lab rarr os Platform Runtime platform detection macos windows linux ios android . Open Lab rarr view Geometry Live geometry metrics exposing view.width view.height view.isPortrait and view.isLandscape. Open Lab rarr",
+    "icon": "material-symbols-light:alternate-email"
   },
   {
     "id": "lab-scope-media",
@@ -914,6 +854,16 @@
     ],
     "content": "gql Zero-dependency GraphQL query and mutation client with automated cacheEngine response caching and live WebSocket subscription bindings. gql.query user id 1 name email gql.query query variables gql.mutate mutation variables p class opacity-80 leading-relaxed Located in code src/modules/sprites/gql.ts /code this sprite provides GraphQL capabilities without heavy Apollo or Relay bundles. /p ul class list-disc list-inside opacity-80 mt-3 space-y-1.5 li strong Zero-Dependency Client /strong Lightweight fetch-based client under 2KB /li li strong CacheEngine Integration /strong Automatically persists query snapshots in IndexedDB /li /ul",
     "icon": "mdi:graphql"
+  },
+  {
+    "id": "labs-sprites",
+    "route": "/labs/sprites",
+    "path": "/_pages/labs/sprites/index.html",
+    "title": "Sprites",
+    "category": "Labs",
+    "keywords": [],
+    "content": "Sprites Labs Category 14 Injected Sprites Injected Sprites Utilities Built-in framework utilities and native runtime clients accessible directly inside any HTML expression without imports or boilerplate. animate Animation Web Animations API runner with spring physics and zero-layout-shift FLIP list transitions. Open Lab rarr bgFetch Offline Background Fetch API wrapper executing large persistent file downloads across tab closures. Open Lab rarr bgSync Sync Background Sync API for deferred requests guaranteeing delivery when network recovers. Open Lab rarr flow Canvas Spatial canvas node link coordinator and Bezier connector engine for node graphs. Open Lab rarr gql GraphQL Zero-dependency GraphQL query and mutation client returning fine-grained reactive refs. Open Lab rarr mask Utility Programmatic string formatting and pattern masking utility for non-input expressions. Open Lab rarr mcp AI Agent Model Context Protocol AI assistant client for direct LLM sampling and runtime diagnostics. Open Lab rarr periodicSync Sync Periodic Background Sync manager for background data polling and silent cache updates. Open Lab rarr predictive Predictive Quadtree predictive engine forecasting user pointer trajectories and pre-fetching assets. Open Lab rarr push Notifications Web Push notification subscription manager and permission controller. Open Lab rarr ... Selector Contextual DOM selector engine with directional combinators closest child next - prev . Open Lab rarr sql Database SurrealD",
+    "icon": "material-symbols-light:attach-money"
   },
   {
     "id": "lab-sprite-mask",
