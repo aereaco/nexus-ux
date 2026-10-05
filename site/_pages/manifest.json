@@ -21,7 +21,7 @@
   {
     "id": "labs-attributes",
     "route": "/labs/attributes",
-    "path": "/_pages/labs/attributes.html",
+    "path": "/_pages/labs/attributes/index.html",
     "title": "Attributes",
     "icon": "material-symbols-light:code",
     "order": 1,
@@ -117,16 +117,6 @@
     "category": "Docs"
   },
   {
-    "id": "labs-modifiers",
-    "route": "/labs/modifiers",
-    "path": "/_pages/labs/modifiers.html",
-    "title": "Modifiers",
-    "icon": "material-symbols-light:remove",
-    "order": 2,
-    "parent": null,
-    "category": "Labs"
-  },
-  {
     "id": "lab-attr-bind",
     "route": "/labs/attributes/bind",
     "path": "/_pages/labs/attributes/bind.html",
@@ -156,6 +146,16 @@
     "keywords": [
       "_delay"
     ]
+  },
+  {
+    "id": "labs-modifiers",
+    "route": "/labs/modifiers",
+    "path": "/_pages/labs/modifiers/index.html",
+    "title": "Modifiers",
+    "icon": "material-symbols-light:remove",
+    "order": 2,
+    "parent": null,
+    "category": "Labs"
   },
   {
     "id": "lab-scope-container",
@@ -207,16 +207,6 @@
     "category": "Docs"
   },
   {
-    "id": "labs-scopes",
-    "route": "/labs/scopes",
-    "path": "/_pages/labs/scopes.html",
-    "title": "Scopes",
-    "icon": "material-symbols-light:alternate-email",
-    "order": 3,
-    "parent": null,
-    "category": "Labs"
-  },
-  {
     "id": "lab-attr-for",
     "route": "/labs/attributes/for",
     "path": "/_pages/labs/attributes/for.html",
@@ -257,6 +247,16 @@
     "keywords": [
       "auth"
     ]
+  },
+  {
+    "id": "labs-scopes",
+    "route": "/labs/scopes",
+    "path": "/_pages/labs/scopes/index.html",
+    "title": "Scopes",
+    "icon": "material-symbols-light:alternate-email",
+    "order": 3,
+    "parent": null,
+    "category": "Labs"
   },
   {
     "id": "lab-sprite-bgsync",
@@ -305,16 +305,6 @@
     "order": 4,
     "parent": null,
     "category": "Docs"
-  },
-  {
-    "id": "labs-sprites",
-    "route": "/labs/sprites",
-    "path": "/_pages/labs/sprites.html",
-    "title": "Sprites",
-    "icon": "material-symbols-light:attach-money",
-    "order": 4,
-    "parent": null,
-    "category": "Labs"
   },
   {
     "id": "lab-attr-if",
@@ -370,6 +360,16 @@
       "zoomin",
       "fitview"
     ]
+  },
+  {
+    "id": "labs-sprites",
+    "route": "/labs/sprites",
+    "path": "/_pages/labs/sprites/index.html",
+    "title": "Sprites",
+    "icon": "material-symbols-light:attach-money",
+    "order": 4,
+    "parent": null,
+    "category": "Labs"
   },
   {
     "id": "doc-license",
@@ -1132,42 +1132,6 @@
     ]
   },
   {
-    "id": "_bottom-panel",
-    "route": "/builder/_bottom-panel",
-    "path": "/_pages/builder/_bottom-panel.html",
-    "parent": "/builder"
-  },
-  {
-    "id": "_canvas",
-    "route": "/builder/_canvas",
-    "path": "/_pages/builder/_canvas.html",
-    "parent": "/builder"
-  },
-  {
-    "id": "_left-panel",
-    "route": "/builder/_left-panel",
-    "path": "/_pages/builder/_left-panel.html",
-    "parent": "/builder"
-  },
-  {
-    "id": "_modals",
-    "route": "/builder/_modals",
-    "path": "/_pages/builder/_modals.html",
-    "parent": "/builder"
-  },
-  {
-    "id": "_right-panel",
-    "route": "/builder/_right-panel",
-    "path": "/_pages/builder/_right-panel.html",
-    "parent": "/builder"
-  },
-  {
-    "id": "_top-panel",
-    "route": "/builder/_top-panel",
-    "path": "/_pages/builder/_top-panel.html",
-    "parent": "/builder"
-  },
-  {
     "id": "error",
     "route": "/error",
     "path": "/_pages/error.html",
@@ -1177,9 +1141,10 @@
   },
   {
     "id": "landing",
-    "route": "/landing",
+    "route": "/templates-menu/landing",
     "path": "/_pages/builder/templates/landing.html",
-    "parent": "/builder/templates"
+    "parent": "/templates-menu",
+    "category": "Builder"
   },
   {
     "id": "admin",
@@ -1196,6 +1161,16 @@
     "path": "/_pages/builder/templates/blank.html",
     "title": "Blank Canvas",
     "internal": true,
-    "parent": "/builder/templates"
+    "parent": "templates-menu",
+    "category": "Builder"
+  },
+  {
+    "id": "templates-menu",
+    "route": "",
+    "path": "",
+    "title": "Templates",
+    "icon": "material-symbols-light:folder-outline",
+    "parent": null,
+    "category": "Builder"
   }
 ]
