@@ -11,6 +11,28 @@
   },
   {
     "id": "index",
+    "route": "/builder",
+    "path": "/_pages/apps/builder/index.html",
+    "title": "Visual Builder",
+    "category": "Apps",
+    "keywords": [
+      "builder",
+      "visual",
+      "editor",
+      "page",
+      "builder",
+      "vvvebjs",
+      "drag",
+      "and",
+      "drop",
+      "daisyui",
+      "tailwind"
+    ],
+    "content": "Visual Builder body w-full body h-full body flex body flex-1 body min-w-0 body m-0 body bg-transparent",
+    "icon": "material-symbols-light:dashboard-customize-outline"
+  },
+  {
+    "id": "index",
     "route": "/drag",
     "path": "/_pages/apps/drag/index.html",
     "title": "Drag and Drop",
@@ -38,16 +60,6 @@
     "keywords": [],
     "content": "Todo List Todo List HTML-first reactive state management List Grid Compact Add Task All Active Completed Clear Completed Ready for your focus... Diagnostic Overlay viewport x items total Due Date DD/MM/YYYY Edit Done Cancel Save No Keep it Yes",
     "icon": "material-symbols-light:checklist"
-  },
-  {
-    "id": "landing",
-    "route": "/templates-menu/landing",
-    "path": "/_pages/builder/templates/landing.html",
-    "title": "landing",
-    "category": "Builder",
-    "keywords": [],
-    "content": "Overview Components Templates Pricing N Nexus Studio Overview Components Templates Pricing Sign In Get Started New DaisyUI 5 Native Components Tokens Next-Generation Visual Website Builder Assemble lightning-fast reactive web interfaces directly in the browser with declarative HTML bindings zero compilation lag and deep component inspection. Start Building Free Explore Templates Components 87 DaisyUI 5 Web Native Themes 32 Instant Canvas Sync Overhead 0 kb Zero-Serialization Heap Architecture Engineered for Velocity Everything you need to craft production web applications with zero friction. Dynamic Component Inspectors Click any element heading button or section to instantly inspect and modify variants layouts and responsive breakpoints. Learn More rarr Theme-Adaptive Styling Switch themes live on the canvas. High-contrast dark modes vibrant synthwave palettes and clean business layouts update instantly. Learn More rarr Zero-Serialization Pipeline DOM morphing reconcilers diff elements in-place while keeping user focus and input states completely intact. Learn More rarr N Nexus-UX Studio Copyright copy 2026 - All rights reserved Documentation Components Changelog GitHub",
-    "icon": "material-symbols-light:description-outline"
   },
   {
     "id": "doc-changelog",

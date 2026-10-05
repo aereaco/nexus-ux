@@ -20,16 +20,6 @@
     "icon": "material-symbols-light:checklist"
   },
   {
-    "id": "landing",
-    "route": "/templates-menu/landing",
-    "path": "/_pages/builder/templates/landing.html",
-    "title": "landing",
-    "category": "Builder",
-    "keywords": [],
-    "content": "Overview Components Templates Pricing N Nexus Studio Overview Components Templates Pricing Sign In Get Started New DaisyUI 5 Native Components Tokens Next-Generation Visual Website Builder Assemble lightning-fast reactive web interfaces directly in the browser with declarative HTML bindings zero compilation lag and deep component inspection. Start Building Free Explore Templates Components 87 DaisyUI 5 Web Native Themes 32 Instant Canvas Sync Overhead 0 kb Zero-Serialization Heap Architecture Engineered for Velocity Everything you need to craft production web applications with zero friction. Dynamic Component Inspectors Click any element heading button or section to instantly inspect and modify variants layouts and responsive breakpoints. Learn More rarr Theme-Adaptive Styling Switch themes live on the canvas. High-contrast dark modes vibrant synthwave palettes and clean business layouts update instantly. Learn More rarr Zero-Serialization Pipeline DOM morphing reconcilers diff elements in-place while keeping user focus and input states completely intact. Learn More rarr N Nexus-UX Studio Copyright copy 2026 - All rights reserved Documentation Components Changelog GitHub",
-    "icon": "material-symbols-light:description-outline"
-  },
-  {
     "id": "doc-changelog",
     "route": "/docs/changelog",
     "path": "/_pages/docs/changelog.md",

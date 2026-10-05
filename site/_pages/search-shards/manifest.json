@@ -1,8 +1,17 @@
 [
   {
-    "id": "builder",
+    "id": "home",
+    "route": "/",
+    "path": "/_pages/home.html",
+    "title": "Home",
+    "icon": "material-symbols-light:home-outline",
+    "category": "General",
+    "keywords": []
+  },
+  {
+    "id": "index",
     "route": "/builder",
-    "path": "/_pages/builder.html",
+    "path": "/_pages/apps/builder/index.html",
     "title": "Visual Builder",
     "icon": "material-symbols-light:dashboard-customize-outline",
     "category": "Apps",
@@ -19,15 +28,6 @@
       "daisyui",
       "tailwind"
     ]
-  },
-  {
-    "id": "home",
-    "route": "/",
-    "path": "/_pages/home.html",
-    "title": "Home",
-    "icon": "material-symbols-light:home-outline",
-    "category": "General",
-    "keywords": []
   },
   {
     "id": "index",
@@ -54,15 +54,6 @@
     "title": "Todo List",
     "icon": "material-symbols-light:checklist",
     "category": "Apps",
-    "keywords": []
-  },
-  {
-    "id": "landing",
-    "route": "/templates-menu/landing",
-    "path": "/_pages/builder/templates/landing.html",
-    "title": "landing",
-    "icon": "material-symbols-light:description-outline",
-    "category": "Builder",
     "keywords": []
   },
   {
