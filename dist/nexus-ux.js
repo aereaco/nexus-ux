@@ -270,10 +270,12 @@ ${suggestion}`);
       sanitizingObserver = null;
     }
   }
-  var UXError, logger, sanitizingObserver;
+  var errMsg, toError, UXError, logger, sanitizingObserver;
   var init_debug = __esm({
     "src/engine/debug.ts"() {
       init_consts();
+      errMsg = (e) => e instanceof Error ? e.message : String(e);
+      toError = (e) => e instanceof Error ? e : new Error(String(e));
       UXError = class _UXError extends Error {
         constructor(message, element, expression) {
           super(message);
@@ -1102,7 +1104,7 @@ ${suggestion}`);
             }
           });
         } else {
-          const msg = err instanceof Error ? err.message : String(err);
+          const msg = errMsg(err);
           if (msg === lastErrorMessage)
             consecutiveFailures++;
           else {
@@ -1111,7 +1113,7 @@ ${suggestion}`);
           }
           if (consecutiveFailures >= 3) {
             console.error(`[Nexus Diagnostic] Persistent error on <${el.tagName}> (${consecutiveFailures}x):`, err);
-            reportError(err instanceof Error ? err : new Error(msg), el, `Persistent failure (${consecutiveFailures}x) \u2014 effect quarantined`);
+            reportError(toError(err), el, `Persistent failure (${consecutiveFailures}x) \u2014 effect quarantined`);
             stop(runner);
             const enhanced = el;
             enhanced[EFFECT_RUNNERS_KEY]?.delete(runner);
@@ -1157,7 +1159,7 @@ ${suggestion}`);
             r();
           } catch (err) {
             console.error(`[Nexus Isolation] Effect failed on <${enhancedEl.tagName}>, isolated from ${enhancedEl[EFFECT_RUNNERS_KEY].size - 1} sibling effects:`, err);
-            reportError(err instanceof Error ? err : new Error(String(err)), enhancedEl, "Isolated effect failure");
+            reportError(toError(err), enhancedEl, "Isolated effect failure");
           }
         }
       };
@@ -1480,7 +1482,7 @@ ${suggestion}`);
           initError("assert", msg, el, value);
         }
       } catch (e) {
-        initError("assert", `Assertion error: ${e instanceof Error ? e.message : String(e)}`, el, value);
+        initError("assert", `Assertion error: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -1623,7 +1625,7 @@ ${suggestion}`);
             cleanupFns5.push(() => el.removeEventListener(eventName, inputHandler));
           }
         } catch (e) {
-          runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, `Auto-bind failed: ${value}`);
+          runtime.reportError(toError(e), el, `Auto-bind failed: ${value}`);
         }
         return () => cleanupFns5.forEach((fn) => fn());
       }
@@ -1699,7 +1701,7 @@ ${suggestion}`);
           cleanupFns4.push(() => el.removeEventListener(eventName, inputHandler));
         }
       } catch (e) {
-        initError("bind", `Failed to bind ${target}: ${e instanceof Error ? e.message : String(e)}`, el, value);
+        initError("bind", `Failed to bind ${target}: ${errMsg(e)}`, el, value);
       }
       return () => cleanupFns4.forEach((fn) => fn());
     }
@@ -2578,7 +2580,7 @@ ${scripts}
             timestamp: Date.now()
           };
         } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e);
+          const msg = errMsg(e);
           reportError(new Error(`Build failed: ${msg}`), el);
           return { success: false, error: msg };
         }
@@ -2619,7 +2621,7 @@ ${scripts}
         });
         return cleanup;
       } catch (e) {
-        initError("class", `Failed to reconcile class: ${e instanceof Error ? e.message : String(e)}`, el, value);
+        initError("class", `Failed to reconcile class: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -3027,7 +3029,7 @@ ${scripts}
               }
             } catch (e) {
               componentState.hasError = true;
-              componentState.errorMessage = e instanceof Error ? e.message : String(e);
+              componentState.errorMessage = errMsg(e);
               initError("component", componentState.errorMessage, el, value);
               if (config.fallback) {
                 const fb = runtime.evaluate(el, config.fallback);
@@ -3059,7 +3061,7 @@ ${scripts}
       } catch (e) {
         initError(
           "component",
-          `Failed to init component: ${e instanceof Error ? e.message : String(e)}`,
+          `Failed to init component: ${errMsg(e)}`,
           el,
           value
         );
@@ -3218,6 +3220,7 @@ ${scripts}
     getClosestContainer: () => getClosestContainer,
     isContainerElement: () => isContainerElement
   });
+  init_debug();
 
   // src/engine/animation.ts
   async function flip(targets, changeCallback, options = {}) {
@@ -4582,7 +4585,7 @@ ${scripts}
               containerCleanups.push(cleanupFn);
             }
           } catch (err) {
-            runtime.reportError(err instanceof Error ? err : new Error(String(err)), container, "drag-init");
+            runtime.reportError(toError(err), container, "drag-init");
           }
         }
         const engineNow = container.__draggable;
@@ -4630,7 +4633,7 @@ ${scripts}
         });
         return cleanup;
       } catch (e) {
-        initError("effect", `Failed to run effect: ${e instanceof Error ? e.message : String(e)}`, el, value);
+        initError("effect", `Failed to run effect: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -6147,7 +6150,7 @@ ${scripts}
           anchor.remove();
         };
       } catch (e) {
-        initError("for", `Failed to initialize for: ${e instanceof Error ? e.message : String(e)}`, el, value);
+        initError("for", `Failed to initialize for: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -6180,7 +6183,7 @@ ${scripts}
         });
         return cleanup;
       } catch (e) {
-        initError("html", `Failed to bind html: ${e instanceof Error ? e.message : String(e)}`, el, value);
+        initError("html", `Failed to bind html: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -6275,7 +6278,7 @@ ${scripts}
             anchor.remove();
         };
       } catch (e) {
-        initError("if", `Failed to initialize if: ${e instanceof Error ? e.message : String(e)}`, el, value);
+        initError("if", `Failed to initialize if: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -7058,7 +7061,7 @@ ${match}</ul>
         }
         return () => target.removeEventListener(eventName, handler, options);
       } catch (e) {
-        initError("on", `Failed to attach listener ${eventName}: ${e instanceof Error ? e.message : String(e)}`, el, value);
+        initError("on", `Failed to attach listener ${eventName}: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -7365,7 +7368,7 @@ ${match}</ul>
           }
         };
       } catch (e) {
-        reportError(e instanceof Error ? e : new Error(String(e)), el);
+        reportError(toError(e), el);
       }
     }
   };
@@ -8385,7 +8388,7 @@ ${match}</ul>
             return {};
           } catch (e) {
             state.error = { type: "hook_error", error: e };
-            reportError(e instanceof Error ? e : new Error(String(e)), el);
+            reportError(toError(e), el);
             return { abort: true };
           }
         };
@@ -8711,7 +8714,7 @@ ${match}</ul>
           document.removeEventListener(popStateEvent, onPopState);
         };
       } catch (e) {
-        reportError(e instanceof Error ? e : new Error(String(e)), el);
+        reportError(toError(e), el);
       }
     }
   };
@@ -9219,7 +9222,7 @@ ${match}</ul>
         });
         return cleanup;
       } catch (e) {
-        initError("show", `Failed to initialize show: ${e instanceof Error ? e.message : String(e)}`, el, value);
+        initError("show", `Failed to initialize show: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -9230,6 +9233,7 @@ ${match}</ul>
   __export(signal_exports, {
     default: () => signal_default
   });
+  init_debug();
   var signalModule = {
     name: "signal",
     attribute: "signal",
@@ -9279,7 +9283,7 @@ ${match}</ul>
           }
         }
       } catch (e) {
-        runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, expression);
+        runtime.reportError(toError(e), el, expression);
         return;
       }
       if (!isGlobal) {
@@ -9313,7 +9317,7 @@ ${match}</ul>
         });
         return cleanup;
       } catch (e) {
-        initError("style", `Failed to reconcile style: ${e instanceof Error ? e.message : String(e)}`, el, value);
+        initError("style", `Failed to reconcile style: ${errMsg(e)}`, el, value);
       }
     }
   };
@@ -9394,7 +9398,7 @@ ${match}</ul>
         });
         return cleanup;
       } catch (e) {
-        initError("switcher", `Failed to initialize switcher: ${e instanceof Error ? e.message : String(e)}`, el, expression);
+        initError("switcher", `Failed to initialize switcher: ${errMsg(e)}`, el, expression);
       }
     }
   };
@@ -9407,6 +9411,7 @@ ${match}</ul>
     teleportAttribute: () => teleportAttribute
   });
   init_consts();
+  init_debug();
   var teleportAttribute = {
     name: "teleport",
     attribute: "teleport",
@@ -9502,7 +9507,7 @@ ${match}</ul>
                   }
                 }
               } catch (err) {
-                runtime.reportError(err instanceof Error ? err : new Error(String(err)), element, "teleport-mutate");
+                runtime.reportError(toError(err), element, "teleport-mutate");
               }
             };
             if ("startViewTransition" in document && doMutate) {
@@ -9519,7 +9524,7 @@ ${match}</ul>
               item: targetList[toIndex]
             };
           } catch (err) {
-            runtime.reportError(err instanceof Error ? err : new Error(String(err)), element, "teleport-drop");
+            runtime.reportError(toError(err), element, "teleport-drop");
           }
         };
         element.addEventListener("dragover", onDragOver);
@@ -9847,7 +9852,7 @@ ${match}</ul>
           cleanupEffect2();
         };
       } catch (e) {
-        initError("theme", `Failed to bind theme: ${e instanceof Error ? e.message : String(e)}`, el, expression);
+        initError("theme", `Failed to bind theme: ${errMsg(e)}`, el, expression);
       }
     }
   };
@@ -9939,6 +9944,7 @@ ${match}</ul>
   });
 
   // src/engine/utils/pwa.ts
+  init_debug();
   function hasServiceWorker() {
     return typeof navigator !== "undefined" && "serviceWorker" in navigator;
   }
@@ -9970,7 +9976,7 @@ ${match}</ul>
         }
         op.status = successStatus;
       } catch (e) {
-        op.error = e instanceof Error ? e.message : String(e);
+        op.error = errMsg(e);
         op.status = "error";
       }
     })();
@@ -10461,6 +10467,7 @@ ${match}</ul>
     gqlSprite: () => gqlSprite,
     gqlSpriteModule: () => gqlSpriteModule
   });
+  init_debug();
   var defaultEndpoint = "/graphql";
   function configureGqlClient(config) {
     if (config.endpoint)
@@ -10533,7 +10540,7 @@ ${match}</ul>
         result.status = response.errors ? "error" : "success";
       } catch (err) {
         result.errors = [{
-          message: err instanceof Error ? err.message : String(err)
+          message: errMsg(err)
         }];
         result.status = "error";
       } finally {
@@ -11690,6 +11697,7 @@ ${match}</ul>
     default: () => push_default,
     pushSpriteModule: () => pushSpriteModule
   });
+  init_debug();
   function urlBase64ToUint8Array(base64String) {
     const padding = "=".repeat((4 - base64String.length % 4) % 4);
     const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -11750,7 +11758,7 @@ ${match}</ul>
             op.data = sub;
             op.status = "success";
           } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
+            const message = errMsg(err);
             state.error = message;
             state.status = "error";
             op.error = message;
@@ -11790,6 +11798,7 @@ ${match}</ul>
   });
 
   // src/engine/agent.ts
+  init_debug();
   init_consts();
   var DEFAULT_CONFIG = {
     enabled: true,
@@ -11828,7 +11837,7 @@ ${match}</ul>
       };
       globalThis.addEventListener("error", this.globalErrorHandler);
       this.globalRejectionHandler = (reason, promise) => {
-        const error = reason instanceof Error ? reason : new Error(String(reason));
+        const error = toError(reason);
         this.captureBeacon(error, "unhandledRejection", { promise });
       };
       globalThis.addEventListener("unhandledrejection", this.globalRejectionHandler);
@@ -12076,8 +12085,8 @@ ${match}</ul>
       if (!this.config.enabled)
         return;
       const emitBeacon = () => {
-        const errMsg = context?.error ? ` (Error: ${context.error})` : "";
-        console.warn(`[Nexus Resolution Beacon] ${type.toUpperCase()} Failure: "${identifier}"${errMsg}`, {
+        const errMsg2 = context?.error ? ` (Error: ${context.error})` : "";
+        console.warn(`[Nexus Resolution Beacon] ${type.toUpperCase()} Failure: "${identifier}"${errMsg2}`, {
           context,
           timestamp: (/* @__PURE__ */ new Date()).toISOString()
         });
@@ -12335,6 +12344,7 @@ ${match}</ul>
     sqlSprite: () => sqlSprite,
     sqlSpriteModule: () => sqlSpriteModule
   });
+  init_debug();
   var connectionPool = /* @__PURE__ */ new Map();
   var pendingRequests = /* @__PURE__ */ new Map();
   var liveQueries = /* @__PURE__ */ new Map();
@@ -12545,7 +12555,7 @@ ${match}</ul>
           result.status = "ready";
         }
       } catch (err) {
-        result.error = err instanceof Error ? err.message : String(err);
+        result.error = errMsg(err);
         result.status = "error";
       }
       return result;
@@ -12671,6 +12681,7 @@ ${match}</ul>
     default: () => sw_default,
     swSpriteModule: () => swSpriteModule
   });
+  init_debug();
   function createSwApi(runtime) {
     const state = runtime.reactive({
       status: "idle",
@@ -12749,7 +12760,7 @@ ${match}</ul>
             });
             op.status = "done";
           } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
+            op.error = errMsg(e);
             op.status = "error";
             state.error = op.error;
             state.status = "error";
@@ -13734,7 +13745,7 @@ ${match}</ul>
           try {
             new Function("element", "runtime", event.detail.script)(el, runtime);
           } catch (e) {
-            reportError(new Error(`Execute script error: ${e instanceof Error ? e.message : String(e)}`), el);
+            reportError(new Error(`Execute script error: ${errMsg(e)}`), el);
           }
         }
       };
@@ -13771,7 +13782,7 @@ ${match}</ul>
           }
         } catch (e) {
           reportError(
-            new Error(`History listener error: ${e instanceof Error ? e.message : String(e)}`),
+            new Error(`History listener error: ${errMsg(e)}`),
             document.body
           );
         }
@@ -13844,7 +13855,7 @@ ${match}</ul>
           }
         } catch (e) {
           reportError(
-            new Error(`LinkRewriter error: ${e instanceof Error ? e.message : String(e)}`),
+            new Error(`LinkRewriter error: ${errMsg(e)}`),
             el
           );
         }
@@ -13984,7 +13995,7 @@ ${match}</ul>
         observer.observe(el, { childList: true, subtree: true, attributes: true });
         return () => observer.disconnect();
       } catch (e) {
-        reportError(new Error(`Failed to init MutationObserver: ${e instanceof Error ? e.message : String(e)}`), el);
+        reportError(new Error(`Failed to init MutationObserver: ${errMsg(e)}`), el);
       }
     }
   };
@@ -15167,7 +15178,7 @@ ${bridge}`, {
               console.warn(`Fetch request to ${url} was aborted.`);
             }
           } else {
-            reportError(new Error(`Failed to fetch from ${url}: ${e instanceof Error ? e.message : String(e)}`), el);
+            reportError(new Error(`Failed to fetch from ${url}: ${errMsg(e)}`), el);
           }
           el.dispatchEvent(new CustomEvent(`${CUSTOM_EVENT_PREFIX}fetch-error`, {
             bubbles: true,
@@ -15439,7 +15450,7 @@ ${bridge}`, {
           receiver(void 0);
         } else {
           console.error(`[Evaluator Error] Expression "${expression}" failed:`, e);
-          evaluationError(expression, e instanceof Error ? e : new Error(String(e)), el);
+          evaluationError(expression, toError(e), el);
         }
       } finally {
         currentEvalDepth--;
@@ -15703,7 +15714,7 @@ ${bridge}`, {
             module.onGlobalInit(this.runtimeContext);
           } catch (e) {
             this.runtimeContext.reportError(
-              e instanceof Error ? e : new Error(String(e)),
+              toError(e),
               void 0,
               `Failed to initialize module: ${name}`
             );
@@ -15729,7 +15740,7 @@ ${bridge}`, {
           }
         } catch (e) {
           this.runtimeContext.reportError(
-            e instanceof Error ? e : new Error(String(e)),
+            toError(e),
             void 0,
             `Failed to start listener module: ${name}`
           );

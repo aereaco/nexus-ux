@@ -1,6 +1,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError } from '../../engine/debug.ts';
+import { initError, errMsg } from '../../engine/debug.ts';
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
 
 const onModule: AttributeModule = {
@@ -79,7 +79,7 @@ const onModule: AttributeModule = {
       return () => target.removeEventListener(eventName, handler as EventListener, options);
 
     } catch (e) {
-      initError('on', `Failed to attach listener ${eventName}: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      initError('on', `Failed to attach listener ${eventName}: ${errMsg(e)}`, el, value);
     }
   }
 };

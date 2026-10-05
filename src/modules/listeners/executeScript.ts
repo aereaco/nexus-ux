@@ -1,6 +1,6 @@
 import { ListenerModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { reportError } from '../../engine/debug.ts';
+import { reportError, errMsg } from '../../engine/debug.ts';
 
 const executeScriptModule: ListenerModule = {
   name: 'executeScript',
@@ -12,7 +12,7 @@ const executeScriptModule: ListenerModule = {
           // Execute script with access to element and runtime
           new Function('element', 'runtime', event.detail.script)(el, runtime);
         } catch (e) {
-          reportError(new Error(`Execute script error: ${e instanceof Error ? e.message : String(e)}`), el);
+          reportError(new Error(`Execute script error: ${errMsg(e)}`), el);
         }
       }
     };

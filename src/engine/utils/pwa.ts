@@ -1,4 +1,5 @@
 import type { RuntimeContext } from '../composition.ts';
+import { errMsg } from '../debug.ts';
 
 export interface PwaAsyncOp<T = unknown> {
   status: string;
@@ -62,7 +63,7 @@ export function runPwaOp<T = unknown>(
       }
       op.status = successStatus;
     } catch (e) {
-      op.error = e instanceof Error ? e.message : String(e);
+      op.error = errMsg(e);
       op.status = 'error';
     }
   })();

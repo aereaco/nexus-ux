@@ -1,5 +1,6 @@
 import { RuntimeContext } from '../../engine/composition.ts';
 import { createPwaAsyncOp, hasServiceWorker, runPwaOp } from '../../engine/utils/pwa.ts';
+import { errMsg } from '../../engine/debug.ts';
 
 /**
  * $push Sprite — Push Messaging API wrapper
@@ -87,7 +88,7 @@ export function createPushApi(runtime: RuntimeContext) {
           op.data = sub;
           op.status = 'success';
         } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
+          const message = errMsg(err);
           state.error = message;
           state.status = 'error';
           op.error = message;

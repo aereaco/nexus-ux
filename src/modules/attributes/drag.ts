@@ -1,5 +1,6 @@
 import { AttributeModule } from "../../engine/modules.ts";
 import { RuntimeContext } from "../../engine/composition.ts";
+import { toError } from "../../engine/debug.ts";
 import { flip } from "../../engine/animation.ts";
 import { getDataStack } from "../../engine/scope.ts";
 import { CLEANUP_FUNCTIONS_KEY, MARKER_KEY, DATA_STACK_KEY, IS_TEMPLATE_KEY } from "../../engine/consts.ts";
@@ -1540,7 +1541,7 @@ export const dragAttribute: AttributeModule = {
             containerCleanups.push(cleanupFn);
           }
         } catch (err) {
-          runtime.reportError(err instanceof Error ? err : new Error(String(err)), container, "drag-init");
+          runtime.reportError(toError(err), container, "drag-init");
         }
       }
 

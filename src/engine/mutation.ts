@@ -1,7 +1,7 @@
 import { ObserverModule } from './modules.ts';
 import { RuntimeContext } from './composition.ts';
 import { NexusEnhancedElement, ownership } from './reactivity.ts';
-import { reportError } from './debug.ts';
+import { reportError, errMsg } from './debug.ts';
 import { CLEANUP_FUNCTIONS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY } from './consts.ts';
 import { stylesheet, markExternalStylesSettled } from '../modules/attributes/stylesheet.ts';
 import { corePredictiveEngine } from './predictive.ts';
@@ -159,7 +159,7 @@ const mutationObserverModule: ObserverModule = {
       return () => observer.disconnect();
 
     } catch (e) {
-      reportError(new Error(`Failed to init MutationObserver: ${e instanceof Error ? e.message : String(e)}`), el);
+      reportError(new Error(`Failed to init MutationObserver: ${errMsg(e)}`), el);
     }
   },
 };

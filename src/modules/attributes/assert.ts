@@ -1,6 +1,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError } from '../../engine/debug.ts';
+import { initError, errMsg } from '../../engine/debug.ts';
 
 const assertModule: AttributeModule = {
   name: 'assert',
@@ -15,7 +15,7 @@ const assertModule: AttributeModule = {
         initError('assert', msg, el, value);
       }
     } catch (e) {
-      initError('assert', `Assertion error: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      initError('assert', `Assertion error: ${errMsg(e)}`, el, value);
     }
   }
 };

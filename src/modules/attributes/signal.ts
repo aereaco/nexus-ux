@@ -35,6 +35,7 @@ import { addScopeToNode, parseGhostKeys, createScopeProxy } from '../../engine/s
 import { unifiedRef, Ref } from '../../engine/reactivity.ts';
 import { deepEqual } from '../../engine/reconciler.ts';
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
+import { toError } from '../../engine/debug.ts';
 
 function cloneValue(val: unknown): unknown {
   if (Array.isArray(val)) {
@@ -118,7 +119,7 @@ const signalModule: AttributeModule = {
         }
       }
     } catch (e) {
-      runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, expression);
+      runtime.reportError(toError(e), el, expression);
       return;
     }
 

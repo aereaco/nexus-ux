@@ -1,6 +1,6 @@
 import { ListenerModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { reportError } from '../../engine/debug.ts';
+import { reportError, errMsg } from '../../engine/debug.ts';
 import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
 
 /**
@@ -86,7 +86,7 @@ const linkRewriterModule: ListenerModule = {
         }
       } catch (e) {
         reportError(
-          new Error(`LinkRewriter error: ${e instanceof Error ? e.message : String(e)}`),
+          new Error(`LinkRewriter error: ${errMsg(e)}`),
           el,
         );
       }

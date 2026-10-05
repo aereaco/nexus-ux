@@ -1,6 +1,6 @@
 /// <reference path="./composition.ts" />
 import { CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, DATA_STACK_KEY, LOCAL_SCOPES_KEY, MARKER_KEY } from './consts.ts';
-import { reportError } from './debug.ts';
+import { reportError, errMsg, toError } from './debug.ts';
 import { scheduler } from './scheduler.ts';
 
 // =============================================================================
@@ -651,7 +651,7 @@ export function elementBoundEffect(
           }
         });
       } else {
-        const msg = err instanceof Error ? err.message : String(err);
+        const msg = errMsg(err);
         if (msg === lastErrorMessage) consecutiveFailures++;
         else {
           consecutiveFailures = 1;
@@ -660,7 +660,7 @@ export function elementBoundEffect(
 
         if (consecutiveFailures >= 3) {
           console.error(`[Nexus Diagnostic] Persistent error on <${el.tagName}> (${consecutiveFailures}x):`, err);
-          reportError(err instanceof Error ? err : new Error(msg), el, `Persistent failure (${consecutiveFailures}x) — effect quarantined`);
+          reportError(toError(err), el, `Persistent failure (${consecutiveFailures}x) — effect quarantined`);
           stop(runner);
           const enhanced = el as NexusEnhancedElement;
           enhanced[EFFECT_RUNNERS_KEY]?.delete(runner);
@@ -702,7 +702,7 @@ export function elementBoundEffect(
           r();
         } catch (err) {
           console.error(`[Nexus Isolation] Effect failed on <${enhancedEl.tagName}>, isolated from ${enhancedEl[EFFECT_RUNNERS_KEY]!.size - 1} sibling effects:`, err);
-          reportError(err instanceof Error ? err : new Error(String(err)), enhancedEl, 'Isolated effect failure');
+          reportError(toError(err), enhancedEl, 'Isolated effect failure');
         }
       }
     };

@@ -1,5 +1,6 @@
 import { RuntimeContext } from '../../engine/composition.ts';
 import { heap } from '../../engine/reactivity.ts';
+import { errMsg } from '../../engine/debug.ts';
 
 /**
  * GraphQL Client Sprite
@@ -124,7 +125,7 @@ export function gqlSprite(runtime: RuntimeContext) {
       result.status = response.errors ? 'error' : 'success';
     } catch (err) {
       result.errors = [{
-        message: err instanceof Error ? err.message : String(err)
+        message: errMsg(err)
       }];
       result.status = 'error';
     } finally {

@@ -14,7 +14,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
-import { initError } from '../../engine/debug.ts';
+import { initError, errMsg } from '../../engine/debug.ts';
 
 const ALL_DAISYUI_THEMES = [
   'light', 'dark', 'cupcake', 'bumblebee', 'emerald', 'corporate', 'synthwave', 'retro',
@@ -187,7 +187,7 @@ const themeModule: AttributeModule = {
             cleanupEffect();
         };
     } catch (e) {
-        initError('theme', `Failed to bind theme: ${e instanceof Error ? e.message : String(e)}`, el, expression);
+        initError('theme', `Failed to bind theme: ${errMsg(e)}`, el, expression);
     }
   }
 };

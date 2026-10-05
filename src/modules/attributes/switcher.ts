@@ -1,6 +1,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError } from '../../engine/debug.ts';
+import { initError, errMsg } from '../../engine/debug.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
 
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
@@ -95,7 +95,7 @@ const switcherModule: AttributeModule = {
 
       return cleanup;
     } catch (e) {
-      initError('switcher', `Failed to initialize switcher: ${e instanceof Error ? e.message : String(e)}`, el, expression);
+      initError('switcher', `Failed to initialize switcher: ${errMsg(e)}`, el, expression);
     }
   }
 };

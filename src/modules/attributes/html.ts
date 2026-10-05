@@ -1,6 +1,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError } from '../../engine/debug.ts';
+import { initError, errMsg } from '../../engine/debug.ts';
 
 const htmlModule: AttributeModule = {
   name: 'html',
@@ -23,7 +23,7 @@ const htmlModule: AttributeModule = {
       });
       return cleanup;
     } catch (e) {
-      initError('html', `Failed to bind html: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      initError('html', `Failed to bind html: ${errMsg(e)}`, el, value);
     }
   }
 };

@@ -41,7 +41,7 @@
 
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError } from '../../engine/debug.ts';
+import { initError, errMsg, toError } from '../../engine/debug.ts';
 import { matchAttributes, ParsedAttribute } from '../../engine/attributeParser.ts';
 
 
@@ -183,7 +183,7 @@ const bindModule: AttributeModule = {
         }
 
       } catch (e) {
-        runtime.reportError(e instanceof Error ? e : new Error(String(e)), el, `Auto-bind failed: ${value}`);
+        runtime.reportError(toError(e), el, `Auto-bind failed: ${value}`);
       }
 
       return () => cleanupFns.forEach(fn => fn());
@@ -266,7 +266,7 @@ const bindModule: AttributeModule = {
       }
 
     } catch (e) {
-      initError('bind', `Failed to bind ${target}: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      initError('bind', `Failed to bind ${target}: ${errMsg(e)}`, el, value);
     }
 
     return () => cleanupFns.forEach(fn => fn());

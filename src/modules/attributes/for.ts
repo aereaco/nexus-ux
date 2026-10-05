@@ -31,7 +31,7 @@
 
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError } from '../../engine/debug.ts';
+import { initError, errMsg } from '../../engine/debug.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
 import { CLEANUP_FUNCTIONS_KEY, DATA_STACK_KEY, IS_TEMPLATE_KEY, LOCAL_SCOPES_KEY, MARKER_KEY } from '../../engine/consts.ts';
 import { nexusClassMap, nexusStyleMap } from '../../engine/reconciler.ts';
@@ -268,7 +268,7 @@ const forModule: AttributeModule = {
       }
 
     } catch (e) {
-      initError('for', `Failed to initialize for: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      initError('for', `Failed to initialize for: ${errMsg(e)}`, el, value);
     }
   }
 };

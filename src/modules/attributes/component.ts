@@ -4,7 +4,7 @@ import { addScopeToNode, getDataStack } from '../../engine/scope.ts';
 import { COMPONENT_CONTEXT_KEY, DATA_STACK_KEY, CLEANUP_FUNCTIONS_KEY, MARKER_KEY } from '../../engine/consts.ts';
 import { cacheEngine } from '../../engine/cache.ts';
 import type { NexusEnhancedElement } from '../../engine/reactivity.ts';
-import { initError } from '../../engine/debug.ts';
+import { initError, errMsg } from '../../engine/debug.ts';
 import { stylesheet } from './stylesheet.ts';
 
 export interface ComponentConfig {
@@ -484,7 +484,7 @@ const componentModule: AttributeModule = {
             }
           } catch (e) {
             componentState.hasError = true;
-            componentState.errorMessage = e instanceof Error ? e.message : String(e);
+            componentState.errorMessage = errMsg(e);
             initError('component', componentState.errorMessage, el, value);
             if (config.fallback) {
               const fb = runtime.evaluate(el, config.fallback);
@@ -518,7 +518,7 @@ const componentModule: AttributeModule = {
     } catch (e) {
       initError(
         'component',
-        `Failed to init component: ${e instanceof Error ? e.message : String(e)}`,
+        `Failed to init component: ${errMsg(e)}`,
         el,
         value
       );

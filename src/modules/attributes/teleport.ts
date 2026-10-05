@@ -4,6 +4,7 @@ import { ParsedAttribute } from '../../engine/attributeParser.ts';
 import { DATA_STACK_KEY, IS_TEMPLATE_KEY } from '../../engine/consts.ts';
 import { getDataStack } from '../../engine/scope.ts';
 import { DragReorderEngine, buildReorderContext } from './drag.ts';
+import { toError } from '../../engine/debug.ts';
 
 /**
  * data-teleport: Dual-mode teleportation engine.
@@ -146,7 +147,7 @@ export const teleportAttribute: AttributeModule = {
                 }
               }
             } catch (err) {
-              runtime.reportError(err instanceof Error ? err : new Error(String(err)), element, 'teleport-mutate');
+              runtime.reportError(toError(err), element, 'teleport-mutate');
             }
           };
 
@@ -162,7 +163,7 @@ export const teleportAttribute: AttributeModule = {
             item: targetList[toIndex]
           };
         } catch (err) {
-          runtime.reportError(err instanceof Error ? err : new Error(String(err)), element, 'teleport-drop');
+          runtime.reportError(toError(err), element, 'teleport-drop');
         }
       };
 

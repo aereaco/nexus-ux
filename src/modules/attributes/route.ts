@@ -1,7 +1,7 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
-import { reportError } from '../../engine/debug.ts';
+import { reportError, toError } from '../../engine/debug.ts';
 
 /**
  * data-route: Declaratively registers a route.
@@ -164,7 +164,7 @@ export const routeAttributeModule: AttributeModule = {
         }
       };
     } catch (e) {
-      reportError(e instanceof Error ? e : new Error(String(e)), el);
+      reportError(toError(e), el);
     }
   },
 };

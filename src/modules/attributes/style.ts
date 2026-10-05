@@ -1,6 +1,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError } from '../../engine/debug.ts';
+import { initError, errMsg } from '../../engine/debug.ts';
 import { ParsedAttribute } from '../../engine/attributeParser.ts';
 
 const styleModule: AttributeModule = {
@@ -17,7 +17,7 @@ const styleModule: AttributeModule = {
       });
       return cleanup;
     } catch (e) {
-      initError('style', `Failed to reconcile style: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      initError('style', `Failed to reconcile style: ${errMsg(e)}`, el, value);
     }
   }
 };

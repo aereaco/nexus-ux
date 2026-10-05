@@ -1,6 +1,6 @@
 import { ListenerModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { reportError } from '../../engine/debug.ts';
+import { reportError, errMsg } from '../../engine/debug.ts';
 import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
 
 /**
@@ -34,7 +34,7 @@ const historyModule: ListenerModule = {
         }
       } catch (e) {
         reportError(
-          new Error(`History listener error: ${e instanceof Error ? e.message : String(e)}`),
+          new Error(`History listener error: ${errMsg(e)}`),
           document.body,
         );
       }

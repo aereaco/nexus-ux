@@ -24,6 +24,12 @@ import { RuntimeContext } from './composition.ts';
 // 1. Error Reporting API (consolidated from engine/errors.ts)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Extract a message string from any thrown value. */
+export const errMsg = (e: unknown): string => e instanceof Error ? e.message : String(e);
+
+/** Coerce any thrown value to an Error instance. */
+export const toError = (e: unknown): Error => e instanceof Error ? e : new Error(String(e));
+
 /**
  * Custom Error class for Nexus-UX framework errors.
  * Provides consistent error reporting with additional context.

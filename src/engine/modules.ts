@@ -51,7 +51,7 @@ import { getDataStack, registerScopeProvider } from './scope.ts';
 import { evaluate } from './evaluator.ts'; 
 import { parseAttribute, ParsedAttribute } from './attributeParser.ts'; 
 import { scheduler } from './scheduler.ts';
-import { logger } from './debug.ts';
+import { logger, toError } from './debug.ts';
 import { initSanitizingEngine, disposeSanitizingEngine } from './debug.ts';
 import { elUniqId, attrHash } from './utils/hash.ts';
 import { MARKER_KEY } from './consts.ts';
@@ -329,7 +329,7 @@ export class ModuleCoordinator {
           module.onGlobalInit(this.runtimeContext);
         } catch (e) {
           this.runtimeContext.reportError(
-            e instanceof Error ? e : new Error(String(e)),
+            toError(e),
             undefined,
             `Failed to initialize module: ${name}`
           );
@@ -360,7 +360,7 @@ export class ModuleCoordinator {
         }
       } catch (e) {
         this.runtimeContext.reportError(
-          e instanceof Error ? e : new Error(String(e)),
+          toError(e),
           undefined,
           `Failed to start listener module: ${name}`
         );

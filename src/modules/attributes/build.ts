@@ -1,6 +1,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { reportError } from '../../engine/debug.ts';
+import { reportError, errMsg } from '../../engine/debug.ts';
 import { getIndexedDBProxy } from '../../engine/scope.ts';
 import { stylesheet } from './stylesheet.ts';
 
@@ -223,7 +223,7 @@ const buildModule: AttributeModule = {
           timestamp: Date.now() 
         };
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
+        const msg = errMsg(e);
         reportError(new Error(`Build failed: ${msg}`), el);
         return { success: false, error: msg };
       }

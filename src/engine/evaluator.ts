@@ -32,7 +32,7 @@
 
 import { RuntimeContext } from './composition.ts';
 import { getSelfHealAgent } from './agent.ts';
-import { evaluationError, syntaxError } from './debug.ts';
+import { evaluationError, syntaxError, toError } from './debug.ts';
 import {
   registerScopeProvider,
   getElementScope,
@@ -327,7 +327,7 @@ export function evaluateLater(
         receiver(undefined);
       } else {
         console.error(`[Evaluator Error] Expression "${expression}" failed:`, e);
-        evaluationError(expression, e instanceof Error ? e : new Error(String(e)), el as HTMLElement);
+        evaluationError(expression, toError(e), el as HTMLElement);
       }
     } finally {
       currentEvalDepth--;

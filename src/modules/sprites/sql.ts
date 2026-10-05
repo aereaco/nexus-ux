@@ -1,5 +1,6 @@
 import { RuntimeContext } from '../../engine/composition.ts';
 import { heap } from '../../engine/reactivity.ts';
+import { errMsg } from '../../engine/debug.ts';
 
 /**
  * Real SurrealDB Client via WebSocket
@@ -334,7 +335,7 @@ queryResult.forEach((row, idx) => {
         result.status = 'ready';
       }
     } catch (err) {
-      result.error = err instanceof Error ? err.message : String(err);
+      result.error = errMsg(err);
       result.status = 'error';
     }
 

@@ -1,6 +1,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError } from '../../engine/debug.ts';
+import { initError, errMsg } from '../../engine/debug.ts';
 
 const effectModule: AttributeModule = {
   name: 'effect',
@@ -19,7 +19,7 @@ const effectModule: AttributeModule = {
       });
       return cleanup;
     } catch (e) {
-      initError('effect', `Failed to run effect: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      initError('effect', `Failed to run effect: ${errMsg(e)}`, el, value);
     }
   }
 };

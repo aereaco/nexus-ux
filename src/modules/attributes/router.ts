@@ -36,7 +36,7 @@
 
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { reportError } from '../../engine/debug.ts';
+import { reportError, toError } from '../../engine/debug.ts';
 import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
 
 
@@ -1452,7 +1452,7 @@ export const routerAttributeModule: AttributeModule = {
           return {};
         } catch (e) {
           state.error = { type: 'hook_error', error: e };
-          reportError(e instanceof Error ? e : new Error(String(e)), el);
+          reportError(toError(e), el);
           return { abort: true };
         }
       };
@@ -1847,7 +1847,7 @@ export const routerAttributeModule: AttributeModule = {
         document.removeEventListener(popStateEvent, onPopState);
       };
     } catch (e) {
-      reportError(e instanceof Error ? e : new Error(String(e)), el);
+      reportError(toError(e), el);
     }
   },
 };

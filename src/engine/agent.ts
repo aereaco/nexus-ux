@@ -28,6 +28,7 @@
  */
 
 import { topology } from './topology.ts';
+import { toError } from './debug.ts';
 import type { TierLevel, TierConfig } from './topology.ts';
 import type { RuntimeContext } from './composition.ts';
 import { heap } from './reactivity.ts';
@@ -128,7 +129,7 @@ export class SelfHealAgent {
 
     // Unhandled promise rejection
     this.globalRejectionHandler = (reason: unknown, promise?: Promise<unknown>) => {
-      const error = reason instanceof Error ? reason : new Error(String(reason));
+      const error = toError(reason);
       this.captureBeacon(error, 'unhandledRejection', { promise });
     };
     globalThis.addEventListener('unhandledrejection', this.globalRejectionHandler as any);

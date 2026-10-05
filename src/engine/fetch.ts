@@ -1,6 +1,6 @@
 import { UtilityModule } from './modules.ts';
 import { RuntimeContext } from './composition.ts';
-import { reportError } from './debug.ts';
+import { reportError, errMsg } from './debug.ts';
 import { CUSTOM_EVENT_PREFIX } from './consts.ts';
 import { cacheEngine } from './cache.ts';
 
@@ -90,7 +90,7 @@ export const fetchUtilities: FetchUtilities = {
             console.warn(`Fetch request to ${url} was aborted.`);
           }
         } else {
-          reportError(new Error(`Failed to fetch from ${url}: ${e instanceof Error ? e.message : String(e)}`), el);
+          reportError(new Error(`Failed to fetch from ${url}: ${errMsg(e)}`), el);
         }
         el.dispatchEvent(new CustomEvent(`${CUSTOM_EVENT_PREFIX}fetch-error`, {
           bubbles: true,

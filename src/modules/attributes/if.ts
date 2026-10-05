@@ -28,7 +28,7 @@
 
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError } from '../../engine/debug.ts';
+import { initError, errMsg } from '../../engine/debug.ts';
 import { CLEANUP_FUNCTIONS_KEY, MARKER_KEY, IS_TEMPLATE_KEY } from '../../engine/consts.ts';
 
 interface NexusIfElement extends HTMLElement {
@@ -158,7 +158,7 @@ const ifModule: AttributeModule = {
         if (anchor.parentNode) anchor.remove();
       };
     } catch (e) {
-      initError('if', `Failed to initialize if: ${e instanceof Error ? e.message : String(e)}`, el, value);
+      initError('if', `Failed to initialize if: ${errMsg(e)}`, el, value);
     }
   }
 };

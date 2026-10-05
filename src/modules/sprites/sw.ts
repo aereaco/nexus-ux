@@ -1,5 +1,6 @@
 import { RuntimeContext } from '../../engine/composition.ts';
 import { createPwaAsyncOp, hasServiceWorker, runPwaOp } from '../../engine/utils/pwa.ts';
+import { errMsg } from '../../engine/debug.ts';
 
 /**
  * $sw Sprite — Service Worker lifecycle management
@@ -124,7 +125,7 @@ export function createSwApi(runtime: RuntimeContext) {
 
             op.status = 'done';
           } catch (e) {
-            op.error = e instanceof Error ? e.message : String(e);
+            op.error = errMsg(e);
             op.status = 'error';
             state.error = op.error;
             state.status = 'error';
