@@ -1,8 +1,8 @@
 [
   {
-    "id": "drag",
+    "id": "index",
     "route": "/drag",
-    "path": "/_pages/drag.html",
+    "path": "/_pages/apps/drag/index.html",
     "title": "Drag and Drop",
     "category": "Apps",
     "keywords": [],

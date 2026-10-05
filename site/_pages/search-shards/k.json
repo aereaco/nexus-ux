@@ -1,8 +1,8 @@
 [
   {
-    "id": "flow",
+    "id": "index",
     "route": "/flow",
-    "path": "/_pages/flow.html",
+    "path": "/_pages/apps/flow/index.html",
     "title": "Flow Canvas",
     "category": "Apps",
     "keywords": [],
@@ -12,7 +12,7 @@
   {
     "id": "todo",
     "route": "/todo",
-    "path": "/_pages/todo.html",
+    "path": "/_pages/apps/todo/index.html",
     "title": "Todo List",
     "category": "Apps",
     "keywords": [],

@@ -274,9 +274,9 @@
     ]
   },
   {
-    "id": "builder",
+    "id": "index",
     "route": "/builder",
-    "path": "/_pages/builder.html",
+    "path": "/_pages/apps/builder/index.html",
     "title": "Visual Builder",
     "icon": "material-symbols-light:dashboard-customize-outline",
     "order": 4,
@@ -1140,13 +1140,6 @@
     "parent": null
   },
   {
-    "id": "landing",
-    "route": "/templates-menu/landing",
-    "path": "/_pages/builder/templates/landing.html",
-    "parent": "/templates-menu",
-    "category": "Builder"
-  },
-  {
     "id": "admin",
     "route": "",
     "path": "/_internal/admin-console.html",
@@ -1154,32 +1147,5 @@
     "icon": "material-symbols-light:shield-lock",
     "internal": true,
     "parent": null
-  },
-  {
-    "id": "blank",
-    "route": "",
-    "path": "/_pages/builder/templates/blank.html",
-    "title": "Blank Canvas",
-    "internal": true,
-    "parent": "templates-menu",
-    "category": "Builder"
-  },
-  {
-    "id": "builder-menu",
-    "route": "",
-    "path": "",
-    "title": "Builder",
-    "icon": "material-symbols-light:folder-outline",
-    "parent": null,
-    "category": "Apps"
-  },
-  {
-    "id": "templates-menu",
-    "route": "",
-    "path": "",
-    "title": "Templates",
-    "icon": "material-symbols-light:folder-outline",
-    "parent": null,
-    "category": "Builder"
   }
 ]

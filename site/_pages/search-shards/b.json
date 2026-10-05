@@ -22,26 +22,6 @@
     "icon": "material-symbols-light:dashboard-customize-outline"
   },
   {
-    "id": "drag",
-    "route": "/drag",
-    "path": "/_pages/drag.html",
-    "title": "Drag and Drop",
-    "category": "Apps",
-    "keywords": [],
-    "content": "Drag and Drop Nexus-UX Drag and Drop Complete 14-Pattern Native Drag Drop Engine Suite 01. Simple DraggableJS Parity 02. Shared Cross-Container 03. Cloning teleport-mode clone SOURCE TARGET 04. Sorting Toggle State 05. Handles data-drag-handle 06. Filter Selective Drag 07. MultiDrag Batch Select Click items to select several then drag them as one group. 08. Grid Layout Spatial Hit-Test 09. Nested Infinite Recursive Hierarchy 10. Auto-Scroll Constrained VERTICAL AUTO-SCROLL HORIZONTAL AUTO-SCROLL 11. Ghost Styling CSS Feedback R G B A Preview 12. Direction Horizontal 13. Swap Index Exchange 14. Swap Thresholds VERTICAL SWAP THRESHOLD V-Threshold HORIZONTAL SWAP THRESHOLD H-Threshold Nexus-UX Drag Engine 14/14 Verification Patterns",
-    "icon": "material-symbols-light:move-selection-down-outline"
-  },
-  {
-    "id": "flow",
-    "route": "/flow",
-    "path": "/_pages/flow.html",
-    "title": "Flow Canvas",
-    "category": "Apps",
-    "keywords": [],
-    "content": "Flow Canvas Flow Canvas Signal Driven Complete spatial node graph with reactive fine-grained proxies Shift Drag Marquee Del Delete Arrows Nudge Nodes Edges Zoom Fit Add Node In Out Pos Fit View Live Reactive Store ZCZS 60fps Viewport Pan Canvas Studio Grid Snapping Grid Spacing Snap to Grid Show Minimap Wire Routing Engine Default Routing Style SmoothStep Rounded Orthogonal Bezier Cubic Directional Step Sharp 90 Angles Straight Direct Linear Animate All Stop Wires Active Connectors No active connections. Drag between node handles to create wires. Graph Schema IO Export Graph JSON Import Graph JSON Clear Canvas xyFlow Spatial Engine Nexus-UX ZCZS Tune spatial coordinates ports subflow nesting and schema Visual Studio JSON Schema Node Identifier Display Label Node Kind Standard Action Card Input Trigger Green Accent Output Sink Warning Accent Subflow Group Container Parent Subflow Group None Root Canvas Pos X Pos Y Width Height Connection Ports Edge Points No connection ports attached. Click below to add an edge point. Source Output Port Target Input Port Right Side Left Side Top Side Bottom Side Add Port Direct Schema JSON Definition Real-time synchronization Cancel Save Changes close Configure Wire Connector Spatial curve routing arrow markers animation and port attachments Visual Studio JSON Schema Wire ID Display Badge Label Routing Algorithm SmoothStep Rounded Orthogonal Bezier Cubic Directional Step Sharp 90 Angles Straight Direct Linear Arrowhead Marker None Bare Wire Ch",
-    "icon": "material-symbols-light:flowchart-outline"
-  },
-  {
     "id": "home",
     "route": "/",
     "path": "/_pages/home.html",
@@ -50,6 +30,26 @@
     "keywords": [],
     "content": "Home Nexus-UX Engine 2.0 Public Beta Ready Modern HTML-First Reactive Architecture A high-performance reactive user experience framework coordinating declarative HTML directives with web-native browser APIs. Built for Zero-Copy Zero-Serialization ZCZS execution directly across the DOM namespace. Explore Interactive Labs Visual Node Graph Specification Docs Live Runtime Engine 60 FPS Reactive Signal Binding Count 1 Count -1 Zero serialization Zero-copy live proxy heap Core Architectural Pillars Engineered from the ground up for maximum browser performance zero memory churn and pure HTML-first expressiveness. Declarative HTML-First DOM-as-State composition without imperative scripting Application logic state bindings dynamic templates and animations are expressed directly in HTML markup. No build step required to run templates parse natively in the browser s DOM parser. Implementation Features 30 Native Attribute Directives data-signal data-bind data-for data-if data-show data-on data-flow and more. Constructable CSSStyleSheets Direct CSSOM integration via document.adoptedStyleSheets and data-stylesheet . Single Observer Context Exactly one universal MutationObserver orchestrating all DOM insertions diffing and deterministic teardowns. Zero-Copy Zero-Serialization Strictly eliminates JSON serialization and memory copy overhead State is held in shared memory references and typed heaps. Web Workers and main thread communicate via SharedArrayBuffer completely avoiding expensive JS",
     "icon": "material-symbols-light:home-outline"
+  },
+  {
+    "id": "index",
+    "route": "/drag",
+    "path": "/_pages/apps/drag/index.html",
+    "title": "Drag and Drop",
+    "category": "Apps",
+    "keywords": [],
+    "content": "Drag and Drop Nexus-UX Drag and Drop Complete 14-Pattern Native Drag Drop Engine Suite 01. Simple DraggableJS Parity 02. Shared Cross-Container 03. Cloning teleport-mode clone SOURCE TARGET 04. Sorting Toggle State 05. Handles data-drag-handle 06. Filter Selective Drag 07. MultiDrag Batch Select Click items to select several then drag them as one group. 08. Grid Layout Spatial Hit-Test 09. Nested Infinite Recursive Hierarchy 10. Auto-Scroll Constrained VERTICAL AUTO-SCROLL HORIZONTAL AUTO-SCROLL 11. Ghost Styling CSS Feedback R G B A Preview 12. Direction Horizontal 13. Swap Index Exchange 14. Swap Thresholds VERTICAL SWAP THRESHOLD V-Threshold HORIZONTAL SWAP THRESHOLD H-Threshold Nexus-UX Drag Engine 14/14 Verification Patterns",
+    "icon": "material-symbols-light:move-selection-down-outline"
+  },
+  {
+    "id": "index",
+    "route": "/flow",
+    "path": "/_pages/apps/flow/index.html",
+    "title": "Flow Canvas",
+    "category": "Apps",
+    "keywords": [],
+    "content": "Flow Canvas Flow Canvas Signal Driven Complete spatial node graph with reactive fine-grained proxies Shift Drag Marquee Del Delete Arrows Nudge Nodes Edges Zoom Fit Add Node In Out Pos Fit View Live Reactive Store ZCZS 60fps Viewport Pan Canvas Studio Grid Snapping Grid Spacing Snap to Grid Show Minimap Wire Routing Engine Default Routing Style SmoothStep Rounded Orthogonal Bezier Cubic Directional Step Sharp 90 Angles Straight Direct Linear Animate All Stop Wires Active Connectors No active connections. Drag between node handles to create wires. Graph Schema IO Export Graph JSON Import Graph JSON Clear Canvas xyFlow Spatial Engine Nexus-UX ZCZS Tune spatial coordinates ports subflow nesting and schema Visual Studio JSON Schema Node Identifier Display Label Node Kind Standard Action Card Input Trigger Green Accent Output Sink Warning Accent Subflow Group Container Parent Subflow Group None Root Canvas Pos X Pos Y Width Height Connection Ports Edge Points No connection ports attached. Click below to add an edge point. Source Output Port Target Input Port Right Side Left Side Top Side Bottom Side Add Port Direct Schema JSON Definition Real-time synchronization Cancel Save Changes close Configure Wire Connector Spatial curve routing arrow markers animation and port attachments Visual Studio JSON Schema Wire ID Display Badge Label Routing Algorithm SmoothStep Rounded Orthogonal Bezier Cubic Directional Step Sharp 90 Angles Straight Direct Linear Arrowhead Marker None Bare Wire Ch",
+    "icon": "material-symbols-light:flowchart-outline"
   },
   {
     "id": "landing",

@@ -21,24 +21,6 @@
     ]
   },
   {
-    "id": "drag",
-    "route": "/drag",
-    "path": "/_pages/drag.html",
-    "title": "Drag and Drop",
-    "icon": "material-symbols-light:move-selection-down-outline",
-    "category": "Apps",
-    "keywords": []
-  },
-  {
-    "id": "flow",
-    "route": "/flow",
-    "path": "/_pages/flow.html",
-    "title": "Flow Canvas",
-    "icon": "material-symbols-light:flowchart-outline",
-    "category": "Apps",
-    "keywords": []
-  },
-  {
     "id": "home",
     "route": "/",
     "path": "/_pages/home.html",
@@ -48,9 +30,27 @@
     "keywords": []
   },
   {
+    "id": "index",
+    "route": "/drag",
+    "path": "/_pages/apps/drag/index.html",
+    "title": "Drag and Drop",
+    "icon": "material-symbols-light:move-selection-down-outline",
+    "category": "Apps",
+    "keywords": []
+  },
+  {
+    "id": "index",
+    "route": "/flow",
+    "path": "/_pages/apps/flow/index.html",
+    "title": "Flow Canvas",
+    "icon": "material-symbols-light:flowchart-outline",
+    "category": "Apps",
+    "keywords": []
+  },
+  {
     "id": "todo",
     "route": "/todo",
-    "path": "/_pages/todo.html",
+    "path": "/_pages/apps/todo/index.html",
     "title": "Todo List",
     "icon": "material-symbols-light:checklist",
     "category": "Apps",
