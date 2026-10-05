@@ -87,9 +87,9 @@
     ]
   },
   {
-    "id": "drag",
+    "id": "index",
     "route": "/drag",
-    "path": "/_pages/drag.html",
+    "path": "/_pages/apps/drag/index.html",
     "title": "Drag and Drop",
     "icon": "material-symbols-light:move-selection-down-outline",
     "order": 2,
@@ -99,7 +99,7 @@
   {
     "id": "todo",
     "route": "/todo",
-    "path": "/_pages/todo.html",
+    "path": "/_pages/apps/todo/index.html",
     "title": "Todo List",
     "icon": "material-symbols-light:checklist",
     "order": 2,
@@ -187,9 +187,9 @@
     ]
   },
   {
-    "id": "flow",
+    "id": "index",
     "route": "/flow",
-    "path": "/_pages/flow.html",
+    "path": "/_pages/apps/flow/index.html",
     "title": "Flow Canvas",
     "icon": "material-symbols-light:flowchart-outline",
     "order": 3,
@@ -1163,6 +1163,15 @@
     "internal": true,
     "parent": "templates-menu",
     "category": "Builder"
+  },
+  {
+    "id": "builder-menu",
+    "route": "",
+    "path": "",
+    "title": "Builder",
+    "icon": "material-symbols-light:folder-outline",
+    "parent": null,
+    "category": "Apps"
   },
   {
     "id": "templates-menu",
