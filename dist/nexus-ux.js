@@ -8812,6 +8812,7 @@ ${match}</ul>
         return;
       }
       const s = window.getComputedStyle(this.el);
+      const isRTL = s.direction === "rtl";
       const isScrollableY = s.overflowY === "auto" || s.overflowY === "scroll";
       const canScrollY = isScrollableY && scrollHeight - clientHeight > 1 && clientHeight > 0;
       if (canScrollY && this.trackV && this.thumbV) {
@@ -8821,9 +8822,14 @@ ${match}</ul>
           this.trackV.style.top = `${this.el.offsetTop}px`;
           this.trackV.style.height = `${this.el.clientHeight}px`;
           this.trackV.style.bottom = "auto";
-          const offsetRight = this.host.clientWidth - (this.el.offsetLeft + this.el.clientWidth);
-          this.trackV.style.right = `${Math.max(0, offsetRight)}px`;
-          this.trackV.style.left = "auto";
+          if (isRTL) {
+            this.trackV.style.left = `${this.el.offsetLeft}px`;
+            this.trackV.style.right = "auto";
+          } else {
+            const offsetRight = this.host.clientWidth - (this.el.offsetLeft + this.el.clientWidth);
+            this.trackV.style.right = `${Math.max(0, offsetRight)}px`;
+            this.trackV.style.left = "auto";
+          }
         }
         const thumbHeight = Math.max(24, clientHeight / scrollHeight * clientHeight);
         const maxScroll = scrollHeight - clientHeight;
@@ -8851,8 +8857,9 @@ ${match}</ul>
         const maxScroll = scrollWidth - clientWidth;
         const maxThumb = clientWidth - thumbWidth;
         const thumbLeft = maxScroll > 0 ? Math.abs(scrollLeft) / maxScroll * maxThumb : 0;
+        const thumbX = isRTL ? -thumbLeft : thumbLeft;
         this.thumbH.style.width = `${thumbWidth}px`;
-        this.thumbH.style.transform = `translateX(${thumbLeft}px)`;
+        this.thumbH.style.transform = `translateX(${thumbX}px)`;
       } else if (this.trackH && this.trackH.style.display !== "none") {
         this.trackH.style.display = "none";
       }
@@ -8905,12 +8912,14 @@ ${match}</ul>
               startScrollLeft = this.el.scrollLeft;
             },
             onMove: (_e, delta) => {
+              const isRTL = window.getComputedStyle(this.el).direction === "rtl";
               const { clientWidth, scrollWidth } = this.el;
               const thumbW = Math.max(24, clientWidth / scrollWidth * clientWidth);
               const maxThumb = clientWidth - thumbW;
               const maxScroll = scrollWidth - clientWidth;
               if (maxThumb > 0) {
-                this.el.scrollLeft = startScrollLeft + delta.dx / maxThumb * maxScroll;
+                const dx = isRTL ? -delta.dx : delta.dx;
+                this.el.scrollLeft = startScrollLeft + dx / maxThumb * maxScroll;
               }
             },
             onEnd: () => {
@@ -8942,14 +8951,16 @@ ${match}</ul>
             return;
           e.stopPropagation();
           e.preventDefault();
+          const isRTL = window.getComputedStyle(this.el).direction === "rtl";
           const rect = this.trackH.getBoundingClientRect();
-          const clickX = e.clientX - rect.left;
+          const clickX = isRTL ? rect.right - e.clientX : e.clientX - rect.left;
           const { clientWidth, scrollWidth } = this.el;
           const thumbW = Math.max(24, clientWidth / scrollWidth * clientWidth);
           const maxThumb = clientWidth - thumbW;
           const maxScroll = scrollWidth - clientWidth;
           if (maxThumb > 0) {
-            this.el.scrollLeft = Math.max(0, Math.min(maxScroll, (clickX - thumbW / 2) / maxThumb * maxScroll));
+            const targetScroll = Math.max(0, Math.min(maxScroll, (clickX - thumbW / 2) / maxThumb * maxScroll));
+            this.el.scrollLeft = isRTL ? -targetScroll : targetScroll;
           }
         });
       }
