@@ -51,7 +51,7 @@ import { getDataStack, registerScopeProvider } from './scope.ts';
 import { evaluate } from './evaluator.ts'; 
 import { parseAttribute, ParsedAttribute } from './attributeParser.ts'; 
 import { scheduler } from './scheduler.ts';
-import { logger, toError } from './debug.ts';
+import { logger, toError, initError, errMsg } from './debug.ts';
 import { initSanitizingEngine, disposeSanitizingEngine } from './debug.ts';
 import { elUniqId, attrHash } from './utils/hash.ts';
 import { MARKER_KEY } from './consts.ts';
@@ -229,6 +229,22 @@ export class ModuleCoordinator {
       watch: reactivity.watch,
       onEffectCleanup: reactivity.onEffectCleanup,
       elementBoundEffect: reactivity.elementBoundEffect,
+      bind: (
+        el: HTMLElement,
+        value: string,
+        handler: (result: unknown) => void,
+        options?: { raw?: boolean }
+      ): (() => void) | void => {
+        try {
+          const [, cleanup] = reactivity.elementBoundEffect(el, () => {
+            const res = options?.raw ? undefined : evaluate(el, value, this.runtimeContext);
+            handler(res);
+          });
+          return cleanup;
+        } catch (e) {
+          initError('bind', `Reactive bind failed on <${el.tagName}>: ${errMsg(e)}`, el, value);
+        }
+      },
 
       morphDOM: morphDOM,
       fetch: fetchUtilities,
@@ -240,8 +256,8 @@ export class ModuleCoordinator {
       globalActions: getGlobalActions.bind(this),
       getModifier: (name: string) => this.modifierModules.get(name),
       processElement: this.processElement.bind(this),
-      reconcileClass: (el, val) => reconciler.reconcileClass(el, val),
-      reconcileStyle: (el, val) => reconciler.reconcileStyle(el, val),
+      reconcileClass: reconciler.reconcileClass,
+      reconcileStyle: reconciler.reconcileStyle,
       adoptStyle: (el) => {
         if (typeof (this.runtimeContext as any)._styleAdopter === 'function') {
           (this.runtimeContext as any)._styleAdopter(el);

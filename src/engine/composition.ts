@@ -82,6 +82,12 @@ export interface RuntimeContext {
   watch: typeof import('./reactivity.ts').watch;
   onEffectCleanup: typeof import('./reactivity.ts').onEffectCleanup;
   elementBoundEffect: (el: HTMLElement, effect: () => void) => [() => void, () => void];
+  bind: (
+    el: HTMLElement,
+    value: string,
+    handler: (result: unknown) => void,
+    options?: { raw?: boolean }
+  ) => (() => void) | void;
 
   // Expression Evaluator & Parser
   evaluate: (el: Element | Text | Comment, expression: string, extras?: Record<string, unknown>) => unknown;

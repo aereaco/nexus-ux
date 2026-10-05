@@ -15624,6 +15624,17 @@ ${bridge}`, {
         watch,
         onEffectCleanup,
         elementBoundEffect,
+        bind: (el, value, handler, options) => {
+          try {
+            const [, cleanup] = elementBoundEffect(el, () => {
+              const res = options?.raw ? void 0 : evaluate(el, value, this.runtimeContext);
+              handler(res);
+            });
+            return cleanup;
+          } catch (e) {
+            initError("bind", `Reactive bind failed on <${el.tagName}>: ${errMsg(e)}`, el, value);
+          }
+        },
         morphDOM,
         fetch: fetchUtilities,
         evaluate: (el, expression, extras) => evaluate(el, expression, this.runtimeContext, extras),
@@ -15634,8 +15645,8 @@ ${bridge}`, {
         globalActions: getGlobalActions.bind(this),
         getModifier: (name) => this.modifierModules.get(name),
         processElement: this.processElement.bind(this),
-        reconcileClass: (el, val) => reconcileClass(el, val),
-        reconcileStyle: (el, val) => reconcileStyle(el, val),
+        reconcileClass,
+        reconcileStyle,
         adoptStyle: (el) => {
           if (typeof this.runtimeContext._styleAdopter === "function") {
             this.runtimeContext._styleAdopter(el);
