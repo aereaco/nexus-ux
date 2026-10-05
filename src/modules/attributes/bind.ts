@@ -41,7 +41,7 @@
 
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError, errMsg, toError } from '../../engine/debug.ts';
+import { toError } from '../../engine/debug.ts';
 import { matchAttributes, ParsedAttribute } from '../../engine/attributeParser.ts';
 
 
@@ -192,81 +192,75 @@ const bindModule: AttributeModule = {
     // ─── Sub-Directive Mode (data-bind-value, data-bind-dir, data-bind-style, etc.) ───
     const cleanupFns: (() => void)[] = [];
 
-    try {
-      const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        const result = runtime.evaluate(el, value);
-        const attrValue = result !== undefined && result !== null ? String(result) : '';
+    const cleanup = runtime.bind(el, value, (result) => {
+      const attrValue = result !== undefined && result !== null ? String(result) : '';
 
-        if (target === 'value' || target === 'checked') {
-          if (el instanceof HTMLInputElement && el.type === 'checkbox') {
-            if (el.checked !== Boolean(result)) el.checked = Boolean(result);
-          } else if (el instanceof HTMLInputElement && el.type === 'radio') {
-            if (target === 'checked') {
-              if (el.checked !== Boolean(result)) el.checked = Boolean(result);
-            } else {
-              if (el.value !== attrValue) el.value = attrValue;
-            }
-          } else if ('value' in el) {
-            setValuePreservingCursor(el as HTMLInputElement, attrValue);
-          }
-        } else if (target === 'text') {
-          if (el.textContent !== attrValue) el.textContent = attrValue;
-        } else if (target === 'html') {
-          if (el.innerHTML !== attrValue) el.innerHTML = attrValue;
-        } else if (target === 'style') {
-          runtime.reconcileStyle(el, result);
-        } else if (target === 'draggable') {
-          const newVal = result ? 'true' : 'false';
-          if (el.getAttribute('draggable') !== newVal) {
-            el.setAttribute('draggable', newVal);
-          }
-        } else if (target === 'dir') {
-          if (el.getAttribute('dir') !== attrValue) {
-            el.setAttribute('dir', attrValue);
-          }
-          if (document.documentElement.getAttribute('dir') !== attrValue) {
-            document.documentElement.setAttribute('dir', attrValue);
-          }
-        } else {
-          if (result === false || result === null || result === undefined) {
-            if (el.hasAttribute(target)) el.removeAttribute(target);
-          } else {
-            if (el.getAttribute(target) !== attrValue) el.setAttribute(target, attrValue);
-          }
-        }
-      });
-
-      cleanupFns.push(cleanup);
-
-      // Two-Way Binding Setup (Input Listener)
       if (target === 'value' || target === 'checked') {
-        const isLazy = el.hasAttribute('data-bind_lazy') || parsed?.modifiers?.includes('lazy') === true;
-        const eventName = isLazy ? 'change' : (
-          el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')
-            || el instanceof HTMLSelectElement ? 'change' : 'input'
-        );
-
-        const inputHandler = (e: Event) => {
-          let newValue: unknown;
-          if (el instanceof HTMLInputElement && el.type === 'checkbox') {
-            newValue = el.checked;
-          } else if (el instanceof HTMLInputElement && el.type === 'radio') {
-            newValue = el.checked ? el.value : undefined;
-          } else if (el instanceof HTMLInputElement && (el.type === 'range' || el.type === 'number')) {
-            const raw = (e.target as HTMLInputElement).value;
-            newValue = raw === '' ? '' : Number(raw);
+        if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+          if (el.checked !== Boolean(result)) el.checked = Boolean(result);
+        } else if (el instanceof HTMLInputElement && el.type === 'radio') {
+          if (target === 'checked') {
+            if (el.checked !== Boolean(result)) el.checked = Boolean(result);
           } else {
-            newValue = (e.target as HTMLInputElement).value;
+            if (el.value !== attrValue) el.value = attrValue;
           }
-          runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
-        };
-
-        el.addEventListener(eventName, inputHandler);
-        cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
+        } else if ('value' in el) {
+          setValuePreservingCursor(el as HTMLInputElement, attrValue);
+        }
+      } else if (target === 'text') {
+        if (el.textContent !== attrValue) el.textContent = attrValue;
+      } else if (target === 'html') {
+        if (el.innerHTML !== attrValue) el.innerHTML = attrValue;
+      } else if (target === 'style') {
+        runtime.reconcileStyle(el, result);
+      } else if (target === 'draggable') {
+        const newVal = result ? 'true' : 'false';
+        if (el.getAttribute('draggable') !== newVal) {
+          el.setAttribute('draggable', newVal);
+        }
+      } else if (target === 'dir') {
+        if (el.getAttribute('dir') !== attrValue) {
+          el.setAttribute('dir', attrValue);
+        }
+        if (document.documentElement.getAttribute('dir') !== attrValue) {
+          document.documentElement.setAttribute('dir', attrValue);
+        }
+      } else {
+        if (result === false || result === null || result === undefined) {
+          if (el.hasAttribute(target)) el.removeAttribute(target);
+        } else {
+          if (el.getAttribute(target) !== attrValue) el.setAttribute(target, attrValue);
+        }
       }
+    });
 
-    } catch (e) {
-      initError('bind', `Failed to bind ${target}: ${errMsg(e)}`, el, value);
+    if (cleanup) cleanupFns.push(cleanup);
+
+    // Two-Way Binding Setup (Input Listener)
+    if (target === 'value' || target === 'checked') {
+      const isLazy = el.hasAttribute('data-bind_lazy') || parsed?.modifiers?.includes('lazy') === true;
+      const eventName = isLazy ? 'change' : (
+        el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')
+          || el instanceof HTMLSelectElement ? 'change' : 'input'
+      );
+
+      const inputHandler = (e: Event) => {
+        let newValue: unknown;
+        if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+          newValue = el.checked;
+        } else if (el instanceof HTMLInputElement && el.type === 'radio') {
+          newValue = el.checked ? el.value : undefined;
+        } else if (el instanceof HTMLInputElement && (el.type === 'range' || el.type === 'number')) {
+          const raw = (e.target as HTMLInputElement).value;
+          newValue = raw === '' ? '' : Number(raw);
+        } else {
+          newValue = (e.target as HTMLInputElement).value;
+        }
+        runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+      };
+
+      el.addEventListener(eventName, inputHandler);
+      cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
     }
 
     return () => cleanupFns.forEach(fn => fn());

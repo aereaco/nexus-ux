@@ -31,7 +31,7 @@
 
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError, errMsg } from '../../engine/debug.ts';
+import { initError } from '../../engine/debug.ts';
 import { addScopeToNode } from '../../engine/scope.ts';
 import { CLEANUP_FUNCTIONS_KEY, DATA_STACK_KEY, IS_TEMPLATE_KEY, LOCAL_SCOPES_KEY, MARKER_KEY } from '../../engine/consts.ts';
 import { nexusClassMap, nexusStyleMap } from '../../engine/reconciler.ts';
@@ -124,10 +124,9 @@ const forModule: AttributeModule = {
 
     const mountedMap = new Map<any, Node[]>();
 
-    try {
-      const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        const items = runtime.evaluate(el, itemsExpr) as unknown as unknown[];
-        if (!Array.isArray(items)) return;
+    const cleanup = runtime.bind(el, itemsExpr, (evaluated) => {
+      const items = evaluated as unknown as unknown[];
+      if (!Array.isArray(items)) return;
         
 
         const currentKeys = new Set();
@@ -253,23 +252,19 @@ const forModule: AttributeModule = {
           }
         }
 
-        // Process newly created nodes AFTER they are connected to the DOM tree so
-        // engine directives (e.g. stylesheet adoptClass) find ancestor context.
-        newlyCreatedNodes.forEach(n => {
-          runtime.processElement(n, true);
-        });
+      // Process newly created nodes AFTER they are connected to the DOM tree so
+      // engine directives (e.g. stylesheet adoptClass) find ancestor context.
+      newlyCreatedNodes.forEach(n => {
+        runtime.processElement(n, true);
       });
+    });
 
-      return () => {
-        cleanup();
-        for (const nodes of mountedMap.values()) disposeNodes(nodes);
-        mountedMap.clear();
-        anchor.remove();
-      }
-
-    } catch (e) {
-      initError('for', `Failed to initialize for: ${errMsg(e)}`, el, value);
-    }
+    return () => {
+      cleanup?.();
+      for (const nodes of mountedMap.values()) disposeNodes(nodes);
+      mountedMap.clear();
+      anchor.remove();
+    };
   }
 };
 

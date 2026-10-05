@@ -28,7 +28,6 @@
 
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
-import { initError, errMsg } from '../../engine/debug.ts';
 import { CLEANUP_FUNCTIONS_KEY, MARKER_KEY, IS_TEMPLATE_KEY } from '../../engine/consts.ts';
 
 interface NexusIfElement extends HTMLElement {
@@ -131,35 +130,31 @@ const ifModule: AttributeModule = {
       });
     };
 
-    try {
-      const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-        // `el` is hidden (display:none) but connected; evaluating against it
-        // resolves the correct data scope.
-        const condition = Boolean(runtime.evaluate(el, value));
+    const cleanup = runtime.bind(el, value, (result) => {
+      // `el` is hidden (display:none) but connected; evaluating against it
+      // resolves the correct data scope.
+      const condition = Boolean(result);
 
-        if (condition) {
-          if (!isMounted) {
-            mount();
-            isMounted = true;
-          }
-        } else {
-          if (isMounted) {
-            disposeNodes(currentNodes);
-            currentNodes = [];
-            isMounted = false;
-          }
+      if (condition) {
+        if (!isMounted) {
+          mount();
+          isMounted = true;
         }
-      });
+      } else {
+        if (isMounted) {
+          disposeNodes(currentNodes);
+          currentNodes = [];
+          isMounted = false;
+        }
+      }
+    });
 
-      return () => {
-        cleanup();
-        disposeNodes(currentNodes);
-        currentNodes = [];
-        if (anchor.parentNode) anchor.remove();
-      };
-    } catch (e) {
-      initError('if', `Failed to initialize if: ${errMsg(e)}`, el, value);
-    }
+    return () => {
+      cleanup?.();
+      disposeNodes(currentNodes);
+      currentNodes = [];
+      if (anchor.parentNode) anchor.remove();
+    };
   }
 };
 

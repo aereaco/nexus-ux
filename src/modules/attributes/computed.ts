@@ -28,7 +28,6 @@
 import { AttributeModule } from '../../engine/modules.ts';
 import { RuntimeContext } from '../../engine/composition.ts';
 import { addScopeToNode, parseGhostKeys, createScopeProxy } from '../../engine/scope.ts';
-import { initError } from '../../engine/debug.ts';
 import { unifiedRef, unifiedComputed } from '../../engine/reactivity.ts';
 
 const computedModule: AttributeModule = {
@@ -58,8 +57,7 @@ const computedModule: AttributeModule = {
       const addCleanup = addScopeToNode(el, scopeProxy);
       computedCleanup.push(addCleanup);
 
-      const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
-        const computedDefs = runtime.evaluate(el, value || '{}');
+      const effectCleanup = runtime.bind(el, value || '{}', (computedDefs) => {
         if (typeof computedDefs === 'object' && computedDefs !== null) {
           Object.entries(computedDefs).forEach(([propName, getter]) => {
             if (typeof getter !== 'function') return;
@@ -81,7 +79,7 @@ const computedModule: AttributeModule = {
           });
         }
       });
-      computedCleanup.push(effectCleanup);
+      if (effectCleanup) computedCleanup.push(effectCleanup);
     }
 
     // Format 2: data-computed-propName="expression"
@@ -107,7 +105,7 @@ const computedModule: AttributeModule = {
         const propName = attr.name.substring('data-computed-'.length);
         if (!propName) return;
 
-        const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
+        const [_, effectCleanup] = runtime.elementBoundEffect(el, () => {
           const expression = attr.value;
           const computedVal = runtime.computed(() => {
             try {

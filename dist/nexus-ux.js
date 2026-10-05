@@ -1570,11 +1570,11 @@ ${suggestion}`);
       if (!target) {
         const cleanupFns5 = [];
         try {
-          const [runner, cleanup] = runtime.elementBoundEffect(el, () => {
+          const [runner, cleanup2] = runtime.elementBoundEffect(el, () => {
             const result = runtime.evaluate(el, value);
             applyBindingResult(result, el);
           });
-          cleanupFns5.push(cleanup);
+          cleanupFns5.push(cleanup2);
           if (value.includes("innerWidth") || value.includes("innerHeight")) {
             const onResize = () => {
               runner();
@@ -1630,78 +1630,74 @@ ${suggestion}`);
         return () => cleanupFns5.forEach((fn) => fn());
       }
       const cleanupFns4 = [];
-      try {
-        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-          const result = runtime.evaluate(el, value);
-          const attrValue = result !== void 0 && result !== null ? String(result) : "";
-          if (target === "value" || target === "checked") {
-            if (el instanceof HTMLInputElement && el.type === "checkbox") {
+      const cleanup = runtime.bind(el, value, (result) => {
+        const attrValue = result !== void 0 && result !== null ? String(result) : "";
+        if (target === "value" || target === "checked") {
+          if (el instanceof HTMLInputElement && el.type === "checkbox") {
+            if (el.checked !== Boolean(result))
+              el.checked = Boolean(result);
+          } else if (el instanceof HTMLInputElement && el.type === "radio") {
+            if (target === "checked") {
               if (el.checked !== Boolean(result))
                 el.checked = Boolean(result);
-            } else if (el instanceof HTMLInputElement && el.type === "radio") {
-              if (target === "checked") {
-                if (el.checked !== Boolean(result))
-                  el.checked = Boolean(result);
-              } else {
-                if (el.value !== attrValue)
-                  el.value = attrValue;
-              }
-            } else if ("value" in el) {
-              setValuePreservingCursor(el, attrValue);
-            }
-          } else if (target === "text") {
-            if (el.textContent !== attrValue)
-              el.textContent = attrValue;
-          } else if (target === "html") {
-            if (el.innerHTML !== attrValue)
-              el.innerHTML = attrValue;
-          } else if (target === "style") {
-            runtime.reconcileStyle(el, result);
-          } else if (target === "draggable") {
-            const newVal = result ? "true" : "false";
-            if (el.getAttribute("draggable") !== newVal) {
-              el.setAttribute("draggable", newVal);
-            }
-          } else if (target === "dir") {
-            if (el.getAttribute("dir") !== attrValue) {
-              el.setAttribute("dir", attrValue);
-            }
-            if (document.documentElement.getAttribute("dir") !== attrValue) {
-              document.documentElement.setAttribute("dir", attrValue);
-            }
-          } else {
-            if (result === false || result === null || result === void 0) {
-              if (el.hasAttribute(target))
-                el.removeAttribute(target);
             } else {
-              if (el.getAttribute(target) !== attrValue)
-                el.setAttribute(target, attrValue);
+              if (el.value !== attrValue)
+                el.value = attrValue;
             }
+          } else if ("value" in el) {
+            setValuePreservingCursor(el, attrValue);
           }
-        });
-        cleanupFns4.push(cleanup);
-        if (target === "value" || target === "checked") {
-          const isLazy = el.hasAttribute("data-bind_lazy") || parsed?.modifiers?.includes("lazy") === true;
-          const eventName = isLazy ? "change" : el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio") || el instanceof HTMLSelectElement ? "change" : "input";
-          const inputHandler = (e) => {
-            let newValue;
-            if (el instanceof HTMLInputElement && el.type === "checkbox") {
-              newValue = el.checked;
-            } else if (el instanceof HTMLInputElement && el.type === "radio") {
-              newValue = el.checked ? el.value : void 0;
-            } else if (el instanceof HTMLInputElement && (el.type === "range" || el.type === "number")) {
-              const raw = e.target.value;
-              newValue = raw === "" ? "" : Number(raw);
-            } else {
-              newValue = e.target.value;
-            }
-            runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
-          };
-          el.addEventListener(eventName, inputHandler);
-          cleanupFns4.push(() => el.removeEventListener(eventName, inputHandler));
+        } else if (target === "text") {
+          if (el.textContent !== attrValue)
+            el.textContent = attrValue;
+        } else if (target === "html") {
+          if (el.innerHTML !== attrValue)
+            el.innerHTML = attrValue;
+        } else if (target === "style") {
+          runtime.reconcileStyle(el, result);
+        } else if (target === "draggable") {
+          const newVal = result ? "true" : "false";
+          if (el.getAttribute("draggable") !== newVal) {
+            el.setAttribute("draggable", newVal);
+          }
+        } else if (target === "dir") {
+          if (el.getAttribute("dir") !== attrValue) {
+            el.setAttribute("dir", attrValue);
+          }
+          if (document.documentElement.getAttribute("dir") !== attrValue) {
+            document.documentElement.setAttribute("dir", attrValue);
+          }
+        } else {
+          if (result === false || result === null || result === void 0) {
+            if (el.hasAttribute(target))
+              el.removeAttribute(target);
+          } else {
+            if (el.getAttribute(target) !== attrValue)
+              el.setAttribute(target, attrValue);
+          }
         }
-      } catch (e) {
-        initError2("bind", `Failed to bind ${target}: ${errMsg(e)}`, el, value);
+      });
+      if (cleanup)
+        cleanupFns4.push(cleanup);
+      if (target === "value" || target === "checked") {
+        const isLazy = el.hasAttribute("data-bind_lazy") || parsed?.modifiers?.includes("lazy") === true;
+        const eventName = isLazy ? "change" : el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio") || el instanceof HTMLSelectElement ? "change" : "input";
+        const inputHandler = (e) => {
+          let newValue;
+          if (el instanceof HTMLInputElement && el.type === "checkbox") {
+            newValue = el.checked;
+          } else if (el instanceof HTMLInputElement && el.type === "radio") {
+            newValue = el.checked ? el.value : void 0;
+          } else if (el instanceof HTMLInputElement && (el.type === "range" || el.type === "number")) {
+            const raw = e.target.value;
+            newValue = raw === "" ? "" : Number(raw);
+          } else {
+            newValue = e.target.value;
+          }
+          runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+        };
+        el.addEventListener(eventName, inputHandler);
+        cleanupFns4.push(() => el.removeEventListener(eventName, inputHandler));
       }
       return () => cleanupFns4.forEach((fn) => fn());
     }
@@ -3084,8 +3080,7 @@ ${scripts}
         const scopeProxy = createScopeProxy(stateRef);
         const addCleanup = addScopeToNode(el, scopeProxy);
         computedCleanup.push(addCleanup);
-        const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
-          const computedDefs = runtime.evaluate(el, value || "{}");
+        const effectCleanup = runtime.bind(el, value || "{}", (computedDefs) => {
           if (typeof computedDefs === "object" && computedDefs !== null) {
             Object.entries(computedDefs).forEach(([propName, getter]) => {
               if (typeof getter !== "function")
@@ -3106,7 +3101,8 @@ ${scripts}
             });
           }
         });
-        computedCleanup.push(effectCleanup);
+        if (effectCleanup)
+          computedCleanup.push(effectCleanup);
       }
       const attrs = Array.from(el.attributes).filter((a) => a.name.startsWith("data-computed-"));
       if (attrs.length > 0) {
@@ -3137,7 +3133,7 @@ ${scripts}
           const propName = attr.name.substring("data-computed-".length);
           if (!propName)
             return;
-          const [_runner, effectCleanup] = runtime.elementBoundEffect(el, () => {
+          const [_, effectCleanup] = runtime.elementBoundEffect(el, () => {
             const expression = attr.value;
             const computedVal = runtime.computed(() => {
               try {
@@ -6011,7 +6007,7 @@ ${scripts}
             const enhanced = n;
             const elRemovals = enhanced[CLEANUP_FUNCTIONS_KEY];
             if (elRemovals) {
-              elRemovals.forEach((cleanup) => cleanup());
+              elRemovals.forEach((cleanup2) => cleanup2());
               delete enhanced[CLEANUP_FUNCTIONS_KEY];
             }
             delete enhanced[LOCAL_SCOPES_KEY];
@@ -6022,123 +6018,119 @@ ${scripts}
         });
       };
       const mountedMap = /* @__PURE__ */ new Map();
-      try {
-        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-          const items = runtime.evaluate(el, itemsExpr);
-          if (!Array.isArray(items))
-            return;
-          const currentKeys = /* @__PURE__ */ new Set();
-          const nextNodes = [];
-          const newlyCreatedNodes = [];
-          items.forEach((item, index) => {
-            let key = item?.id ?? (typeof item === "object" && item !== null ? index : item);
-            if (currentKeys.has(key)) {
-              key = `${String(key)}__${index}`;
-            }
-            currentKeys.add(key);
-            let nodes = mountedMap.get(key);
-            if (!nodes) {
-              const clone = isTemplate ? blueprint.cloneNode(true) : blueprint.cloneNode(true);
-              if (!isTemplate) {
-                copyNexusMetadata(blueprint, clone);
-              } else {
-                const srcChildren = Array.from(blueprint.childNodes).filter((n) => n instanceof HTMLElement);
-                const destChildren = Array.from(clone.childNodes).filter((n) => n instanceof HTMLElement);
-                for (let i = 0; i < srcChildren.length; i++) {
-                  if (srcChildren[i] && destChildren[i]) {
-                    copyNexusMetadata(srcChildren[i], destChildren[i]);
-                  }
+      const cleanup = runtime.bind(el, itemsExpr, (evaluated) => {
+        const items = evaluated;
+        if (!Array.isArray(items))
+          return;
+        const currentKeys = /* @__PURE__ */ new Set();
+        const nextNodes = [];
+        const newlyCreatedNodes = [];
+        items.forEach((item, index) => {
+          let key = item?.id ?? (typeof item === "object" && item !== null ? index : item);
+          if (currentKeys.has(key)) {
+            key = `${String(key)}__${index}`;
+          }
+          currentKeys.add(key);
+          let nodes = mountedMap.get(key);
+          if (!nodes) {
+            const clone = isTemplate ? blueprint.cloneNode(true) : blueprint.cloneNode(true);
+            if (!isTemplate) {
+              copyNexusMetadata(blueprint, clone);
+            } else {
+              const srcChildren = Array.from(blueprint.childNodes).filter((n) => n instanceof HTMLElement);
+              const destChildren = Array.from(clone.childNodes).filter((n) => n instanceof HTMLElement);
+              for (let i = 0; i < srcChildren.length; i++) {
+                if (srcChildren[i] && destChildren[i]) {
+                  copyNexusMetadata(srcChildren[i], destChildren[i]);
                 }
               }
-              nodes = isTemplate ? Array.from(clone.childNodes).filter(isFlowNode) : [clone];
-              nodes.forEach((n) => {
-                if (isFlowNode(n)) {
+            }
+            nodes = isTemplate ? Array.from(clone.childNodes).filter(isFlowNode) : [clone];
+            nodes.forEach((n) => {
+              if (isFlowNode(n)) {
+                const scope = { [itemKey]: item };
+                if (indexKey)
+                  scope[indexKey] = index;
+                addScopeToNode(n, runtime.shallowReactive(scope), el);
+                if (!isTemplate) {
+                  n.style.display = "";
+                  n.removeAttribute("data-for");
+                  delete n[IS_TEMPLATE_KEY];
+                }
+                const cleanClonedMarkers = (target) => {
+                  delete target[MARKER_KEY];
+                  delete target[CLEANUP_FUNCTIONS_KEY];
+                  if (target.childNodes) {
+                    target.childNodes.forEach(cleanClonedMarkers);
+                  }
+                };
+                cleanClonedMarkers(n);
+                newlyCreatedNodes.push(n);
+              }
+            });
+            mountedMap.set(key, nodes);
+          } else {
+            nodes.forEach((n) => {
+              if (isFlowNode(n)) {
+                const enhanced = n;
+                const stack = enhanced[LOCAL_SCOPES_KEY] || enhanced[DATA_STACK_KEY] || enhanced[Symbol.for("__nexus_local_scopes__")] || enhanced[Symbol.for("__data_stack__")];
+                if (stack && stack.length > 0) {
+                  const scope = stack[0];
+                  if (scope[itemKey] !== item) {
+                    scope[itemKey] = item;
+                  }
+                  if (indexKey && scope[indexKey] !== index) {
+                    scope[indexKey] = index;
+                  }
+                } else {
                   const scope = { [itemKey]: item };
                   if (indexKey)
                     scope[indexKey] = index;
                   addScopeToNode(n, runtime.shallowReactive(scope), el);
-                  if (!isTemplate) {
-                    n.style.display = "";
-                    n.removeAttribute("data-for");
-                    delete n[IS_TEMPLATE_KEY];
-                  }
-                  const cleanClonedMarkers = (target) => {
-                    delete target[MARKER_KEY];
-                    delete target[CLEANUP_FUNCTIONS_KEY];
-                    if (target.childNodes) {
-                      target.childNodes.forEach(cleanClonedMarkers);
-                    }
-                  };
-                  cleanClonedMarkers(n);
-                  newlyCreatedNodes.push(n);
-                }
-              });
-              mountedMap.set(key, nodes);
-            } else {
-              nodes.forEach((n) => {
-                if (isFlowNode(n)) {
-                  const enhanced = n;
-                  const stack = enhanced[LOCAL_SCOPES_KEY] || enhanced[DATA_STACK_KEY] || enhanced[Symbol.for("__nexus_local_scopes__")] || enhanced[Symbol.for("__data_stack__")];
-                  if (stack && stack.length > 0) {
-                    const scope = stack[0];
-                    if (scope[itemKey] !== item) {
-                      scope[itemKey] = item;
-                    }
-                    if (indexKey && scope[indexKey] !== index) {
-                      scope[indexKey] = index;
-                    }
-                  } else {
-                    const scope = { [itemKey]: item };
-                    if (indexKey)
-                      scope[indexKey] = index;
-                    addScopeToNode(n, runtime.shallowReactive(scope), el);
-                  }
-                }
-              });
-            }
-            nextNodes.push(...nodes);
-          });
-          for (const [key, nodes] of mountedMap.entries()) {
-            if (!currentKeys.has(key)) {
-              disposeNodes(nodes);
-              mountedMap.delete(key);
-            }
-          }
-          const isInitialMount = nextNodes.length === newlyCreatedNodes.length && newlyCreatedNodes.length > 1;
-          if (isInitialMount) {
-            const fragment = document.createDocumentFragment();
-            for (let i = 0; i < nextNodes.length; i++) {
-              fragment.appendChild(nextNodes[i]);
-            }
-            anchor.parentNode?.insertBefore(fragment, anchor);
-          } else {
-            let expectedBefore = anchor;
-            for (let i = nextNodes.length - 1; i >= 0; i--) {
-              const node = nextNodes[i];
-              if (node.nextSibling !== expectedBefore) {
-                if (typeof anchor.parentNode?.moveBefore === "function" && node.parentNode === anchor.parentNode) {
-                  anchor.parentNode.moveBefore(node, expectedBefore);
-                } else {
-                  anchor.parentNode?.insertBefore(node, expectedBefore);
                 }
               }
-              expectedBefore = node;
-            }
+            });
           }
-          newlyCreatedNodes.forEach((n) => {
-            runtime.processElement(n, true);
-          });
+          nextNodes.push(...nodes);
         });
-        return () => {
-          cleanup();
-          for (const nodes of mountedMap.values())
+        for (const [key, nodes] of mountedMap.entries()) {
+          if (!currentKeys.has(key)) {
             disposeNodes(nodes);
-          mountedMap.clear();
-          anchor.remove();
-        };
-      } catch (e) {
-        initError2("for", `Failed to initialize for: ${errMsg(e)}`, el, value);
-      }
+            mountedMap.delete(key);
+          }
+        }
+        const isInitialMount = nextNodes.length === newlyCreatedNodes.length && newlyCreatedNodes.length > 1;
+        if (isInitialMount) {
+          const fragment = document.createDocumentFragment();
+          for (let i = 0; i < nextNodes.length; i++) {
+            fragment.appendChild(nextNodes[i]);
+          }
+          anchor.parentNode?.insertBefore(fragment, anchor);
+        } else {
+          let expectedBefore = anchor;
+          for (let i = nextNodes.length - 1; i >= 0; i--) {
+            const node = nextNodes[i];
+            if (node.nextSibling !== expectedBefore) {
+              if (typeof anchor.parentNode?.moveBefore === "function" && node.parentNode === anchor.parentNode) {
+                anchor.parentNode.moveBefore(node, expectedBefore);
+              } else {
+                anchor.parentNode?.insertBefore(node, expectedBefore);
+              }
+            }
+            expectedBefore = node;
+          }
+        }
+        newlyCreatedNodes.forEach((n) => {
+          runtime.processElement(n, true);
+        });
+      });
+      return () => {
+        cleanup?.();
+        for (const nodes of mountedMap.values())
+          disposeNodes(nodes);
+        mountedMap.clear();
+        anchor.remove();
+      };
     }
   };
   var for_default = forModule;
@@ -6174,7 +6166,6 @@ ${scripts}
   __export(if_exports, {
     default: () => if_default
   });
-  init_debug();
   init_consts();
   function teardownTree(node) {
     if (!(node instanceof HTMLElement))
@@ -6234,32 +6225,28 @@ ${scripts}
             runtime.processElement(n);
         });
       };
-      try {
-        const [_runner, cleanup] = runtime.elementBoundEffect(el, () => {
-          const condition = Boolean(runtime.evaluate(el, value));
-          if (condition) {
-            if (!isMounted) {
-              mount();
-              isMounted = true;
-            }
-          } else {
-            if (isMounted) {
-              disposeNodes(currentNodes);
-              currentNodes = [];
-              isMounted = false;
-            }
+      const cleanup = runtime.bind(el, value, (result) => {
+        const condition = Boolean(result);
+        if (condition) {
+          if (!isMounted) {
+            mount();
+            isMounted = true;
           }
-        });
-        return () => {
-          cleanup();
-          disposeNodes(currentNodes);
-          currentNodes = [];
-          if (anchor.parentNode)
-            anchor.remove();
-        };
-      } catch (e) {
-        initError2("if", `Failed to initialize if: ${errMsg(e)}`, el, value);
-      }
+        } else {
+          if (isMounted) {
+            disposeNodes(currentNodes);
+            currentNodes = [];
+            isMounted = false;
+          }
+        }
+      });
+      return () => {
+        cleanup?.();
+        disposeNodes(currentNodes);
+        currentNodes = [];
+        if (anchor.parentNode)
+          anchor.remove();
+      };
     }
   };
   var if_default = ifModule;
@@ -9579,12 +9566,9 @@ ${match}</ul>
           runtime.processElement?.(clone);
         }
       };
-      updateTarget();
-      const [_runner, effectCleanup] = runtime.elementBoundEffect(element, updateTarget);
+      const cleanup = runtime.bind(element, value, () => updateTarget(), { raw: true });
       return () => {
-        if (typeof effectCleanup === "function") {
-          effectCleanup();
-        }
+        cleanup?.();
         if (clone.parentNode) {
           clone.parentNode.removeChild(clone);
         }

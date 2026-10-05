@@ -275,14 +275,10 @@ export const teleportAttribute: AttributeModule = {
       }
     };
 
-    updateTarget();
-
-    const [_runner, effectCleanup] = runtime.elementBoundEffect(element, updateTarget);
+    const cleanup = runtime.bind(element, value, () => updateTarget(), { raw: true });
 
     return () => {
-      if (typeof effectCleanup === 'function') {
-        effectCleanup();
-      }
+      cleanup?.();
       if (clone.parentNode) {
         clone.parentNode.removeChild(clone);
       }
