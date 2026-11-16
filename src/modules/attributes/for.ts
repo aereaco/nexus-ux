@@ -1,0 +1,279 @@
+/**
+ * Nexus-UX For Directive Module
+ *
+ * Handles `data-for` for list rendering. Clones a template element for each
+ * item in an array, binds the item to the element's scope, and manages
+ * lifecycle cleanup when the array changes.
+ *
+ * Supported Syntax:
+ *   - `(item, index) in items` — tuple destructuring
+ *   - `item in items` — item only
+ *   - `item, i in items` — alternative tuple syntax
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Template nodes are cloned via cloneNode(true); original
+ *     template is never mutated.
+ *   - Zero-serialization: Scope objects are shared by reference across
+ *     cloned elements; no serialization.
+ *
+ * Coordination:
+ *   - scope.ts provides addScopeToNode for scoped element creation
+ *   - reconciler.ts provides nexusClassMap/nexusStyleMap for metadata
+ *   - reactivity.ts provides reactive wrappers for array tracking
+ *   - consts.ts provides CLEANUP_FUNCTIONS_KEY for lifecycle management
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Flow-aware cloning (SVG and HTML elements both supported)
+ *   - Nexus metadata preservation across clone boundaries
+ *   - Automatic cleanup on array mutation or element removal
+ *   - Ghost key support for typed item properties
+ */
+
+import { AttributeModule } from '../../engine/modules.ts';
+import { RuntimeContext } from '../../engine/composition.ts';
+import { initError } from '../../engine/debug.ts';
+import { addScopeToNode } from '../../engine/scope.ts';
+import { CLEANUP_FUNCTIONS_KEY, DATA_STACK_KEY, IS_TEMPLATE_KEY, LOCAL_SCOPES_KEY, MARKER_KEY } from '../../engine/consts.ts';
+import { nexusClassMap, nexusStyleMap, teardownSubtree } from '../../engine/reconciler.ts';
+
+// SVGs (paths, etc.) are SVGElement, not HTMLElement — both must be treated
+// as cloneable/scopable flow nodes.
+type ForNode = HTMLElement | SVGElement;
+const isFlowNode = (n: Node): n is ForNode => n instanceof HTMLElement || n instanceof SVGElement;
+
+// Helper to copy dynamic class and style metadata recursively during cloning
+function copyNexusMetadata(src: ForNode, dest: ForNode) {
+  const srcClasses = nexusClassMap.get(src);
+  if (srcClasses) {
+    nexusClassMap.set(dest, new Set(srcClasses));
+  }
+  const srcStyles = nexusStyleMap.get(src);
+  if (srcStyles) {
+    nexusStyleMap.set(dest, new Set(srcStyles));
+  }
+  const srcChildren = Array.from(src.children) as HTMLElement[];
+  const destChildren = Array.from(dest.children) as HTMLElement[];
+  for (let i = 0; i < srcChildren.length; i++) {
+    if (srcChildren[i] && destChildren[i]) {
+      copyNexusMetadata(srcChildren[i], destChildren[i]);
+    }
+  }
+}
+
+const forModule: AttributeModule = {
+  name: 'for',
+  attribute: 'for',
+  handle: (el: HTMLElement, value: string, runtime: RuntimeContext): (() => void) | void => {
+    // 1. Validation
+    const templateRef = el.getAttribute('data-template');
+    const targetTemplate = templateRef ? (document.querySelector(templateRef) as HTMLTemplateElement) : null;
+    const isTemplate = el instanceof HTMLTemplateElement || !!targetTemplate;
+    const blueprint = targetTemplate ? targetTemplate.content : (isTemplate ? (el as HTMLTemplateElement).content : el);
+    
+    let itemKey = '';
+    let indexKey: string | undefined = undefined;
+    let itemsExpr = '';
+
+    const inIdx = value.indexOf(' in ');
+    if (inIdx === -1) {
+      initError('for', `Invalid syntax: ${value}. Expected "item in items"`, el, value);
+      return;
+    }
+
+    const lhs = value.substring(0, inIdx).trim();
+    itemsExpr = value.substring(inIdx + 4).trim();
+
+    if (lhs.startsWith('(') && lhs.endsWith(')')) {
+        const inner = lhs.substring(1, lhs.length - 1);
+        const commaIdx = inner.indexOf(',');
+        if (commaIdx !== -1) {
+            itemKey = inner.substring(0, commaIdx).trim();
+            indexKey = inner.substring(commaIdx + 1).trim();
+        } else {
+            itemKey = inner.trim();
+        }
+    } else {
+        itemKey = lhs;
+    }
+ 
+    const anchor = document.createComment(` for: ${value} `);
+    el.parentNode?.insertBefore(anchor, el);
+ 
+    if (!isTemplate) {
+      el.style.display = 'none';
+      // Mark as hidden template in JS memory via Symbol key (Alpine/Datastar pattern)
+      (el as any)[IS_TEMPLATE_KEY] = true;
+    }
+
+    const keyExpr = el.getAttribute('data-key') || el.getAttribute(':key');
+    const disposeNodes = (nodes: Node[]) => {
+      nodes.forEach(n => {
+        teardownSubtree(n, true);
+        n.parentNode?.removeChild(n);
+      });
+    };
+
+    const mountedMap = new Map<any, Node[]>();
+
+    const cleanup = runtime.bind(el, itemsExpr, (evaluated) => {
+      const items = evaluated as unknown as unknown[];
+      if (!Array.isArray(items)) return;
+        
+
+        const currentKeys = new Set();
+        const nextNodes: Node[] = [];
+        const newlyCreatedNodes: ForNode[] = [];
+
+        items.forEach((item, index) => {
+          let key: any;
+          if (keyExpr) {
+            try {
+              const extras: Record<string, unknown> = { [itemKey]: item };
+              if (indexKey) extras[indexKey] = index;
+              const evaluatedKey = runtime.evaluate(el, keyExpr, extras);
+              if (evaluatedKey !== undefined && evaluatedKey !== null) {
+                key = evaluatedKey;
+              }
+            } catch {
+              // Fallback to default key below
+            }
+          }
+          if (key === undefined || key === null) {
+            key = (item as any)?.id ?? (typeof item === 'object' && item !== null ? index : item);
+          }
+          if (currentKeys.has(key)) {
+            key = `${String(key)}__${index}`;
+          }
+          currentKeys.add(key);
+
+          let nodes = mountedMap.get(key);
+          if (!nodes) {
+            // Create New
+            const clone = isTemplate 
+              ? (blueprint as DocumentFragment).cloneNode(true) 
+              : (blueprint as HTMLElement).cloneNode(true);
+            
+            if (!isTemplate) {
+              copyNexusMetadata(blueprint as HTMLElement, clone as HTMLElement);
+            } else {
+              const srcChildren = Array.from(blueprint.childNodes).filter(n => n instanceof HTMLElement) as HTMLElement[];
+              const destChildren = Array.from(clone.childNodes).filter(n => n instanceof HTMLElement) as HTMLElement[];
+              for (let i = 0; i < srcChildren.length; i++) {
+                if (srcChildren[i] && destChildren[i]) {
+                  copyNexusMetadata(srcChildren[i], destChildren[i]);
+                }
+              }
+            }
+            
+            nodes = isTemplate 
+              ? Array.from((clone as DocumentFragment).childNodes).filter(isFlowNode) as ForNode[]
+              : [clone as ForNode];
+
+            nodes.forEach(n => {
+              if (isFlowNode(n)) {
+                (n as any)._ux_key = key;
+                (n as any)._nexus_key = key;
+                const scope: Record<string, any> = { [itemKey]: item };
+                if (indexKey) scope[indexKey] = index;
+                // ZCZS: Use shallowReactive to preserve the original reactive proxy
+                // references from the parent collection. Deep reactive() would create
+                // disconnected copies, breaking bidirectional state synchronization
+                // between parent array items and child scope references.
+                addScopeToNode(n, runtime.shallowReactive(scope), el);
+                
+                if (!isTemplate) {
+                  n.style.display = '';
+                  n.removeAttribute('data-for');
+                  delete (n as any)[IS_TEMPLATE_KEY];
+                }
+
+                // Remove stale markers from blueprint clone so processElement re-walks freshly
+                const cleanClonedMarkers = (target: Node) => {
+                  delete (target as any)[MARKER_KEY];
+                  delete (target as any)[CLEANUP_FUNCTIONS_KEY];
+                  if (target.childNodes) {
+                    target.childNodes.forEach(cleanClonedMarkers);
+                  }
+                };
+                cleanClonedMarkers(n);
+
+                newlyCreatedNodes.push(n);
+              }
+            });
+            mountedMap.set(key, nodes);
+          } else {
+            // Update Existing Scope
+            nodes.forEach(n => {
+              if (isFlowNode(n)) {
+                const enhanced = n as any;
+                const stack = enhanced[LOCAL_SCOPES_KEY] || enhanced[DATA_STACK_KEY] || enhanced[Symbol.for('__nexus_local_scopes__')] || enhanced[Symbol.for('__data_stack__')];
+                if (stack && stack.length > 0) {
+                  // Mutate existing proxy to trigger bound effects
+                  const scope = stack[0];
+                  if (scope[itemKey] !== item) {
+                    scope[itemKey] = item;
+                  }
+                  if (indexKey && scope[indexKey] !== index) {
+                    scope[indexKey] = index;
+                  }
+                } else {
+                  // Fallback if scope was somehow lost
+                  const scope: Record<string, any> = { [itemKey]: item };
+                  if (indexKey) scope[indexKey] = index;
+                  addScopeToNode(n, runtime.shallowReactive(scope), el);
+                }
+              }
+            });
+          }
+          nextNodes.push(...nodes);
+        });
+
+        // Remove old nodes
+        for (const [key, nodes] of mountedMap.entries()) {
+          if (!currentKeys.has(key)) {
+            disposeNodes(nodes);
+            mountedMap.delete(key);
+          }
+        }
+
+        // Re-order in DOM — batch initial mounts via DocumentFragment;
+        // for updates, only move nodes that are out of position.
+        const isInitialMount = nextNodes.length === newlyCreatedNodes.length && newlyCreatedNodes.length > 1;
+        if (isInitialMount) {
+          const fragment = document.createDocumentFragment();
+          for (let i = 0; i < nextNodes.length; i++) {
+            fragment.appendChild(nextNodes[i]);
+          }
+          anchor.parentNode?.insertBefore(fragment, anchor);
+        } else {
+          let expectedBefore: Node | null = anchor;
+          for (let i = nextNodes.length - 1; i >= 0; i--) {
+            const node = nextNodes[i];
+            if (node.nextSibling !== expectedBefore) {
+              if (typeof (anchor.parentNode as any)?.moveBefore === 'function' && node.parentNode === anchor.parentNode) {
+                (anchor.parentNode as any).moveBefore(node, expectedBefore);
+              } else {
+                anchor.parentNode?.insertBefore(node, expectedBefore);
+              }
+            }
+            expectedBefore = node;
+          }
+        }
+
+      // Process newly created nodes AFTER they are connected to the DOM tree so
+      // engine directives (e.g. stylesheet adoptClass) find ancestor context.
+      newlyCreatedNodes.forEach(n => {
+        runtime.processElement(n, true);
+      });
+    });
+
+    return () => {
+      cleanup?.();
+      for (const nodes of mountedMap.values()) disposeNodes(nodes);
+      mountedMap.clear();
+      anchor.remove();
+    };
+  }
+};
+
+export default forModule;

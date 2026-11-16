@@ -1,0 +1,35 @@
+{
+  "tasks": {
+    "build": "deno run -A scripts/build.ts --minify",
+    "test": "deno test -A src/",
+    "build:push": "deno run -A scripts/build.ts --minify --push"
+  },
+  "imports": {
+    "esbuild": "https://deno.land/x/esbuild@v0.20.0/mod.js",
+    "esbuild-deno-loader": "https://deno.land/x/esbuild_deno_loader@0.9.0/mod.ts",
+    "brotli": "https://deno.land/x/brotli@v0.1.4/mod.ts",
+    "std/path": "https://deno.land/std@0.212.0/path/mod.ts",
+    "std/assert": "https://deno.land/std@0.212.0/assert/mod.ts",
+    "@swc/core": "npm:@swc/core@1.15.24"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "deno.ns"
+    ],
+    "strict": true
+  },
+  "nodeModulesDir": "auto",
+  "lint": {
+    "exclude": [
+      "dist/"
+    ]
+  },
+  "fmt": {
+    "exclude": [
+      "dist/"
+    ]
+  }
+}

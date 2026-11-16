@@ -1,0 +1,101 @@
+import { AttributeModule } from '../../engine/modules.ts';
+import { RuntimeContext } from '../../engine/composition.ts';
+import { addScopeToNode } from '../../engine/scope.ts';
+import { initError } from '../../engine/debug.ts';
+
+import { ParsedAttribute } from '../../engine/attributeParser.ts';
+
+/**
+ * data-switcher="signal"
+ * data-switcher-options="[...] array of objects with { id, ... }"
+ * Orchestrates state-cycling and provides logic helpers.
+ */
+const switcherModule: AttributeModule = {
+  name: 'switcher',
+  attribute: 'switcher',
+  metadata: {
+    after: ['for', 'signal']
+  },
+  handle: (el: HTMLElement, expression: string, runtime: RuntimeContext, parsedAttr?: ParsedAttribute): (() => void) | void => {
+    // Return early if handling sub-directive data-switcher-options
+    if (parsedAttr?.argument) return;
+
+    runtime.log(`Nexus Switcher [${expression}]: Initializing on`, el);
+    const optionsAttr = el.getAttribute('data-switcher-options');
+    if (!optionsAttr) {
+      initError('switcher', 'Missing data-switcher-options attribute', el, expression);
+      return;
+    }
+
+    // Scoped helpers
+    const helpers = {
+      $switch: () => {
+        const items = runtime.evaluate(el, optionsAttr) as Record<string, unknown>[];
+        const current = runtime.evaluate(el, expression);
+        if (!Array.isArray(items)) {
+          runtime.warn(`Nexus Switcher [${expression}]: Options "${optionsAttr}" is not an array`, items);
+          return;
+        }
+        
+        const idx = items.findIndex(item => (item.id || item) === current);
+        const nextIdx = (idx + 1) % items.length;
+        const nextItem = items[nextIdx];
+        const nextValue = nextItem.id || nextItem;
+        
+        runtime.log(`Nexus Switcher [${expression}]: Cycling ${current} -> ${nextValue}`);
+
+        // Update via evaluate to ensure it propagates through the stack correctly (ZCZS: pass by reference)
+        try {
+          runtime.evaluate(el, `${expression} = $next`, { $next: nextValue });
+        } catch (e) {
+          console.error('UX Switcher: Failed to update signal', expression, e);
+        }
+      },
+      $isActive: (id: unknown) => {
+        const current = runtime.evaluate(el, expression);
+        const isActive = current === id;
+        // console.debug(`Nexus Switcher [${expression}]: $isActive(${id}) -> ${isActive} (current: ${current})`);
+        return isActive;
+      },
+      get $activeItem() {
+        const items = runtime.evaluate(el, optionsAttr) as Record<string, unknown>[];
+        const current = runtime.evaluate(el, expression);
+        if (!Array.isArray(items)) return null;
+        return items.find(item => (item.id || item) === current) || null;
+      }
+    };
+
+    runtime.log(`UX Switcher [${expression}]: Injecting helpers on`, el);
+    const removeScope = addScopeToNode(el, helpers);
+
+    // Watch for changes to trigger animations if requested
+    const unbind = runtime.bind(el, expression, currentVal => {
+      const items = runtime.evaluate(el, optionsAttr);
+      runtime.log(`UX Switcher [${expression}]: Active state changed to:`, currentVal, 'options:', items);
+      
+      // Simple animation hook: toggle a class on children
+      // Animation hook: toggle a transition class on children
+      Array.from(el.children).forEach(child => {
+        if (child instanceof HTMLElement) {
+          child.classList.add('switcher-transitioning');
+          // Use transitionend event instead of hardcoded timeout — adapts to any CSS duration.
+          // Safety fallback after 1s if no transition is defined on the element.
+          const onEnd = () => {
+            child.classList.remove('switcher-transitioning');
+            child.removeEventListener('transitionend', onEnd);
+            clearTimeout(fallback);
+          };
+          child.addEventListener('transitionend', onEnd, { once: true });
+          const fallback = setTimeout(onEnd, 1000);
+        }
+      });
+    });
+
+    return () => {
+      if (typeof unbind === 'function') unbind();
+      removeScope();
+    };
+  }
+};
+
+export default switcherModule;

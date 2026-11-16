@@ -1,0 +1,44 @@
+/**
+ * Nexus-UX Once Modifier
+ *
+ * Ensures the handler executes only once per element. Subsequent invocations
+ * are silently discarded.
+ *
+ * NEG Token Boundary:
+ *   This is a behavior modifier (`_`) not an intent modifier (`-`).
+ *   Used as: `data-on-click_once`
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Closure captures fired flag by reference; no cloning.
+ *   - Zero-serialization: Handler state is a simple boolean.
+ *
+ * Coordination:
+ *   - on.ts applies this modifier during event listener construction
+ *   - ModuleCoordinator registers via registerModifierModule
+ *
+ * Nexus-UX Innovation Preserved:
+ *   - Dual-mode: event listener wrapper AND pipeline interceptor
+ */
+
+import { ModifierModule } from '../../engine/modules.ts';
+import { createModifier } from '../../engine/utils/modifier.ts';
+
+export const onceModifier: ModifierModule = createModifier('once', (payload) => {
+  let fired = false;
+  if (typeof payload === 'function') {
+    return (e: Event) => {
+      if (!fired) {
+        fired = true;
+        return payload(e);
+      }
+    };
+  }
+  return (...args: any[]) => {
+    if (!fired) {
+      fired = true;
+      return typeof payload === 'function' ? payload(...args) : payload;
+    }
+  };
+});
+
+export default onceModifier;

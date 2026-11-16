@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+*.log
+.gemini/
+.env
+.agent/
+.kilo/
+.kilocode/
+.vscode/
+.system_generated/
+.kilocodemodes
+.playwright/
+.plans/
+dist/*.br

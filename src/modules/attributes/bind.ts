@@ -1,0 +1,266 @@
+/**
+ * Nexus-UX Bind Directive Module
+ *
+ * Handles `data-bind` for two-way and one-way property binding between
+ * DOM elements and reactive state. Supports auto-detection, sub-directives,
+ * mass property assignment, and native API two-way binding.
+ *
+ * Binding Modes:
+ *   - Auto-detect: `data-bind="expr"` binds to element value/textContent
+ *   - Sub-directive: `data-bind-attr="expr"` binds to specific attribute
+ *   - Mass assign: `data-bind="obj"` assigns object properties to element
+ *   - Native API: `data-bind="localStorage.collapsed"` binds to writable native APIs
+ *   - Native read-only: `data-bind="window.innerWidth"` tracks read-only APIs reactively
+ *
+ * Native API Binding (Reflect-based):
+ *   When the expression targets a known native API object (window, localStorage,
+ *   sessionStorage, navigator, document, screen), bind.ts wraps it in a Proxy.
+ *   The Proxy intercepts gets/sets via Reflect traps:
+ *     - Read: registers the appropriate native listener (resize, scroll, storage)
+ *       and pushes updates into the signal automatically
+ *     - Write: persists to the native API immediately via Reflect.set()
+ *   No `_` prefix, no mirror registration, no separate API wrappers required.
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Native objects are wrapped by Proxy reference; no cloning.
+ *   - Zero-serialization: Property reads/writes flow directly through Reflect.
+ *
+ * Coordination:
+ *   - attributeParser.ts extracts directive/argument/modifiers
+ *   - evaluator.ts evaluates bound expressions through native API Proxies
+ *   - reactivity.ts provides elementBoundEffect for reactive updates
+ *   - reconciler.ts provides deepEqual for change detection
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Auto-detect mode absorbs Alpine's data-model behavior
+ *   - Mass property assignment from object expressions
+ *   - Lazy binding via _lazy modifier for input/select/textarea
+ *   - Native API two-way binding via Reflect Proxy traps
+ *   - Reactive effect cleanup on element removal
+ */
+
+import { AttributeModule } from '../../engine/modules.ts';
+import { RuntimeContext } from '../../engine/composition.ts';
+import { toError } from '../../engine/debug.ts';
+import { matchAttributes, ParsedAttribute } from '../../engine/attributeParser.ts';
+
+
+
+function setValuePreservingCursor(el: HTMLInputElement | HTMLTextAreaElement, value: string): void {
+  if (el.value === value) return;
+  const isFocused = typeof document !== 'undefined' && document.activeElement === el;
+  if (isFocused && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    el.value = value;
+    try { el.setSelectionRange(start, end); } catch (_) {}
+  } else {
+    el.value = value;
+  }
+}
+
+function applyBindingResult(result: unknown, el: HTMLElement): void {
+  if (typeof result === 'object' && result !== null && !Array.isArray(result)) {
+    Object.entries(result).forEach(([param, val]) => {
+      if (param in el) {
+        if ((el as any)[param] !== val) (el as any)[param] = val;
+      } else {
+        if (val === false || val === null || val === undefined) {
+          if (el.hasAttribute(param)) el.removeAttribute(param);
+        } else {
+          const strVal = String(val);
+          if (el.getAttribute(param) !== strVal) el.setAttribute(param, strVal);
+        }
+      }
+    });
+    return;
+  }
+
+  const strVal = result !== undefined && result !== null ? String(result) : '';
+  if (el instanceof HTMLInputElement) {
+    if (el.type === 'checkbox') {
+      el.checked = Boolean(result);
+    } else if (el.type === 'radio') {
+      el.checked = result !== undefined && result !== null && el.value === strVal;
+    } else {
+      setValuePreservingCursor(el, strVal);
+    }
+  } else if (el instanceof HTMLSelectElement) {
+    const options = Array.from(el.options);
+    const found = options.some(opt => opt.value === strVal);
+    if (found || strVal === '') {
+      if (el.value !== strVal) {
+        el.value = strVal;
+      }
+    }
+  } else if (el instanceof HTMLTextAreaElement) {
+    setValuePreservingCursor(el, strVal);
+  } else {
+    if (el.textContent !== strVal) {
+      el.textContent = strVal;
+    }
+  }
+}
+
+const bindModule: AttributeModule = {
+  name: 'bind',
+  attribute: 'bind',
+  handle: (el: HTMLElement, value: string, runtime: RuntimeContext, parsedAttr?: ParsedAttribute): (() => void) | void => {
+    if (!value) return;
+
+    const parsed = parsedAttr || runtime.parseAttribute('data-bind', runtime, el);
+    const target = parsed?.argument;
+
+    // ─── Auto-Detect Mode (data-bind="expr" without sub-directive argument) ───
+    if (!target) {
+      const cleanupFns: (() => void)[] = [];
+      try {
+        // 1. Reactive Effect: State → DOM
+        const [runner, cleanup] = runtime.elementBoundEffect(el, () => {
+          const result = runtime.evaluate(el, value);
+          applyBindingResult(result, el);
+        });
+        cleanupFns.push(cleanup);
+
+        if (value.includes('innerWidth') || value.includes('innerHeight')) {
+          const onResize = () => { runner(); };
+          globalThis.addEventListener('resize', onResize);
+          cleanupFns.push(() => globalThis.removeEventListener('resize', onResize));
+        } else if (value.includes('scrollX') || value.includes('scrollY')) {
+          const onScroll = () => { runner(); };
+          globalThis.addEventListener('scroll', onScroll);
+          cleanupFns.push(() => globalThis.removeEventListener('scroll', onScroll));
+        }
+
+        // 2. Event Listener: DOM → State (Form Inputs Only)
+        const isFormInput = el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement || (el as HTMLElement).isContentEditable;
+
+        if (isFormInput) {
+          const isLazy = el.hasAttribute('data-bind_lazy') || parsed?.modifiers?.includes('lazy') === true;
+          const eventName = isLazy ? 'change' : (
+            el instanceof HTMLSelectElement || (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio'))
+              ? 'change' : 'input'
+          );
+
+          const inputHandler = (_e: Event) => {
+            let newValue: unknown;
+            if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+              newValue = el.checked;
+            } else if (el instanceof HTMLInputElement && el.type === 'radio') {
+              newValue = el.checked ? el.value : undefined;
+              if (newValue === undefined) return;
+            } else if (el instanceof HTMLSelectElement && el.multiple) {
+              newValue = Array.from(el.selectedOptions).map(opt => opt.value);
+            } else if (el instanceof HTMLInputElement && (el.type === 'range' || el.type === 'number')) {
+              newValue = el.value === '' ? '' : Number(el.value);
+            } else if ('value' in el) {
+              newValue = (el as any).value;
+            }
+
+            const trimmedVal = value.trim();
+            const isValidLValue = /^#?[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[[^\]]+\])*$/.test(trimmedVal);
+
+            if (isValidLValue) {
+              try {
+                const current = runtime.evaluate(el, value);
+                if (current && typeof current === 'object' && 'value' in (current as Record<string, unknown>)) {
+                  runtime.evaluate(el, `${value}.value = $newValue`, { $newValue: newValue });
+                } else {
+                  runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+                }
+              } catch {
+                // Ignore non-assignable expression errors
+              }
+            }
+          };
+
+          el.addEventListener(eventName, inputHandler);
+          cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
+        }
+
+      } catch (e) {
+        runtime.reportError(toError(e), el, `Auto-bind failed: ${value}`);
+      }
+
+      return () => cleanupFns.forEach(fn => fn());
+    }
+
+    // ─── Sub-Directive Mode (data-bind-value, data-bind-dir, data-bind-style, etc.) ───
+    const cleanupFns: (() => void)[] = [];
+
+    const cleanup = runtime.bind(el, value, (result) => {
+      const attrValue = result !== undefined && result !== null ? String(result) : '';
+
+      if (target === 'value' || target === 'checked') {
+        if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+          if (el.checked !== Boolean(result)) el.checked = Boolean(result);
+        } else if (el instanceof HTMLInputElement && el.type === 'radio') {
+          if (target === 'checked') {
+            if (el.checked !== Boolean(result)) el.checked = Boolean(result);
+          } else {
+            if (el.value !== attrValue) el.value = attrValue;
+          }
+        } else if ('value' in el) {
+          setValuePreservingCursor(el as HTMLInputElement, attrValue);
+        }
+      } else if (target === 'text') {
+        if (el.textContent !== attrValue) el.textContent = attrValue;
+      } else if (target === 'html') {
+        if (el.innerHTML !== attrValue) el.innerHTML = attrValue;
+      } else if (target === 'style') {
+        runtime.reconcileStyle(el, result);
+      } else if (target === 'draggable') {
+        const newVal = result ? 'true' : 'false';
+        if (el.getAttribute('draggable') !== newVal) {
+          el.setAttribute('draggable', newVal);
+        }
+      } else if (target === 'dir') {
+        if (el.getAttribute('dir') !== attrValue) {
+          el.setAttribute('dir', attrValue);
+        }
+        if (document.documentElement.getAttribute('dir') !== attrValue) {
+          document.documentElement.setAttribute('dir', attrValue);
+        }
+      } else {
+        if (result === false || result === null || result === undefined) {
+          if (el.hasAttribute(target)) el.removeAttribute(target);
+        } else {
+          if (el.getAttribute(target) !== attrValue) el.setAttribute(target, attrValue);
+        }
+      }
+    });
+
+    if (cleanup) cleanupFns.push(cleanup);
+
+    // Two-Way Binding Setup (Input Listener)
+    if (target === 'value' || target === 'checked') {
+      const isLazy = el.hasAttribute('data-bind_lazy') || parsed?.modifiers?.includes('lazy') === true;
+      const eventName = isLazy ? 'change' : (
+        el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')
+          || el instanceof HTMLSelectElement ? 'change' : 'input'
+      );
+
+      const inputHandler = (e: Event) => {
+        let newValue: unknown;
+        if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+          newValue = el.checked;
+        } else if (el instanceof HTMLInputElement && el.type === 'radio') {
+          newValue = el.checked ? el.value : undefined;
+        } else if (el instanceof HTMLInputElement && (el.type === 'range' || el.type === 'number')) {
+          const raw = (e.target as HTMLInputElement).value;
+          newValue = raw === '' ? '' : Number(raw);
+        } else {
+          newValue = (e.target as HTMLInputElement).value;
+        }
+        runtime.evaluate(el, `${value} = $newValue`, { $newValue: newValue });
+      };
+
+      el.addEventListener(eventName, inputHandler);
+      cleanupFns.push(() => el.removeEventListener(eventName, inputHandler));
+    }
+
+    return () => cleanupFns.forEach(fn => fn());
+  }
+};
+
+export default bindModule;

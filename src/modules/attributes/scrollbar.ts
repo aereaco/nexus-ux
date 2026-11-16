@@ -1,0 +1,558 @@
+/**
+ * Universal Native + Overlay Scrollbar Engine for Nexus-UX
+ *
+ * Zero-copy modern architecture:
+ * - Constructable StyleSheets for 100% pre-paint certainty.
+ * - CSS Logical Properties (`inset-inline`, `inset-block`) for automatic LTR/RTL mirroring.
+ * - Hardware-accelerated GPU transforms (`translateY`/`translateX`).
+ * - Self-contained pointer-capture drag coordination.
+ * - Exact gutter alignment for search match location ticks.
+ * - Instance API (`show`, `hide`, `update`) for tabpanel state management.
+ */
+
+import { AttributeModule } from '../../engine/modules.ts';
+import { RuntimeContext } from '../../engine/composition.ts';
+import { ensureAdoptedStylesheet } from '../../engine/utils/styles.ts';
+import { trackPointerDrag } from '../../engine/utils/pointer.ts';
+
+export type ScrollbarMode = 'native' | 'overlay' | 'none';
+
+export interface ScrollbarConfig {
+  mode?: ScrollbarMode;
+  autohide?: number | boolean;
+  thin?: boolean;
+  width?: string | number;
+  height?: string | number;
+  fade?: number | string;
+  fadeIn?: number | string;
+  fadeOut?: number | string;
+  global?: boolean;
+}
+
+let globalConfig: ScrollbarConfig = {
+  mode: 'overlay',
+  autohide: 800,
+  thin: true,
+  width: '0.625rem',
+  height: '0.625rem',
+  fade: '0.4s',
+  fadeIn: '0.2s',
+  fadeOut: '0.4s',
+};
+
+export function buildScrollbarCSS(config?: Partial<ScrollbarConfig>): string {
+  const cfg = { ...globalConfig, ...config };
+  const width = typeof cfg.width === 'number' ? `${cfg.width * 0.25}rem` : (cfg.width || '0.625rem');
+  const height = typeof cfg.height === 'number' ? `${cfg.height * 0.25}rem` : (cfg.height || width);
+  const fadeOut = typeof cfg.fadeOut === 'number' ? `${cfg.fadeOut}ms` : (cfg.fadeOut || cfg.fade || '0.4s');
+  const fadeIn = typeof cfg.fadeIn === 'number' ? `${cfg.fadeIn}ms` : (cfg.fadeIn || '0.2s');
+
+  return `[style*="overflow"],[data-scrollbar],.overflow-y-auto,.overflow-x-auto,.overflow-auto,.scrollbar-none,.scrollbar-overlay-active{scrollbar-width:none !important}[style*="overflow"]::-webkit-scrollbar,[data-scrollbar]::-webkit-scrollbar,.overflow-y-auto::-webkit-scrollbar,.overflow-x-auto::-webkit-scrollbar,.overflow-auto::-webkit-scrollbar,.scrollbar-none::-webkit-scrollbar,.scrollbar-overlay-active::-webkit-scrollbar{display:none !important;width:0 !important;height:0 !important}[data-scrollbar]::-webkit-scrollbar-thumb,.overflow-y-auto::-webkit-scrollbar-thumb,.overflow-x-auto::-webkit-scrollbar-thumb,.overflow-auto::-webkit-scrollbar-thumb,.scrollbar-none::-webkit-scrollbar-thumb,.scrollbar-overlay-active::-webkit-scrollbar-thumb{display:none !important;background-color:transparent !important}:root,:host,[data-scrollbar_global]{--scrollbar-width:${width};--scrollbar-height:${height};--scrollbar-thumb:color-mix(in srgb,currentColor 30%,transparent);--scrollbar-thumb-hover:color-mix(in srgb,currentColor 50%,transparent);--scrollbar-thumb-active:color-mix(in srgb,currentColor 70%,transparent);--scrollbar-track:transparent;--scrollbar-thumb-radius:9999px;--scrollbar-fade-in:${fadeIn};--scrollbar-fade-out:${fadeOut}}.scrollbar-track-v{display:none;position:absolute;inset-block-start:0;inset-block-end:0;inset-inline-end:0;width:var(--scrollbar-width,0.625rem);overflow:visible;pointer-events:auto;z-index:50}.scrollbar-thumb-v{position:absolute;inset-block-start:0;inset-inline-start:0;width:100%;min-height:1.5rem;background-color:var(--scrollbar-thumb);border-radius:var(--scrollbar-thumb-radius,9999px);opacity:0;pointer-events:auto;cursor:grab;will-change:transform,opacity;transition:opacity var(--scrollbar-fade-out,0.4s) cubic-bezier(0.4,0,0.2,1),background-color 0.2s ease-out}.scrollbar-track-h{display:none;position:absolute;inset-block-end:0;inset-inline-start:0;inset-inline-end:0;height:var(--scrollbar-height,0.625rem);overflow:visible;pointer-events:auto;z-index:50}.scrollbar-thumb-h{position:absolute;inset-block-start:0;inset-inline-start:0;height:100%;min-width:1.5rem;background-color:var(--scrollbar-thumb);border-radius:var(--scrollbar-thumb-radius,9999px);opacity:0;pointer-events:auto;cursor:grab;will-change:transform,opacity;transition:opacity var(--scrollbar-fade-out,0.4s) cubic-bezier(0.4,0,0.2,1),background-color 0.2s ease-out}.scrollbar-track-v[style*="display:none"],.scrollbar-track-h[style*="display:none"]{display:none !important;pointer-events:none !important}.is-scrolling>.scrollbar-track-v>.scrollbar-thumb-v,.is-scrolling>.scrollbar-track-h>.scrollbar-thumb-h,.is-scrolling.scrollbar-track-v>.scrollbar-thumb-v,.is-scrolling.scrollbar-track-h>.scrollbar-thumb-h,.scrollbar-overlay-active.scrollbar-no-autohide>.scrollbar-track-v>.scrollbar-thumb-v,.scrollbar-overlay-active.scrollbar-no-autohide>.scrollbar-track-h>.scrollbar-thumb-h,.scrollbar-track-v:not([style*="display:none"]):hover>.scrollbar-thumb-v,.scrollbar-track-h:not([style*="display:none"]):hover>.scrollbar-thumb-h,.scrollbar-thumb-v.is-dragging,.scrollbar-thumb-h.is-dragging{opacity:1 !important;transition:opacity var(--scrollbar-fade-in,0.2s) ease-out,background-color 0.2s ease-out !important}.scrollbar-thumb-v:hover,.scrollbar-thumb-h:hover{background-color:var(--scrollbar-thumb-hover) !important}.scrollbar-thumb-v.is-dragging,.scrollbar-thumb-h.is-dragging{cursor:grabbing !important;background-color:var(--scrollbar-thumb-active) !important}`;
+}
+
+const scrollbarSheetRef: { sheet: CSSStyleSheet | null } = { sheet: null };
+
+export function ensureScrollbarStyles(root?: Document | ShadowRoot | null, config?: Partial<ScrollbarConfig>): void {
+  const css = buildScrollbarCSS(config || globalConfig);
+  if (scrollbarSheetRef.sheet && config) {
+    scrollbarSheetRef.sheet.replaceSync(css);
+  }
+  ensureAdoptedStylesheet(css, scrollbarSheetRef, root);
+}
+
+// Lazy-initialized on first [data-scrollbar] directive handle() call.
+
+const overlayInstances = new WeakMap<Element, OverlayScrollbarInstance>();
+const activeInstances = new Set<OverlayScrollbarInstance>();
+const elementTimers = new WeakMap<Element, number>();
+
+export class OverlayScrollbarInstance {
+  public el: HTMLElement;
+  public host: HTMLElement;
+  private trackV: HTMLElement | null = null;
+  private thumbV: HTMLElement | null = null;
+  private trackH: HTMLElement | null = null;
+  private thumbH: HTMLElement | null = null;
+  private rafId: number | null = null;
+  private scrollHandler: (() => void) | null = null;
+  private cleanups: (() => void)[] = [];
+
+  constructor(el: HTMLElement) {
+    this.el = el;
+    this.host = (el.parentElement || document.body) as HTMLElement;
+    activeInstances.add(this);
+    this.init();
+  }
+
+  public init(): void {
+    if (this.host !== document.body && window.getComputedStyle(this.host).position === 'static') {
+      this.host.style.position = 'relative';
+    }
+    this.el.classList.add('scrollbar-overlay-active');
+    if (globalConfig.autohide === false) {
+      this.el.classList.add('scrollbar-no-autohide');
+    }
+
+    (this.el as any).__scrollbarInstance = this;
+
+    // Vertical Overlay Sprite
+    this.trackV = document.createElement('div');
+    this.trackV.className = 'scrollbar-track-v';
+    this.thumbV = document.createElement('div');
+    this.thumbV.className = 'scrollbar-thumb-v';
+    this.trackV.appendChild(this.thumbV);
+    this.host.appendChild(this.trackV);
+
+    // Horizontal Overlay Sprite
+    this.trackH = document.createElement('div');
+    this.trackH.className = 'scrollbar-track-h';
+    this.thumbH = document.createElement('div');
+    this.thumbH.className = 'scrollbar-thumb-h';
+    this.trackH.appendChild(this.thumbH);
+    this.host.appendChild(this.trackH);
+
+    this.bindEvents();
+    this.update();
+  }
+
+  public setScrolling(active: boolean): void {
+    if (active) {
+      this.trackV?.classList.add('is-scrolling');
+      this.trackH?.classList.add('is-scrolling');
+    } else {
+      this.trackV?.classList.remove('is-scrolling');
+      this.trackH?.classList.remove('is-scrolling');
+    }
+  }
+
+  public hide(): void {
+    if (this.trackV) this.trackV.style.display = 'none';
+    if (this.trackH) this.trackH.style.display = 'none';
+  }
+
+  public show(): void {
+    this.update();
+  }
+
+  public scheduleUpdate(): void {
+    if (this.rafId !== null) return;
+    this.rafId = requestAnimationFrame(() => {
+      this.rafId = null;
+      this.update();
+    });
+  }
+
+  public update(): void {
+    if (!this.el.isConnected) {
+      this.destroy();
+      return;
+    }
+
+    const { clientHeight, scrollHeight, clientWidth, scrollWidth, scrollTop, scrollLeft } = this.el;
+
+    if (
+      this.el.getAttribute('data-scrollbar') === 'none' ||
+      this.el.classList.contains('scrollbar-none') ||
+      clientHeight === 0 ||
+      this.el.style.display === 'none'
+    ) {
+      this.hide();
+      return;
+    }
+
+    const s = window.getComputedStyle(this.el);
+    const isRTL = s.direction === 'rtl';
+
+    // Vertical Update
+    const isScrollableY = s.overflowY === 'auto' || s.overflowY === 'scroll';
+    const canScrollY = isScrollableY && (scrollHeight - clientHeight > 1) && clientHeight > 0;
+    if (canScrollY && this.trackV && this.thumbV) {
+      if (this.trackV.style.display !== 'block') this.trackV.style.display = 'block';
+      if (this.host !== this.el) {
+        this.trackV.style.top = `${this.el.offsetTop}px`;
+        this.trackV.style.height = `${this.el.clientHeight}px`;
+        this.trackV.style.bottom = 'auto';
+        if (isRTL) {
+          this.trackV.style.left = `${this.el.offsetLeft}px`;
+          this.trackV.style.right = 'auto';
+        } else {
+          const offsetRight = this.host.clientWidth - (this.el.offsetLeft + this.el.clientWidth);
+          this.trackV.style.right = `${Math.max(0, offsetRight)}px`;
+          this.trackV.style.left = 'auto';
+        }
+      }
+      const thumbHeight = Math.max(24, (clientHeight / scrollHeight) * clientHeight);
+      const maxScroll = scrollHeight - clientHeight;
+      const maxThumb = clientHeight - thumbHeight;
+      const thumbTop = maxScroll > 0 ? (scrollTop / maxScroll) * maxThumb : 0;
+
+      this.thumbV.style.height = `${thumbHeight}px`;
+      this.thumbV.style.transform = `translateY(${thumbTop}px)`;
+    } else if (this.trackV && this.trackV.style.display !== 'none') {
+      this.trackV.style.display = 'none';
+    }
+
+    // Horizontal Update
+    const isScrollableX = s.overflowX === 'auto' || s.overflowX === 'scroll';
+    const canScrollX = isScrollableX && (scrollWidth - clientWidth > 1) && clientWidth > 0;
+    if (canScrollX && this.trackH && this.thumbH) {
+      if (this.trackH.style.display !== 'block') this.trackH.style.display = 'block';
+      if (this.host !== this.el) {
+        this.trackH.style.left = `${this.el.offsetLeft}px`;
+        this.trackH.style.width = `${this.el.clientWidth}px`;
+        this.trackH.style.right = 'auto';
+        const offsetBottom = this.host.clientHeight - (this.el.offsetTop + this.el.clientHeight);
+        this.trackH.style.bottom = `${Math.max(0, offsetBottom)}px`;
+        this.trackH.style.top = 'auto';
+      }
+      const thumbWidth = Math.max(24, (clientWidth / scrollWidth) * clientWidth);
+      const maxScroll = scrollWidth - clientWidth;
+      const maxThumb = clientWidth - thumbWidth;
+      const thumbLeft = maxScroll > 0 ? (Math.abs(scrollLeft) / maxScroll) * maxThumb : 0;
+      const thumbX = isRTL ? -thumbLeft : thumbLeft;
+
+      this.thumbH.style.width = `${thumbWidth}px`;
+      this.thumbH.style.transform = `translateX(${thumbX}px)`;
+    } else if (this.trackH && this.trackH.style.display !== 'none') {
+      this.trackH.style.display = 'none';
+    }
+  }
+
+  private bindEvents(): void {
+    this.scrollHandler = () => {
+      this.update();
+      triggerContainerMotion(this.el);
+    };
+    this.el.addEventListener('scroll', this.scrollHandler, { passive: true });
+
+    // Vertical Thumb Drag
+    if (this.thumbV) {
+      let startScrollTop = 0;
+      this.cleanups.push(
+        trackPointerDrag(this.thumbV, {
+          capture: true,
+          onStart: (e) => {
+            if (e.button !== 0) return false;
+            e.stopPropagation();
+            e.preventDefault();
+            this.thumbV!.classList.add('is-dragging');
+            startScrollTop = this.el.scrollTop;
+          },
+          onMove: (_e, delta) => {
+            const { clientHeight, scrollHeight } = this.el;
+            const thumbH = Math.max(24, (clientHeight / scrollHeight) * clientHeight);
+            const maxThumb = clientHeight - thumbH;
+            const maxScroll = scrollHeight - clientHeight;
+            if (maxThumb > 0) {
+              this.el.scrollTop = startScrollTop + (delta.dy / maxThumb) * maxScroll;
+            }
+          },
+          onEnd: () => {
+            this.thumbV?.classList.remove('is-dragging');
+          }
+        })
+      );
+    }
+
+    // Horizontal Thumb Drag
+    if (this.thumbH) {
+      let startScrollLeft = 0;
+      this.cleanups.push(
+        trackPointerDrag(this.thumbH, {
+          capture: true,
+          onStart: (e) => {
+            if (e.button !== 0) return false;
+            e.stopPropagation();
+            e.preventDefault();
+            this.thumbH!.classList.add('is-dragging');
+            startScrollLeft = this.el.scrollLeft;
+          },
+          onMove: (_e, delta) => {
+            const isRTL = window.getComputedStyle(this.el).direction === 'rtl';
+            const { clientWidth, scrollWidth } = this.el;
+            const thumbW = Math.max(24, (clientWidth / scrollWidth) * clientWidth);
+            const maxThumb = clientWidth - thumbW;
+            const maxScroll = scrollWidth - clientWidth;
+            if (maxThumb > 0) {
+              const dx = isRTL ? -delta.dx : delta.dx;
+              this.el.scrollLeft = startScrollLeft + (dx / maxThumb) * maxScroll;
+            }
+          },
+          onEnd: () => {
+            this.thumbH?.classList.remove('is-dragging');
+          }
+        })
+      );
+    }
+
+    // Vertical Track Click-to-Scroll
+    if (this.trackV) {
+      this.trackV.addEventListener('pointerdown', (e: PointerEvent) => {
+        if (e.target === this.thumbV) return;
+        e.stopPropagation();
+        e.preventDefault();
+        const rect = this.trackV!.getBoundingClientRect();
+        const clickY = e.clientY - rect.top;
+        const { clientHeight, scrollHeight } = this.el;
+        const thumbH = Math.max(24, (clientHeight / scrollHeight) * clientHeight);
+        const maxThumb = clientHeight - thumbH;
+        const maxScroll = scrollHeight - clientHeight;
+        if (maxThumb > 0) {
+          this.el.scrollTop = Math.max(0, Math.min(maxScroll, ((clickY - thumbH / 2) / maxThumb) * maxScroll));
+        }
+      });
+    }
+
+    // Horizontal Track Click-to-Scroll
+    if (this.trackH) {
+      this.trackH.addEventListener('pointerdown', (e: PointerEvent) => {
+        if (e.target === this.thumbH) return;
+        e.stopPropagation();
+        e.preventDefault();
+        const isRTL = window.getComputedStyle(this.el).direction === 'rtl';
+        const rect = this.trackH!.getBoundingClientRect();
+        const clickX = isRTL ? rect.right - e.clientX : e.clientX - rect.left;
+        const { clientWidth, scrollWidth } = this.el;
+        const thumbW = Math.max(24, (clientWidth / scrollWidth) * clientWidth);
+        const maxThumb = clientWidth - thumbW;
+        const maxScroll = scrollWidth - clientWidth;
+        if (maxThumb > 0) {
+          const targetScroll = Math.max(0, Math.min(maxScroll, ((clickX - thumbW / 2) / maxThumb) * maxScroll));
+          this.el.scrollLeft = isRTL ? -targetScroll : targetScroll;
+        }
+      });
+    }
+  }
+
+  public destroy(): void {
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+    if (this.scrollHandler) {
+      this.el.removeEventListener('scroll', this.scrollHandler);
+      this.scrollHandler = null;
+    }
+    this.cleanups.forEach((fn) => fn());
+    this.cleanups = [];
+    if (this.trackV) {
+      this.trackV.remove();
+      this.trackV = null;
+    }
+    if (this.trackH) {
+      this.trackH.remove();
+      this.trackH = null;
+    }
+    this.el.classList.remove('scrollbar-overlay-active', 'scrollbar-no-autohide');
+    activeInstances.delete(this);
+    overlayInstances.delete(this.el);
+    delete (this.el as any).__scrollbarInstance;
+  }
+}
+
+export function ensureOverlayInstance(el: HTMLElement): OverlayScrollbarInstance {
+  let inst = (el as any).__scrollbarInstance || overlayInstances.get(el);
+  if (!inst) {
+    inst = new OverlayScrollbarInstance(el);
+    overlayInstances.set(el, inst);
+  }
+  return inst;
+}
+
+export function syncAllOverlayScrollbars(): void {
+  activeInstances.forEach((inst) => inst.scheduleUpdate());
+}
+
+export function isScrollContainer(el: HTMLElement): boolean {
+  if (!el || !(el instanceof HTMLElement) || !el.isConnected) return false;
+  if (el.hasAttribute('data-scrollbar_ignore') || el.getAttribute('data-scrollbar') === 'none' || el.classList.contains('scrollbar-none')) {
+    return false;
+  }
+  if (el === document.documentElement || el === document.body) {
+    const s = window.getComputedStyle(el);
+    if (s.overflow === 'hidden' || (s.overflowX === 'hidden' && s.overflowY === 'hidden')) {
+      return false;
+    }
+  }
+  const s = window.getComputedStyle(el);
+  if (s.display === 'none' || s.visibility === 'hidden') return false;
+  if (el.hasAttribute('data-scrollbar') && el.getAttribute('data-scrollbar') !== 'native' && el.getAttribute('data-scrollbar') !== 'none') return true;
+  const hasScrollY = (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight - el.clientHeight > 1;
+  const hasScrollX = (s.overflowX === 'auto' || s.overflowX === 'scroll') && el.scrollWidth - el.clientWidth > 1;
+  return hasScrollY || hasScrollX;
+}
+
+export function attachOverlayScrollbar(el: HTMLElement, triggerMotion: boolean = true): OverlayScrollbarInstance | null {
+  if (!el || !(el instanceof HTMLElement) || !isScrollContainer(el)) return null;
+  const inst = ensureOverlayInstance(el);
+  inst.scheduleUpdate();
+  if (triggerMotion) {
+    triggerContainerMotion(el);
+  }
+  return inst;
+}
+
+export function triggerContainerMotion(target: Element): void {
+  const autohideMs = typeof globalConfig.autohide === 'number' ? globalConfig.autohide : 800;
+  if (globalConfig.autohide === false || autohideMs <= 0) return;
+
+  target.classList.add('is-scrolling');
+  if (target instanceof HTMLElement) {
+    const inst = overlayInstances.get(target);
+    if (inst) inst.setScrolling(true);
+  }
+
+  const existingTimer = elementTimers.get(target);
+  if (existingTimer !== undefined) clearTimeout(existingTimer);
+
+  const timer = setTimeout(() => {
+    target.classList.remove('is-scrolling');
+    if (target instanceof HTMLElement) {
+      const inst = overlayInstances.get(target);
+      if (inst) inst.setScrolling(false);
+    }
+    elementTimers.delete(target);
+  }, autohideMs) as unknown as number;
+
+  elementTimers.set(target, timer);
+}
+
+let globalListenerRegistered = false;
+
+export function scanScrollContainers(): void {
+  if (typeof document === 'undefined') return;
+  const candidates = document.querySelectorAll(
+    '[data-scrollbar], .overflow-y-auto, .overflow-x-auto, .overflow-auto, [role="tabpanel"], .cm-scroller, .sidebar-content'
+  );
+  candidates.forEach((el) => {
+    if (el instanceof HTMLElement && isScrollContainer(el)) {
+      attachOverlayScrollbar(el, false);
+    }
+  });
+}
+
+function setupGlobalListeners(): void {
+  if (globalListenerRegistered || typeof document === 'undefined') return;
+  globalListenerRegistered = true;
+
+  window.addEventListener('resize', () => syncAllOverlayScrollbars(), { passive: true });
+
+  const onGlobalScroll = (e: Event) => {
+    const target = e.target;
+    if (target instanceof HTMLElement && isScrollContainer(target)) {
+      attachOverlayScrollbar(target, true);
+    }
+  };
+  document.addEventListener('scroll', onGlobalScroll, { capture: true, passive: true });
+
+  const onPointerOver = (e: Event) => {
+    let target = e.target as HTMLElement | null;
+    let depth = 0;
+    while (target && depth < 5 && target !== document.body && target !== document.documentElement) {
+      if (isScrollContainer(target)) {
+        if (!overlayInstances.has(target)) {
+          attachOverlayScrollbar(target, false);
+        } else {
+          overlayInstances.get(target)?.scheduleUpdate();
+        }
+        break;
+      }
+      target = target.parentElement;
+      depth++;
+    }
+  };
+  document.addEventListener('pointerover', onPointerOver, { capture: true, passive: true });
+
+  document.addEventListener('ux:dom-mutated', () => {
+    requestAnimationFrame(scanScrollContainers);
+  }, { passive: true });
+
+  window.addEventListener('hashchange', () => {
+    setTimeout(scanScrollContainers, 50);
+  }, { passive: true });
+
+  window.addEventListener('popstate', () => {
+    setTimeout(scanScrollContainers, 50);
+  }, { passive: true });
+
+  scanScrollContainers();
+  requestAnimationFrame(scanScrollContainers);
+  setTimeout(scanScrollContainers, 150);
+  setTimeout(scanScrollContainers, 600);
+}
+
+const scrollbarModule: AttributeModule = {
+  name: 'scrollbar',
+  attribute: 'scrollbar',
+  onRegister() {
+    if (typeof document !== 'undefined') {
+      ensureScrollbarStyles(document);
+      setupGlobalListeners();
+    }
+  },
+  handle: (el: HTMLElement, value: string, runtime: RuntimeContext, parsedAttr?: any): (() => void) | void => {
+    const isIgnore = el.hasAttribute('data-scrollbar_ignore') ||
+      (parsedAttr?.modifiers && parsedAttr.modifiers.includes('ignore'));
+
+    if (isIgnore) {
+      el.setAttribute('data-scrollbar_ignore', 'true');
+      const inst = overlayInstances.get(el);
+      if (inst) {
+        inst.destroy();
+      }
+      return;
+    }
+
+    ensureScrollbarStyles(el.getRootNode() as Document | ShadowRoot, globalConfig);
+    setupGlobalListeners();
+
+    const isGlobal = el.hasAttribute('data-scrollbar_global') || 
+      (parsedAttr?.modifiers && parsedAttr.modifiers.includes('global')) ||
+      el.tagName.toLowerCase() === 'html';
+
+    let config: ScrollbarConfig = {};
+    if (value && value.trim()) {
+      const trimmed = value.trim();
+      try {
+        const expr = (trimmed.startsWith('{') && trimmed.endsWith('}')) ? `(${trimmed})` : trimmed;
+        const evaluated = runtime.evaluate(el, expr);
+        if (typeof evaluated === 'object' && evaluated !== null) {
+          config = evaluated as ScrollbarConfig;
+        } else if (typeof evaluated === 'string') {
+          if (evaluated === 'overlay' || evaluated === 'native' || evaluated === 'none') {
+            config = { mode: evaluated };
+          }
+        }
+      } catch {
+        if (trimmed === 'overlay' || trimmed === 'none') config = { mode: trimmed };
+      }
+    }
+
+    if (isGlobal) {
+      globalConfig = { ...globalConfig, ...config };
+      el.setAttribute('data-scrollbar_global', 'true');
+      ensureScrollbarStyles(el.getRootNode() as Document | ShadowRoot, globalConfig);
+      setupGlobalListeners();
+      syncAllOverlayScrollbars();
+      return;
+    }
+
+    const merged = { ...globalConfig, ...config };
+    if (merged.mode === 'none') {
+      el.classList.add('scrollbar-none');
+      return;
+    }
+
+    if (merged.mode === 'overlay') {
+      const overlayInst = ensureOverlayInstance(el);
+      overlayInst.scheduleUpdate();
+      requestAnimationFrame(() => overlayInst.update());
+      setTimeout(() => overlayInst.update(), 100);
+      return () => {
+        overlayInst.destroy();
+      };
+    }
+  }
+};
+
+export default scrollbarModule;

@@ -1,0 +1,90 @@
+import { AttributeModule } from '../../engine/modules.ts';
+import { RuntimeContext } from '../../engine/composition.ts';
+import { initError, errMsg } from '../../engine/debug.ts';
+import { ParsedAttribute } from '../../engine/attributeParser.ts';
+
+const onModule: AttributeModule = {
+  name: 'on',
+  attribute: 'on',
+  handle: (el: HTMLElement, value: string, runtime: RuntimeContext, parsedAttr?: ParsedAttribute): (() => void) | void => {
+    // Process ONLY the single target attribute passed by the engine coordinator (Alpine x-on pattern).
+    // Eliminates N^2 duplicate listener registration when multiple data-on-* attributes exist.
+    const parsed = parsedAttr || runtime.parseAttribute('data-on', runtime, el);
+    if (!parsed || !parsed.argument) return;
+
+    const eventName = parsed.argument;
+    const modifiers = parsed.modifiers;
+
+    try {
+      let handler: EventListener = (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        const extras = {
+          $evt: e,
+          $detail: detail,
+          $newValue: (e.target as HTMLInputElement)?.value ?? (e.target as HTMLInputElement)?.checked ?? detail
+        };
+        return runtime.evaluate(el, value, extras);
+      };
+
+      let target: EventTarget = el;
+      let options: AddEventListenerOptions = {};
+
+      const targetModifiers = new Set(['window', 'document', 'outside']);
+      const optionModifiers = new Set(['passive', 'capture']);
+
+      modifiers.forEach((mod: string) => {
+        const dotIdx = mod.indexOf('.');
+        const dashIdx = mod.indexOf('-');
+        let modName = mod;
+        let fullArg = '';
+        if (dotIdx !== -1) {
+          modName = mod.slice(0, dotIdx);
+          fullArg = mod.slice(dotIdx + 1);
+        } else if (dashIdx !== -1) {
+          modName = mod.slice(0, dashIdx);
+          fullArg = mod.slice(dashIdx + 1);
+        }
+
+        if (targetModifiers.has(modName)) {
+          if (modName === 'window') target = window;
+          if (modName === 'document' || modName === 'outside') target = document;
+          if (modName !== 'outside') return;
+        }
+
+        if (optionModifiers.has(modName)) {
+          if (modName === 'passive') options.passive = true;
+          if (modName === 'capture') options.capture = true;
+          return;
+        }
+
+        const modifierModule = runtime.getModifier(modName);
+        if (modifierModule) {
+          const wrapped = modifierModule.handle(handler, el, fullArg, runtime);
+          if (typeof wrapped === 'function') {
+            handler = wrapped as EventListener;
+          }
+        }
+      });
+
+      target.addEventListener(eventName, handler as EventListener, options);
+
+      if (
+        (eventName === 'load' && document.readyState !== 'loading') ||
+        (eventName === 'DOMContentLoaded' && document.readyState !== 'loading')
+      ) {
+        if (target === window || target === document || target === el) {
+          try {
+            (handler as EventListener)(new Event(eventName));
+          } catch {}
+        }
+      }
+
+      return () => target.removeEventListener(eventName, handler as EventListener, options);
+
+    } catch (e) {
+      initError('on', `Failed to attach listener ${eventName}: ${errMsg(e)}`, el, value);
+    }
+  }
+};
+
+export default onModule;

@@ -1,0 +1,50 @@
+import { ref, Ref, computed } from '../../engine/reactivity.ts';
+import { disposeScope } from '../../engine/scope.ts';
+
+// Cache for media query signals
+const mediaSignals: Map<string, Ref<boolean>> = new Map();
+const cleanupFns: (() => void)[] = [];
+
+/**
+ * Creates or retrieves a cached signal that tracks a media query.
+ */
+export function getMediaSignal(query: string): Ref<boolean> {
+  if (mediaSignals.has(query)) {
+    return mediaSignals.get(query)!;
+  }
+
+  if (typeof window === 'undefined') {
+    // Server-side default
+    mediaSignals.set(query, computed(() => false));
+    return mediaSignals.get(query)!;
+  }
+  const mql = globalThis.matchMedia(query);
+  const s = ref(mql.matches);
+
+  const listener = (e: MediaQueryListEvent) => {
+    s.value = e.matches;
+  };
+
+  mql.addEventListener('change', listener);
+  cleanupFns.push(() => mql.removeEventListener('change', listener));
+  mediaSignals.set(query, s);
+  return s;
+}
+
+// deno-lint-ignore no-explicit-any
+export const scopeRule = (q: string, body: () => any) => getMediaSignal(q).value ? body() : undefined;
+
+/** Tear down all listeners — for testing or micro-frontend teardown. */
+export function dispose() { disposeScope(cleanupFns); }
+
+import type { ScopeModule } from '../../engine/modules.ts';
+
+export const mediaScopeModule: ScopeModule = {
+  name: 'media',
+  rule: 'media',
+  scopeRule
+};
+
+export default mediaScopeModule;
+
+

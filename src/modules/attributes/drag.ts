@@ -1,0 +1,1570 @@
+import { AttributeModule } from "../../engine/modules.ts";
+import { RuntimeContext } from "../../engine/composition.ts";
+import { toError } from "../../engine/debug.ts";
+import { flip } from "../../engine/animation.ts";
+import { getDataStack } from "../../engine/scope.ts";
+import { CLEANUP_FUNCTIONS_KEY, MARKER_KEY, DATA_STACK_KEY, IS_TEMPLATE_KEY } from "../../engine/consts.ts";
+import { stylesheet } from "./stylesheet.ts";
+import { dragState } from "../sprites/drag.ts";
+import { ensureAdoptedStylesheet } from "../../engine/utils/styles.ts";
+
+const DRAG_CSS = `[data-drag-item],[data-drag]:not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]){user-select:none;-webkit-user-select:none;touch-action:none}[data-drag-item]:not([data-drag-handle]),[data-drag]:not([data-drag-handle]):not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]){cursor:grab}[data-drag-item]:not([data-drag-handle]):active,[data-drag]:not([data-drag-handle]):not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]):active{cursor:grabbing}[data-drag-handle],.handle{cursor:grab;touch-action:none}[data-drag-handle]:active,.handle:active{cursor:grabbing}[data-drag-nodrag]{cursor:default !important;touch-action:auto !important;pointer-events:auto !important}.draggable-drag,.drag-active{opacity:1 !important;box-shadow:0 25px 50px -12px rgba(0,0,0,0.35) !important;transform:scale(1.03) !important;cursor:grabbing !important;z-index:9999 !important;pointer-events:none !important}.draggable-ghost,.drag-ghost{opacity:0.4 !important;pointer-events:none !important;border:2px dashed color-mix(in srgb,currentColor 25%,transparent) !important;background-color:color-mix(in srgb,currentColor 10%,transparent) !important}.draggable-chosen,.drag-chosen{cursor:grabbing !important;opacity:0.85}.draggable-selected,[data-drag-item].selected{outline:2px solid var(--color-primary,#3b82f6) !important;outline-offset:2px !important}.draggable-swap-highlight{outline:2px dashed var(--color-warning,#f59e0b) !important;outline-offset:2px !important;transition:outline 0.15s ease !important}`;
+
+const dragSheetRef: { sheet: CSSStyleSheet | null } = { sheet: null };
+
+export function ensureDragStyles(root?: Document | ShadowRoot | null) {
+  ensureAdoptedStylesheet(DRAG_CSS, dragSheetRef, root);
+}
+
+if (typeof document !== "undefined") {
+  ensureDragStyles();
+}
+
+export const CONTAINER_SELECTOR = '[data-drag], [data-drag-container], [data-teleport_drop], [data-teleport\\:drop]';
+
+export function isContainerElement(el: HTMLElement | null): boolean {
+  if (!el) return false;
+  if (el.hasAttribute("data-drag-item")) return false;
+  if (
+    el.hasAttribute("data-drag-container") ||
+    el.hasAttribute("data-teleport_drop")
+  ) {
+    return true;
+  }
+  if (el.hasAttribute("data-drag")) {
+    const val = el.getAttribute("data-drag");
+    if (val && (val.includes("{") || val.includes(".") || val.trim().length > 0)) {
+      return true;
+    }
+    return !!(el as any).__draggable;
+  }
+  return false;
+}
+
+export function getClosestContainer(el: HTMLElement | null): HTMLElement | null {
+  let curr: HTMLElement | null = el;
+  while (curr) {
+    if (isContainerElement(curr)) return curr;
+    curr = curr.parentElement;
+  }
+  return null;
+}
+
+// Helper to find scrollable parent container
+function getScrollParent(el: HTMLElement): HTMLElement {
+  let current: HTMLElement | null = el;
+  while (current) {
+    const style = getComputedStyle(current);
+    const overflowY = style.overflowY;
+    const overflowX = style.overflowX;
+    const isScrollableY = overflowY === 'auto' || overflowY === 'scroll';
+    const isScrollableX = overflowX === 'auto' || overflowX === 'scroll';
+    if (isScrollableY || isScrollableX) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return document.documentElement;
+}
+
+function getBoundItemFromElement(el: HTMLElement | null, runtime?: RuntimeContext): any {
+  if (!el) return null;
+  if (runtime) {
+    try {
+      const itm = runtime.evaluate(el, 'item');
+      if (itm && typeof itm === 'object') return itm;
+      const tab = runtime.evaluate(el, 'tab');
+      if (tab && typeof tab === 'object') return tab;
+    } catch {
+      /* fallback */
+    }
+  }
+  const stack = getDataStack(el);
+  for (const s of stack) {
+    if (s && typeof s === 'object') {
+      if ('item' in s && s.item) return s.item;
+      if ('tab' in s && s.tab) return s.tab;
+      for (const key of Object.keys(s)) {
+        if (key !== 'index' && s[key] && typeof s[key] === 'object') {
+          return s[key];
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function matchesItemIdentity(a: any, b: any): boolean {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (typeof a !== 'object' || typeof b !== 'object') return false;
+  const idA = a.id ?? a.href ?? a.key ?? a.path ?? a.name;
+  const idB = b.id ?? b.href ?? b.key ?? b.path ?? b.name;
+  return idA !== undefined && idB !== undefined && idA === idB;
+}
+
+export interface DragReorderContext<T> {
+  getList: () => T[];
+  updateList: (mutate: (list: T[]) => void) => void;
+  container: HTMLElement;
+  direction?: "vertical" | "horizontal" | "grid";
+  ghostClass?: string;
+  dragClass?: string;
+  ghostOpacity?: number;
+  group?: string | { name: string; pull?: "clone" | boolean; put?: boolean; revertClone?: boolean };
+  sort?: boolean;
+  swap?: boolean;
+  swapClass?: string;
+  fallbackOnBody?: boolean;
+  swapThreshold?: number;
+  edgeScrollThreshold?: number;
+  autoScrollSpeed?: number;
+  animationDuration?: number;
+  onReorder?: (list: T[], oldIndex: number, newIndex: number) => void;
+  onAutoScroll?: (delta: { x: number; y: number }) => void | Promise<boolean>;
+}
+
+export interface DraggableOptions {
+  animation?: number;
+  ghostClass?: string;
+  dragClass?: string;
+  chosenClass?: string;
+  fallbackOnBody?: boolean;
+  swapThreshold?: number;
+  invertedSwapThreshold?: number;
+  invertSwap?: boolean;
+  direction?: 'vertical' | 'horizontal' | 'grid';
+  handle?: string;
+  filter?: string;
+  draggable?: string;
+  multiDrag?: boolean;
+  selectedClass?: string;
+  swap?: boolean;
+  swapClass?: string;
+  group?: string | { name: string; pull?: 'clone' | boolean; put?: boolean; revertClone?: boolean };
+  sort?: boolean;
+  ghostOpacity?: number;
+  onStart?: (evt: any) => void;
+  onEnd?: (evt: any) => void;
+}
+
+// ---------------------------------------------------------------------------
+// Pure TypeScript Draggable Engine
+// ---------------------------------------------------------------------------
+export class Draggable {
+  static active: Draggable | null = null;
+  static ghost: HTMLElement | null = null;
+  static clone: HTMLElement | null = null;
+
+  public el: HTMLElement;
+  public options: DraggableOptions;
+
+  private _pointerDownBound: (e: PointerEvent) => void;
+  private _pointerMoveBound: (e: PointerEvent) => void;
+  private _pointerUpBound: (e: PointerEvent) => void;
+
+  private dragEl: HTMLElement | null = null;
+  private parentEl: HTMLElement | null = null;
+  private nextEl: HTMLElement | null = null;
+  private lastTarget: HTMLElement | null = null;
+  private lastDirection = 0;
+  private _swapHighlightTarget: HTMLElement | null = null;
+
+  private tapEvt: PointerEvent | null = null;
+  private dragStarted = false;
+  private multiDragElements: HTMLElement[] = [];
+  private originalIndices = new Map<HTMLElement, number>();
+
+  private scrollParent: HTMLElement | null = null;
+  private _lastActiveItemScope: any = null;
+  private _lastSourceItemScope: any = null;
+  private _dockedContainer: HTMLElement | null = null;
+  private scrollParentBounds: DOMRect | null = null;
+
+  private _runtime?: RuntimeContext;
+
+  constructor(el: HTMLElement, options: DraggableOptions, runtime?: RuntimeContext) {
+    this.el = el;
+    this._runtime = runtime;
+    this.options = {
+      animation: 150,
+      ghostClass: 'draggable-ghost',
+      dragClass: 'draggable-drag',
+      chosenClass: 'draggable-chosen',
+      selectedClass: 'draggable-selected',
+      swapClass: 'draggable-swap-highlight',
+      fallbackOnBody: true,
+      swapThreshold: 1,
+      invertedSwapThreshold: 1,
+      invertSwap: false,
+      draggable: '[data-drag-item], [data-drag]:not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container])',
+      sort: true,
+      ...options,
+    };
+
+    this._pointerDownBound = this._onPointerDown.bind(this);
+    this._pointerMoveBound = this._onPointerMove.bind(this);
+    this._pointerUpBound = this._onPointerUp.bind(this);
+
+    if (this.options.handle) {
+      const handles = this.el.querySelectorAll<HTMLElement>(this.options.handle);
+      for (let i = 0; i < handles.length; i++) {
+        if (!handles[i].style.touchAction) handles[i].style.touchAction = 'none';
+      }
+    }
+
+    this.el.addEventListener('pointerdown', this._pointerDownBound);
+  }
+
+  public destroy() {
+    this.el.removeEventListener('pointerdown', this._pointerDownBound);
+    this._cleanupDragListeners();
+  }
+
+  private _onPointerDown(e: PointerEvent) {
+    if (e.button !== 0) return; // Only left click
+    if (Draggable.active) return;
+
+    const target = e.target as HTMLElement;
+    const dragEl = target.closest(this.options.draggable!) as HTMLElement | null;
+    if (!dragEl || !this.el.contains(dragEl)) return;
+
+    // Bubbling Gating: ensure the closest Draggable container is this.el
+    const closestDraggableContainer = getClosestContainer(dragEl);
+    if (closestDraggableContainer !== this.el) {
+      return; // Let the nested Draggable handle it!
+    }
+
+    if (dragEl.getAttribute('draggable') === 'false') {
+      return;
+    }
+
+    if (target.closest('[data-drag-nodrag]')) {
+      return;
+    }
+
+    // Handle Selector
+    const itemHasHandle = dragEl.querySelector('[data-drag-handle]');
+    if (this.options.handle) {
+      if (!target.closest(this.options.handle)) return;
+    } else if (itemHasHandle) {
+      if (!target.closest('[data-drag-handle]')) return;
+    }
+
+    // Filter Selector
+    if (this.options.filter) {
+      if (target.closest(this.options.filter)) {
+        return;
+      }
+    }
+
+    // Interactive controls (checkbox, button, etc.) own their own events.
+    // Skipping here lets a checkbox drive MultiDrag selection through its
+    // two-way binding instead of double-toggling with the engine's tap-select
+    // (and prevents preventDefault from suppressing the native control).
+    const targetTag = target.tagName.toUpperCase();
+    if (['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(targetTag)) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    this.dragEl = dragEl;
+    this.tapEvt = e;
+    this.dragStarted = false;
+
+    // Apply the chosen highlight immediately on press so touch/mouse/pen all get
+    // instant feedback before the drag threshold is crossed. This is engine-driven
+    // (not native :active, which preventDefault suppresses on touch). Removed in
+    // _onPointerUp for both the drag and plain-tap paths.
+    this.dragEl.classList.add(this.options.chosenClass!);
+
+    document.addEventListener('pointermove', this._pointerMoveBound);
+    document.addEventListener('pointerup', this._pointerUpBound);
+    document.addEventListener('pointercancel', this._pointerUpBound);
+  }
+
+  private _onPointerMove(e: PointerEvent) {
+    if (!this.tapEvt || !this.dragEl) return;
+
+    // Cursor delta drives both the drag-start threshold and the ghost transform.
+    // Everything here is in CSS pixels (clientX/Y and getBoundingClientRect share
+    // that coordinate space), so OS/browser scaling needs no compensation.
+    const dx = e.clientX - this.tapEvt.clientX;
+    const dy = e.clientY - this.tapEvt.clientY;
+
+    if (!this.dragStarted) {
+      const threshold = e.pointerType === 'touch' ? 8 : 3;
+      if (Math.sqrt(dx * dx + dy * dy) > threshold) {
+        this._startDrag(e);
+      }
+      return;
+    }
+
+    // Move ghost
+    if (Draggable.ghost) {
+      Draggable.ghost.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+    }
+
+    // Autoscroll
+    this._maybeAutoScroll(e.clientX, e.clientY);
+
+    // Hit-testing
+    this._onDragOver(e);
+  }
+
+  private _startDrag(e: PointerEvent) {
+    this.dragStarted = true;
+    Draggable.active = this;
+    this.parentEl = this.dragEl!.parentElement;
+    this.nextEl = this.dragEl!.nextElementSibling as HTMLElement | null;
+
+    if (this.parentEl) {
+      const stack = getDataStack(this.parentEl);
+      this._lastSourceItemScope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
+    }
+
+    // Capture starting indices of draggable elements only (excluding templates and placeholders)
+    this.originalIndices.clear();
+    let draggableIdx = 0;
+    Array.from(this.el.children).forEach((child: any) => {
+      if (child.matches(this.options.draggable!) && child.getAttribute('draggable') !== 'false' && !child[IS_TEMPLATE_KEY]) {
+        child.draggableIndex = draggableIdx;
+        this.originalIndices.set(child, draggableIdx);
+        draggableIdx++;
+      }
+    });
+
+    // Sync $drag reactive sprite
+    dragState.isDragging = true;
+    dragState.activeItem = getBoundItemFromElement(this.dragEl, this._runtime);
+    dragState.sourceList = (this.el as any).__dragListExpr || '';
+    dragState.targetList = (this.el as any).__dragListExpr || '';
+    const startIdx = this.originalIndices.get(this.dragEl!) ?? -1;
+    dragState.fromIndex = startIdx;
+    dragState.toIndex = startIdx;
+
+    // Populate MultiDrag items list if multiDrag is active
+    if (this.options.multiDrag) {
+      // If the clicked element is already selected, gather all selected elements in the container
+      if (this.dragEl!.classList.contains(this.options.selectedClass!)) {
+        this.multiDragElements = Array.from(this.el.children).filter(c =>
+          (c as HTMLElement).matches(this.options.draggable!) && c.classList.contains(this.options.selectedClass!)
+        ) as HTMLElement[];
+      } else {
+        // Clear other selections in data model and select this one
+        Array.from(this.el.children).forEach((c: any) => {
+          const stack = getDataStack(c);
+          const scope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
+          if (scope && scope.item) {
+            scope.item.selected = (c === this.dragEl);
+          }
+        });
+        this.multiDragElements = [this.dragEl!];
+      }
+    }
+
+    // Handle Clone
+    const pull = typeof this.options.group === 'object' && this.options.group.pull === 'clone';
+    if (pull) {
+      Draggable.clone = this.dragEl!.cloneNode(true) as HTMLElement;
+      this.dragEl!.parentNode!.insertBefore(Draggable.clone, this.dragEl!);
+    }
+
+    // Create ghost
+    const rect = this.dragEl!.getBoundingClientRect();
+    Draggable.ghost = this.dragEl!.cloneNode(true) as HTMLElement;
+    Draggable.ghost.style.position = 'fixed';
+    Draggable.ghost.style.top = `${rect.top}px`;
+    Draggable.ghost.style.left = `${rect.left}px`;
+    Draggable.ghost.style.width = `${rect.width}px`;
+    Draggable.ghost.style.height = `${rect.height}px`;
+    Draggable.ghost.style.maskImage = 'linear-gradient(to bottom right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)';
+    Draggable.ghost.style.webkitMaskImage = 'linear-gradient(to bottom right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)';
+    Draggable.ghost.style.pointerEvents = 'none';
+    Draggable.ghost.style.zIndex = '100000';
+    Draggable.ghost.classList.add(this.options.ghostClass!);
+    const originalMarker = (this.dragEl as any)[MARKER_KEY];
+    if (originalMarker) (Draggable.ghost as any)[MARKER_KEY] = originalMarker;
+    const originalStack = getDataStack(this.dragEl!);
+    if (originalStack.length) (Draggable.ghost as any)[DATA_STACK_KEY] = originalStack;
+    document.body.appendChild(Draggable.ghost);
+
+    // Add chosen class
+    this.dragEl!.classList.add(this.options.chosenClass!);
+    this.dragEl!.classList.add(this.options.dragClass!);
+
+    // Fold MultiDrag items
+    if (this.options.multiDrag && this.multiDragElements.length > 0) {
+      this.multiDragElements.forEach(el => {
+        if (el !== this.dragEl) {
+          el.style.display = 'none';
+        }
+      });
+    }
+
+    // Setup scroll parent
+    this.scrollParent = getScrollParent(this.el);
+    this.scrollParentBounds = this.scrollParent.getBoundingClientRect();
+
+    if (this.options.onStart) {
+      this.options.onStart({
+        item: this.dragEl,
+        oldIndex: this.originalIndices.get(this.dragEl!),
+        originalEvent: e,
+      });
+    }
+  }
+
+  private _onDragOver(e: PointerEvent) {
+    if (!this.dragEl) return;
+
+    // Boundary detection for source container empty placeholder
+    if (this.parentEl && this._lastSourceItemScope && this._lastSourceItemScope.item) {
+      if (this.dragEl.parentElement !== this.parentEl) {
+        (this._lastSourceItemScope.item as any).isDraggedOut = true;
+      } else {
+        const rect = this.parentEl.getBoundingClientRect();
+        const isOutside = (
+          e.clientX < rect.left ||
+          e.clientX > rect.right ||
+          e.clientY < rect.top ||
+          e.clientY > rect.bottom
+        );
+        (this._lastSourceItemScope.item as any).isDraggedOut = isOutside;
+      }
+    }
+
+    // Find closest container target
+    const target = this._findTargetUnderCursor(e.clientX, e.clientY);
+    if (!target || target === this.dragEl) {
+      this._clearDragOverState();
+      return;
+    }
+
+    // Circular containment prevention
+    if (this.dragEl.contains(target)) {
+      this._clearDragOverState();
+      return;
+    }
+
+    const targetParent = isContainerElement(target) ? target : getClosestContainer(target);
+    if (!targetParent) {
+      this._clearDragOverState();
+      return;
+    }
+
+    let targetDraggable: Draggable | null = null;
+    const reorderEngine = (targetParent as any).__draggable;
+    if (reorderEngine && reorderEngine.draggable) {
+      targetDraggable = reorderEngine.draggable;
+    }
+
+    const isSameContainer = targetParent === this.el;
+    if (!isSameContainer) {
+      if (!targetDraggable || !this._canPullPut(targetDraggable)) {
+        this._clearDocked();
+
+        this._clearDragOverState();
+        return; // Pull/Put not allowed between groups
+      }
+    }
+
+    dragState.targetList = (targetParent as any).__dragListExpr || '';
+
+    this._updateDragOverState(targetParent, e);
+
+    if (isContainerElement(target)) {
+      // Dragged over an empty container: append directly!
+      if (this.dragEl.parentElement !== target) {
+        const srcBefore = this._captureRects(this.dragEl.parentElement!);
+        const destBefore = this._captureRects(target);
+
+        target.appendChild(this.dragEl);
+
+        this._animateShift(this.dragEl.parentElement!, srcBefore);
+        this._animateShift(target, destBefore);
+      }
+
+      this._updateDocked();
+      return;
+    }
+
+    const targetRect = target.getBoundingClientRect();
+    const dragRect = this.dragEl.getBoundingClientRect();
+    const vertical = this._detectDirection(targetParent) === 'vertical';
+
+    const differentLevel = this.dragEl.parentNode !== targetParent;
+    const differentRowCol = !this._dragElInRowColumn(dragRect, targetRect, vertical);
+
+    // The swap-threshold is kept live by the reactive bridge in dragAttribute,
+    // which writes slider-bound values straight into this.options — so reading
+    // options here honors runtime threshold changes without a second code path.
+    const direction = this._getSwapDirection(
+      e,
+      targetRect,
+      vertical,
+      differentRowCol ? 1 : this.options.swapThreshold!,
+      this.options.invertedSwapThreshold!,
+      differentLevel || (!differentRowCol && !!this.options.invertSwap)
+    );
+
+    // Swap mode: decouple hover highlight from DOM mutation.
+    // Never mutate DOM on hover; atomic pairwise swap is executed on drop in _onPointerUp.
+    if (this.options.swap) {
+      if (direction !== 0 && target !== this.dragEl) {
+        this._setSwapHighlight(target);
+      } else if (target === this.dragEl) {
+        this._clearSwapHighlight();
+      }
+      this._updateDocked();
+      return;
+    }
+
+    if (direction !== 0) {
+      // Check if already beside target
+      let sibling: HTMLElement | null = null;
+      let dragIndex = Array.from(this.dragEl.parentElement!.children).indexOf(this.dragEl);
+      if (dragIndex !== -1) {
+        do {
+          dragIndex -= direction;
+          sibling = this.dragEl.parentElement!.children[dragIndex] as HTMLElement | null;
+        } while (sibling && (getComputedStyle(sibling).display === 'none' || sibling === Draggable.ghost));
+      }
+      if (sibling === target) {
+        return;
+      }
+
+      this.lastTarget = target;
+      this.lastDirection = direction;
+
+      // Capture before states
+      const srcBefore = this._captureRects(this.dragEl.parentElement!);
+      const destBefore = isSameContainer ? srcBefore : this._captureRects(targetParent);
+
+      // Perform reorder mutation in DOM
+      const nextSibling = target.nextElementSibling;
+      const after = direction === 1;
+      if (after && !nextSibling) {
+        targetParent.appendChild(this.dragEl);
+      } else {
+        targetParent.insertBefore(this.dragEl, after ? nextSibling : target);
+      }
+
+      // Animate shifts in both containers
+      this._animateShift(this.dragEl.parentElement!, srcBefore);
+      if (!isSameContainer) {
+        this._animateShift(targetParent, destBefore);
+      }
+
+      this._updateDocked();
+    }
+  }
+
+  private _onPointerUp(e: PointerEvent) {
+    this._cleanupDragListeners();
+    const swapTarget = this._swapHighlightTarget;
+    this._clearSwapHighlight();
+
+    if (this.dragEl) {
+      // Always clear the press highlight, whether this ended as a drag or a
+      // plain tap (chosenClass is applied on pointerdown). Safe no-op if absent.
+      this.dragEl.classList.remove(this.options.chosenClass!);
+
+      if (this.dragStarted) {
+        // Remove classes
+        this.dragEl.classList.remove(this.options.dragClass!);
+
+        // Restore MultiDrag elements visibility on drop. The non-primary selected
+        // items were set to display:none during drag; ensure the WHOLE selection
+        // (including the dragged item) is visible again so the re-rendered list
+        // never ends up with a hidden member.
+        if (this.options.multiDrag && this.multiDragElements.length > 0) {
+          this.multiDragElements.forEach(el => {
+            el.style.display = '';
+          });
+        }
+        if (this.dragEl) this.dragEl.style.display = '';
+
+        // Remove clone
+        if (Draggable.clone) {
+          Draggable.clone.parentNode?.removeChild(Draggable.clone);
+          Draggable.clone = null;
+        }
+
+        // Remove ghost
+        if (Draggable.ghost) {
+          Draggable.ghost.parentNode?.removeChild(Draggable.ghost);
+          Draggable.ghost = null;
+        }
+
+        const oldIndex = this.originalIndices.get(this.dragEl);
+
+        if (this.options.swap) {
+          if (swapTarget && swapTarget !== this.dragEl) {
+            const targetIndex = this.originalIndices.get(swapTarget);
+            const srcContainer = this.dragEl.parentElement!;
+            const destContainer = swapTarget.parentElement!;
+            const isSame = srcContainer === destContainer;
+
+            const srcBefore = this._captureRects(srcContainer);
+            const destBefore = isSame ? srcBefore : this._captureRects(destContainer);
+
+            this._swapNodes(this.dragEl, swapTarget);
+
+            this._animateShift(srcContainer, srcBefore);
+            if (!isSame) {
+              this._animateShift(destContainer, destBefore);
+            }
+
+            if (this.options.onEnd) {
+              this.options.onEnd({
+                item: this.dragEl,
+                from: this.parentEl,
+                to: destContainer,
+                oldIndex,
+                newIndex: targetIndex,
+                originalEvent: e,
+                items: [],
+                oldIndicies: [],
+                swapItem: swapTarget,
+              });
+            }
+          } else {
+            // Released without a swap target: no reorder
+            if (this.options.onEnd) {
+              this.options.onEnd({
+                item: this.dragEl,
+                from: this.parentEl,
+                to: this.dragEl.parentElement,
+                oldIndex,
+                newIndex: oldIndex,
+                originalEvent: e,
+                items: [],
+                oldIndicies: [],
+              });
+            }
+          }
+        } else {
+          // Standard sorting insertion logic:
+          let finalIndex = 0;
+          const children = Array.from(this.dragEl.parentElement!.children);
+          for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+            if (child === this.dragEl) break;
+            if ((child as HTMLElement).classList.contains(this.options.selectedClass!)) continue;
+            if (child.nodeName.toUpperCase() === 'TEMPLATE') continue;
+            if ((child as any)[IS_TEMPLATE_KEY]) continue;
+            if (child.getAttribute('draggable') === 'false') continue;
+            if (child.matches(this.options.draggable!)) {
+              finalIndex++;
+            }
+          }
+
+          if (this.options.onEnd) {
+            this.options.onEnd({
+              item: this.dragEl,
+              from: this.parentEl,
+              to: this.dragEl.parentElement,
+              oldIndex,
+              newIndex: finalIndex,
+              originalEvent: e,
+              items: [...this.multiDragElements],
+              oldIndicies: this.multiDragElements.map(el => ({
+                multiDragElement: el,
+                index: this.originalIndices.get(el) ?? -1,
+              })),
+            });
+          }
+        }
+
+        if (this.options.multiDrag) {
+          this.multiDragElements = [];
+        }
+      } else {
+        // A simple tap/click occurred without dragging: toggle selection!
+        if (this.options.multiDrag) {
+          const stack = getDataStack(this.dragEl);
+          const scope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
+          if (scope && scope.item) {
+            scope.item.selected = !scope.item.selected;
+          }
+        }
+      }
+    }
+
+    this._clearDragOverState();
+
+    if (this._lastSourceItemScope && this._lastSourceItemScope.item) {
+      (this._lastSourceItemScope.item as any).isDraggedOut = false;
+      this._lastSourceItemScope = null;
+    }
+
+    this._clearDocked();
+
+    // Reset $drag reactive sprite
+    dragState.isDragging = false;
+    dragState.activeItem = null;
+    dragState.sourceList = '';
+    dragState.targetList = '';
+    dragState.fromIndex = -1;
+    dragState.toIndex = -1;
+
+    Draggable.active = null;
+    this.dragEl = null;
+    this.tapEvt = null;
+    this.dragStarted = false;
+    this._clearDocked();
+  }
+
+  private _cleanupDragListeners() {
+    document.removeEventListener('pointermove', this._pointerMoveBound);
+    document.removeEventListener('pointerup', this._pointerUpBound);
+    document.removeEventListener('pointercancel', this._pointerUpBound);
+  }
+
+  private _clearDocked() {
+    if (this._dockedContainer) {
+      this._dockedContainer.removeAttribute('data-dropzone-state');
+      this._dockedContainer = null;
+    }
+  }
+
+  private _updateDocked() {
+    if (!this.dragEl) return;
+    const container = getClosestContainer(this.dragEl);
+    if (container !== this._dockedContainer) {
+      if (this._dockedContainer) {
+        this._dockedContainer.removeAttribute('data-dropzone-state');
+      }
+      if (container) {
+        container.setAttribute('data-dropzone-state', 'docked');
+      }
+      this._dockedContainer = container;
+    }
+  }
+
+  private _clearDragOverState() {
+    if (this._lastActiveItemScope && this._lastActiveItemScope.item) {
+      (this._lastActiveItemScope.item as any).isDragOver = false;
+      this._lastActiveItemScope = null;
+    }
+    this._clearSwapHighlight();
+  }
+
+  private _setSwapHighlight(target: HTMLElement) {
+    if (this._swapHighlightTarget && this._swapHighlightTarget !== target) {
+      this._swapHighlightTarget.classList.remove(this.options.swapClass!);
+    }
+    target.classList.add(this.options.swapClass!);
+    this._swapHighlightTarget = target;
+  }
+
+  private _clearSwapHighlight() {
+    if (this._swapHighlightTarget) {
+      this._swapHighlightTarget.classList.remove(this.options.swapClass!);
+      this._swapHighlightTarget = null;
+    }
+  }
+
+  private _updateDragOverState(targetParent: HTMLElement, e: PointerEvent) {
+    const stack = getDataStack(targetParent);
+    const targetItemScope = stack.find(s => s && 'item' in s && s.item && typeof s.item === 'object') as any;
+
+    if (this._lastActiveItemScope !== targetItemScope) {
+      this._clearDragOverState();
+      this._lastActiveItemScope = targetItemScope || null;
+    }
+
+    if (targetItemScope && targetItemScope.item) {
+      const rect = targetParent.getBoundingClientRect();
+      const isInside = (
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom
+      );
+      (targetItemScope.item as any).isDragOver = isInside;
+    }
+  }
+
+  private _findTargetUnderCursor(clientX: number, clientY: number): HTMLElement | null {
+    const el = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
+    if (!el) return null;
+
+    // Resolve the drop container under the cursor (handles cross-container drags).
+    const container = getClosestContainer(el);
+    if (!container || !(container as any).__draggable) return null;
+
+    const children = Array.from(container.children).filter(c =>
+      c.nodeName.toUpperCase() !== 'TEMPLATE' &&
+      c !== this.dragEl &&
+      c !== Draggable.ghost &&
+      (c as HTMLElement).style.display !== 'none' &&
+      !(c as any)[IS_TEMPLATE_KEY] &&
+      !(c as HTMLElement).classList.contains('draggable-ghost')
+    ) as HTMLElement[];
+
+    // Empty container takes priority as the drop target.
+    if (children.length === 0) return container;
+
+    // Euclidean distance to each eligible child's center handles flex/grid gaps
+    // and hidden MultiDrag selections robustly.
+    let closest: HTMLElement | null = null;
+    let minDistance = Infinity;
+    for (const child of children) {
+      const rect = child.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const dx = clientX - centerX;
+      const dy = clientY - centerY;
+      const dist = dx * dx + dy * dy;
+      if (dist < minDistance) {
+        minDistance = dist;
+        closest = child;
+      }
+    }
+    return closest;
+  }
+
+  private _detectDirection(container: HTMLElement): 'vertical' | 'horizontal' {
+    if (this.options.direction) return this.options.direction === 'grid' ? 'vertical' : this.options.direction;
+    const style = getComputedStyle(container);
+    if (style.display === 'flex') {
+      return (style.flexDirection === 'column' || style.flexDirection === 'column-reverse') ? 'vertical' : 'horizontal';
+    }
+    if (style.display === 'grid') {
+      return (style.gridTemplateColumns.split(' ').length <= 1) ? 'vertical' : 'horizontal';
+    }
+    const children = Array.from(container.children).filter(c => c.nodeName.toUpperCase() !== 'TEMPLATE') as HTMLElement[];
+    if (children.length >= 2) {
+      const rect1 = children[0].getBoundingClientRect();
+      const rect2 = children[1].getBoundingClientRect();
+      return Math.abs(rect1.top - rect2.top) < 4 ? 'horizontal' : 'vertical';
+    }
+    return 'vertical';
+  }
+
+  private _dragElInRowColumn(dragRect: DOMRect, targetRect: DOMRect, vertical: boolean): boolean {
+    const dragElS1Opp = vertical ? dragRect.left : dragRect.top;
+    const dragElS2Opp = vertical ? dragRect.right : dragRect.bottom;
+    const dragElOppLength = vertical ? dragRect.width : dragRect.height;
+    const targetS1Opp = vertical ? targetRect.left : targetRect.top;
+    const targetS2Opp = vertical ? targetRect.right : targetRect.bottom;
+    const targetOppLength = vertical ? targetRect.width : targetRect.height;
+
+    // Sub-pixel tolerance. Under fractional OS/browser scaling (125/150/175%)
+    // getBoundingClientRect() returns values that diverge by a fraction of a
+    // pixel between siblings that are visually in the same row/column. Exact
+    // equality (as in SortableJS) then reports them as "different row/column",
+    // which upstream forces swapThreshold to 1 and makes the swap-threshold
+    // slider (including 0) do nothing whenever the OS/browser is scaled. A 1px
+    // tolerance keeps same-row/column detection correct regardless of scaling
+    // while still separating genuinely different grid rows/columns (which differ
+    // by a whole item length, far more than 1px).
+    const EPS = 1;
+    return (
+      Math.abs(dragElS1Opp - targetS1Opp) < EPS ||
+      Math.abs(dragElS2Opp - targetS2Opp) < EPS ||
+      Math.abs((dragElS1Opp + dragElOppLength / 2) - (targetS1Opp + targetOppLength / 2)) < EPS
+    );
+  }
+
+  private _getSwapDirection(
+    evt: PointerEvent,
+    targetRect: DOMRect,
+    vertical: boolean,
+    swapThreshold: number,
+    invertedSwapThreshold: number,
+    invertSwap: boolean
+  ): number {
+    const mouseOnAxis = vertical ? evt.clientY : evt.clientX;
+    const targetLength = vertical ? targetRect.height : targetRect.width;
+    const targetS1 = vertical ? targetRect.top : targetRect.left;
+    const targetS2 = vertical ? targetRect.bottom : targetRect.right;
+
+    if (invertSwap) {
+      const margin = (targetLength * invertedSwapThreshold) / 2;
+      if (mouseOnAxis < targetS1 + margin || mouseOnAxis > targetS2 - margin) {
+        return (mouseOnAxis > targetS1 + targetLength / 2) ? 1 : -1;
+      }
+      return 0;
+    }
+
+    const margin = (targetLength * (1 - swapThreshold)) / 2;
+    if (mouseOnAxis >= targetS1 + margin && mouseOnAxis <= targetS2 - margin) {
+      return (mouseOnAxis > targetS1 + targetLength / 2) ? 1 : -1;
+    }
+    return 0;
+  }
+
+  private _swapNodes(n1: HTMLElement, n2: HTMLElement) {
+    if (!n1 || !n2 || n1 === n2) return;
+    const p1 = n1.parentNode;
+    const p2 = n2.parentNode;
+    if (!p1 || !p2) return;
+
+    const tempMarker = document.createComment('swap-marker');
+    p1.insertBefore(tempMarker, n1);
+    p2.insertBefore(n1, n2);
+    p1.insertBefore(n2, tempMarker);
+    p1.removeChild(tempMarker);
+  }
+
+  private _maybeAutoScroll(clientX: number, clientY: number) {
+    if (!this.scrollParent || !this.scrollParentBounds) return;
+    const { left, top, width, height } = this.scrollParentBounds;
+    const edgeScrollThreshold = 40;
+    const autoScrollSpeed = 15;
+
+    const dl = clientX - left;
+    const dr = (left + width) - clientX;
+    const dt = clientY - top;
+    const db = (top + height) - clientY;
+
+    let dx = 0;
+    let dy = 0;
+
+    const canScrollLeft = this.scrollParent.scrollLeft > 0;
+    const canScrollRight = this.scrollParent.scrollLeft < (this.scrollParent.scrollWidth - this.scrollParent.clientWidth);
+    const canScrollTop = this.scrollParent.scrollTop > 0;
+    const canScrollBottom = this.scrollParent.scrollTop < (this.scrollParent.scrollHeight - this.scrollParent.clientHeight);
+
+    if (dl < edgeScrollThreshold && canScrollLeft) {
+      dx = -autoScrollSpeed * (1 - dl / edgeScrollThreshold);
+    } else if (dr < edgeScrollThreshold && canScrollRight) {
+      dx = autoScrollSpeed * (1 - dr / edgeScrollThreshold);
+    }
+
+    if (dt < edgeScrollThreshold && canScrollTop) {
+      dy = -autoScrollSpeed * (1 - dt / edgeScrollThreshold);
+    } else if (db < edgeScrollThreshold && canScrollBottom) {
+      dy = autoScrollSpeed * (1 - db / edgeScrollThreshold);
+    }
+
+    if (dx !== 0 || dy !== 0) {
+      this.scrollParent.scrollBy({ left: dx, top: dy });
+    }
+  }
+
+  private _canPullPut(toDraggable: Draggable): boolean {
+    const fromGroup = this.options.group;
+    const toGroup = toDraggable.options.group;
+    if (!fromGroup || !toGroup) return false;
+
+    const fromName = typeof fromGroup === 'object' ? fromGroup.name : fromGroup;
+    const toName = typeof toGroup === 'object' ? toGroup.name : toGroup;
+
+    if (fromName && toName && fromName === toName) {
+      const fromPull = typeof fromGroup === 'object' && fromGroup.pull !== undefined ? fromGroup.pull : true;
+      const toPut = typeof toGroup === 'object' && toGroup.put !== undefined ? toGroup.put : true;
+      return !!fromPull && !!toPut;
+    }
+    return false;
+  }
+
+  private _captureRects(container: HTMLElement): Map<HTMLElement, DOMRect> {
+    const rects = new Map<HTMLElement, DOMRect>();
+    Array.from(container.children).forEach((child: any) => {
+      if (child.nodeName.toUpperCase() !== 'TEMPLATE') {
+        rects.set(child, child.getBoundingClientRect());
+      }
+    });
+    return rects;
+  }
+
+  private _animateShift(container: HTMLElement, beforeRects: Map<HTMLElement, DOMRect>) {
+    const animMs = this.options.animation || 150;
+    Array.from(container.children).forEach((child: any) => {
+      if (child.nodeName.toUpperCase() === 'TEMPLATE' || child === this.dragEl) return;
+      const beforeRect = beforeRects.get(child);
+      if (!beforeRect) return;
+
+      const afterRect = child.getBoundingClientRect();
+      const dx = beforeRect.left - afterRect.left;
+      const dy = beforeRect.top - afterRect.top;
+
+      if (dx !== 0 || dy !== 0) {
+        if (typeof child.animate === 'function') {
+          child.animate(
+            [{ transform: `translate3d(${dx}px, ${dy}px, 0)` }, { transform: 'translate3d(0, 0, 0)' }],
+            { duration: animMs, easing: 'ease-out' }
+          );
+        } else {
+          child.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+          requestAnimationFrame(() => {
+            child.style.transition = `transform ${animMs}ms ease-out`;
+            child.style.transform = '';
+          });
+        }
+      }
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Nexus-UX Compatibility Wrappers
+// ---------------------------------------------------------------------------
+export class DragReorderEngine<T> {
+  public draggable: Draggable | null = null;
+  private finalToIndex = -1;
+
+  constructor(private ctx: DragReorderContext<T>, private runtime?: RuntimeContext) {
+    if (this.ctx.container) {
+      this.init();
+    }
+  }
+
+  private init() {
+    const container = this.ctx.container;
+    const rawDragVal = container.getAttribute("data-drag");
+    let config: any = {};
+    if (rawDragVal && rawDragVal.trim()) {
+      try {
+        const evaluated = this.runtime?.evaluate(container, rawDragVal);
+        if (evaluated && typeof evaluated === "object" && !Array.isArray(evaluated)) {
+          config = evaluated;
+        } else if (typeof evaluated === "string") {
+          config = { list: evaluated };
+        }
+      } catch {
+        try {
+          config = JSON.parse(rawDragVal);
+        } catch {
+          config = { list: rawDragVal.trim() };
+        }
+      }
+    }
+
+    const isMulti = config.multiDrag ?? config.multi ?? (container.getAttribute("data-drag-multi") === "true");
+    const selectedClass = config.selectedClass || container.getAttribute("data-drag-selected-class") || "draggable-selected";
+    const swap = config.swap ?? (container.hasAttribute("data-drag-swap") || container.getAttribute("data-drag-swap") === "true");
+    const swapClass = config.swapClass || container.getAttribute("data-drag-swap-class") || "draggable-swap-highlight";
+
+    const groupOpt = config.group || container.getAttribute("data-drag-group");
+    let group: any = undefined;
+    if (groupOpt) {
+      if (typeof groupOpt === "object") {
+        group = { ...groupOpt };
+      } else {
+        group = { name: String(groupOpt) };
+      }
+      // Parse custom data-drag-pull and data-drag-put configuration
+      const pullAttr = container.getAttribute("data-drag-pull");
+      const pull = group.pull !== undefined
+        ? group.pull
+        : (pullAttr !== "false" ? (container.hasAttribute("data-drag-clone") || container.getAttribute("data-drag-clone") === "true" ? "clone" : true) : false);
+      const put = group.put !== undefined ? group.put : (container.getAttribute("data-drag-put") !== "false");
+      const revertClone = group.revertClone ?? (container.getAttribute("data-drag-revert-clone") === "true");
+      group.pull = pull;
+      group.put = put;
+      group.revertClone = revertClone;
+    }
+
+    const directionOpt = config.direction || container.getAttribute("data-drag-direction");
+    const direction = directionOpt === "grid" ? undefined : (directionOpt as "vertical" | "horizontal" | undefined);
+
+    // Auto-enable invertSwap and 0.65 threshold for nested group
+    const isNested = (typeof groupOpt === "string" ? groupOpt : groupOpt?.name) === "nested";
+    const swapThresholdAttr = container.getAttribute("data-drag-swap-threshold");
+    const swapThreshold = config.swapThreshold !== undefined
+      ? Number(config.swapThreshold)
+      : (swapThresholdAttr ? parseFloat(swapThresholdAttr) : (isNested ? 0.65 : 1));
+
+    const invertSwapAttr = container.getAttribute("data-drag-invert-swap");
+    const invertSwap = config.invertSwap ?? (invertSwapAttr === "true" || isNested);
+
+    this.draggable = new Draggable(container, {
+      animation: config.animation ?? this.ctx.animationDuration ?? 150,
+      ghostClass: config.ghostClass ?? this.ctx.ghostClass ?? "draggable-ghost",
+      dragClass: config.dragClass ?? this.ctx.dragClass ?? "draggable-drag",
+      ghostOpacity: config.ghostOpacity ?? this.ctx.ghostOpacity ?? 0.4,
+      fallbackOnBody: config.fallbackOnBody ?? (this.ctx.fallbackOnBody !== false),
+      swapThreshold,
+      invertSwap,
+      direction,
+      handle: config.handle || container.getAttribute("data-drag-handle") || undefined,
+      filter: config.filter || container.getAttribute("data-drag-filter") || undefined,
+      draggable: config.draggable || "[data-drag-item], [data-drag]:not([data-drag*='{']):not([data-drag*='=']):not([data-drag-container])",
+      multiDrag: isMulti,
+      selectedClass,
+      swap,
+      swapClass,
+      group,
+      sort: config.sort ?? (this.ctx.sort !== false),
+      onStart: (evt) => {
+        const globalSignals = this.runtime?.globalSignals() as any;
+        if (globalSignals) {
+          globalSignals["drag:start"] = {
+            element: evt.item,
+            originalEvent: evt.originalEvent,
+            fromIndex: evt.oldIndex,
+          };
+        }
+
+        const fromContainer = evt.from;
+        if (this.runtime && fromContainer) {
+          this.updateEmptyState(fromContainer);
+        }
+      },
+      onEnd: (evt) => {
+        this.finalToIndex = evt.newIndex;
+
+        const globalSignals = this.runtime?.globalSignals() as any;
+        if (globalSignals) {
+          globalSignals["drag:end"] = {
+            element: evt.item,
+            originalEvent: evt.originalEvent,
+            cancelled: false,
+          };
+        }
+
+        const fromContainer = evt.from;
+        const toContainer = evt.to;
+        const fromExpr = (fromContainer as any).__dragListExpr
+          || fromContainer.getAttribute("data-drag-container")
+          || fromContainer.getAttribute("data-teleport_drop")
+          || fromContainer.getAttribute("data-drag")
+          || "";
+        const toExpr = (toContainer as any).__dragListExpr
+          || toContainer.getAttribute("data-drag-container")
+          || toContainer.getAttribute("data-teleport_drop")
+          || toContainer.getAttribute("data-drag")
+          || "";
+
+        if (!fromExpr || !this.runtime) return;
+
+        const oldIndex = evt.oldIndex;
+        const newIndex = evt.newIndex;
+        const isMultiDrag = isMulti && evt.items && evt.items.length > 0;
+
+        // Perform reactive list mutations wrapped inside `flip`
+        const childrenToAnimate = Array.from(toContainer.children) as HTMLElement[];
+        const flipFn = (this.runtime.sprites as any)?.$animate?.flip || flip;
+
+        // NOTE: Previously a manual "unfold" transform was applied here that
+        // translated each non-primary selected element on top of the dragEl as
+        // the start of an animation, relying on `flip`'s transitionend cleanup
+        // to revert it. When that cleanup did not fire the folded items stayed
+        // translated on top of the primary item (overlap + empty gap). `flip`
+        // already animates every child from its old layout slot to its new one,
+        // so the manual overlap is both redundant and the source of the bug.
+
+        // We let `flip` own the motion entirely.
+
+        if (toContainer !== fromContainer && toExpr) {
+          // Cross-container drag
+          const targetList = this.runtime.evaluate(toContainer, toExpr) as any[];
+          const sourceList = this.runtime.evaluate(fromContainer, fromExpr) as any[];
+          if (Array.isArray(targetList) && Array.isArray(sourceList)) {
+            if (swap) {
+              if (typeof oldIndex === 'number' && typeof newIndex === 'number' && oldIndex >= 0 && newIndex >= 0) {
+                const temp = sourceList[oldIndex];
+                sourceList[oldIndex] = targetList[newIndex];
+                targetList[newIndex] = temp;
+              }
+              if (this.runtime) {
+                this.updateEmptyState(fromContainer);
+                this.updateEmptyState(toContainer);
+              }
+              return;
+            }
+
+            const isClone = (group?.pull === 'clone') || (toContainer.hasAttribute("data-drag-clone") || toContainer.getAttribute("data-drag-clone") === "true");
+
+            let itemsToInsert: any[] = [];
+            let indicesToRemove: number[] = [];
+
+            if (isMultiDrag) {
+              const sortedIndices = (evt.oldIndicies || []).slice().sort((a: any, b: any) => b.index - a.index);
+              const sortedOldAsc = (evt.oldIndicies || []).slice().sort((a: any, b: any) => a.index - b.index);
+              itemsToInsert = sortedOldAsc.map((x: any) => {
+                const item = sourceList[x.index];
+                return isClone ? { ...item, id: `${item.id}-clone-${Date.now()}-${Math.random().toString(36).substr(2, 5)}` } : item;
+              });
+              if (!isClone) {
+                indicesToRemove = sortedIndices.map((x: any) => x.index);
+              }
+            } else {
+              const item = sourceList[oldIndex];
+              itemsToInsert = [isClone ? { ...item, id: `${item.id}-clone-${Date.now()}-${Math.random().toString(36).substr(2, 5)}` } : item];
+              if (!isClone) {
+                indicesToRemove = [oldIndex];
+              }
+            }
+
+            // --- CLONE DOM RESTORATION START ---
+            if (isClone) {
+              // 1. Remove the clone placeholder element created by Draggable inside fromContainer
+              if (Draggable.clone && Draggable.clone.parentNode) {
+                Draggable.clone.parentNode.removeChild(Draggable.clone);
+                Draggable.clone = null;
+              }
+
+              // 2. Put the original dragged elements back into fromContainer at their original indices
+              if (isMultiDrag) {
+                const sortedOldAsc = (evt.oldIndicies || []).slice().sort((a: any, b: any) => a.index - b.index);
+                sortedOldAsc.forEach((x: any) => {
+                  const el = x.multiDragElement;
+                  const sib = fromContainer.children[x.index];
+                  if (sib) {
+                    fromContainer.insertBefore(el, sib);
+                  } else {
+                    fromContainer.appendChild(el);
+                  }
+                });
+              } else {
+                const sib = fromContainer.children[oldIndex];
+                if (sib) {
+                  fromContainer.insertBefore(evt.item, sib);
+                } else {
+                  fromContainer.appendChild(evt.item);
+                }
+              }
+            } else {
+              if (isMultiDrag) {
+                evt.items.forEach((item: HTMLElement) => {
+                  if (item.parentNode === fromContainer) {
+                    fromContainer.removeChild(item);
+                  }
+                });
+              } else {
+                if (evt.item.parentNode === fromContainer) {
+                  fromContainer.removeChild(evt.item);
+                }
+              }
+            }
+            // --- CLONE DOM RESTORATION END ---
+
+            if (isClone) {
+              this.ctx.updateList((src) => {
+                targetList.splice(newIndex, 0, ...itemsToInsert);
+              });
+            } else {
+              flipFn(childrenToAnimate, () => {
+                this.ctx.updateList((list) => {
+                  for (const idx of indicesToRemove) {
+                    list.splice(idx, 1);
+                  }
+                  targetList.splice(newIndex, 0, ...itemsToInsert);
+                });
+              }, { duration: this.ctx.animationDuration ?? 150 });
+            }
+
+            if (this.runtime) {
+              this.updateEmptyState(fromContainer);
+              this.updateEmptyState(toContainer);
+            }
+          }
+        } else {
+          // Intra-container drag
+          const sourceList = this.runtime.evaluate(fromContainer, fromExpr) as any[];
+          if (Array.isArray(sourceList)) {
+            flipFn(childrenToAnimate, () => {
+              this.ctx.updateList((list) => {
+                if (swap) {
+                  if (isMultiDrag) {
+                    const oldInd = evt.oldIndicies || [];
+                    const newInd = evt.newIndicies || [];
+                    for (let i = 0; i < oldInd.length; i++) {
+                      const oIdx = oldInd[i].index;
+                      const nIdx = newInd[i].index;
+                      if (oIdx !== -1 && nIdx !== -1) {
+                        const temp = list[nIdx];
+                        list[nIdx] = list[oIdx];
+                        list[oIdx] = temp;
+                      }
+                    }
+                  } else {
+                    const temp = list[newIndex];
+                    list[newIndex] = list[oldIndex];
+                    list[oldIndex] = temp;
+                  }
+                } else {
+                  if (isMultiDrag) {
+                    const sortedOldDesc = (evt.oldIndicies || []).slice().sort((a: any, b: any) => b.index - a.index);
+                    const sortedOldAsc = (evt.oldIndicies || []).slice().sort((a: any, b: any) => a.index - b.index);
+                    const itemsToInsert = sortedOldAsc.map((x: any) => sourceList[x.index]);
+                    for (const x of sortedOldDesc) {
+                      list.splice(x.index, 1);
+                    }
+                    list.splice(newIndex, 0, ...itemsToInsert);
+                  } else {
+                    const draggedItem = getBoundItemFromElement(evt.item, this.runtime);
+                    let srcIndex = -1;
+                    if (draggedItem) {
+                      srcIndex = list.findIndex((x: any) => matchesItemIdentity(x, draggedItem));
+                    }
+                    if (srcIndex === -1 && typeof oldIndex === 'number' && oldIndex >= 0 && oldIndex < list.length) {
+                      srcIndex = oldIndex;
+                    }
+
+                    // Compute destination index based on target siblings
+                    let destIndex = typeof newIndex === 'number' ? newIndex : -1;
+                    const nextSib = (evt.item as HTMLElement).nextElementSibling as HTMLElement | null;
+                    if (nextSib) {
+                      const nextItem = getBoundItemFromElement(nextSib, this.runtime);
+                      if (nextItem) {
+                        const targetIdx = list.findIndex((x: any) => matchesItemIdentity(x, nextItem));
+                        if (targetIdx !== -1) {
+                          destIndex = srcIndex < targetIdx ? targetIdx - 1 : targetIdx;
+                        }
+                      }
+                    } else {
+                      // Dropped at the very end
+                      destIndex = list.length - 1;
+                    }
+
+                    // Strict bounds and valid index safety check: only splice when verified
+                    if (srcIndex >= 0 && srcIndex < list.length && destIndex >= 0 && destIndex < list.length) {
+                      if (srcIndex !== destIndex) {
+                        const [moved] = list.splice(srcIndex, 1);
+                        if (moved !== undefined) {
+                          list.splice(destIndex, 0, moved);
+                        }
+                      }
+                    }
+                  }
+                }
+              });
+            }, { duration: this.ctx.animationDuration ?? 150 });
+
+            if (this.runtime) {
+              this.updateEmptyState(fromContainer);
+            }
+          }
+        }
+      }
+    });
+    (this.draggable as any)._runtime = this.runtime;
+
+  }
+
+  public updateEmptyState(container: HTMLElement) {
+    const stack = getDataStack(container);
+    if (stack.length > 0) {
+      const scope = stack[0];
+      const hasChildren = container.querySelector(':scope > [data-drag-item], :scope > [data-drag]:not([data-for])') != null;
+      scope.dragEmpty = !hasChildren;
+    }
+  }
+
+  public startDrag() { }
+  public updateDrag() { }
+  public endDrag() { }
+  public getFinalToIndex(): number {
+    return this.finalToIndex;
+  }
+}
+
+export function buildReorderContext<T>(
+  container: HTMLElement,
+  listExpr: string,
+  runtime: RuntimeContext,
+  options?: any
+): DragReorderContext<T> {
+  const getList = (): T[] => {
+    try {
+      const result = runtime.evaluate(container, listExpr);
+      return Array.isArray(result) ? result : [];
+    } catch {
+      return [];
+    }
+  };
+
+  return {
+    getList,
+    updateList: (mutate) => {
+      const list = getList();
+      mutate(list);
+      try {
+        if (listExpr.startsWith('#')) {
+          const sigName = listExpr.slice(1);
+          if (runtime.setGlobalSignal) {
+            runtime.setGlobalSignal(sigName, [...list]);
+          }
+        } else if (listExpr.includes('.')) {
+          const parts = listExpr.split('.');
+          const prop = parts.pop()!;
+          const targetObj = runtime.evaluate(container, parts.join('.'));
+          if (targetObj && typeof targetObj === 'object') {
+            (targetObj as Record<string, unknown>)[prop] = [...list];
+          }
+        } else {
+          const stack = getDataStack(container);
+          for (const s of stack) {
+            if (s && typeof s === 'object' && listExpr in s) {
+              s[listExpr] = [...list];
+              break;
+            }
+          }
+          if (runtime.setGlobalSignal && runtime.globalSignals && (listExpr in runtime.globalSignals())) {
+            runtime.setGlobalSignal(listExpr, [...list]);
+          }
+        }
+      } catch {
+        /* no-op fallback */
+      }
+    },
+    container,
+    direction: options?.direction,
+    ghostClass: options?.ghostClass,
+    dragClass: options?.dragClass,
+    ghostOpacity: options?.ghostOpacity,
+    group: options?.group,
+    sort: options?.sort !== false,
+    swap: options?.swap,
+    swapClass: options?.swapClass,
+    fallbackOnBody: options?.fallbackOnBody,
+    swapThreshold: options?.swapThreshold,
+    edgeScrollThreshold: options?.edgeScrollThreshold ?? 40,
+    autoScrollSpeed: options?.autoScrollSpeed ?? 15,
+    animationDuration: options?.animationDuration ?? 150,
+    onReorder: options?.onReorder,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Nexus-UX Directive Bindings
+// ---------------------------------------------------------------------------
+export const dragItemAttribute: AttributeModule = {
+  name: "dragItem",
+  attribute: "drag-item",
+  handle: (element: HTMLElement) => {
+    ensureDragStyles(element.getRootNode() as Document | ShadowRoot);
+  }
+};
+
+export const dragHandleAttribute: AttributeModule = {
+  name: "dragHandle",
+  attribute: "drag-handle",
+  handle: (element: HTMLElement) => {
+    ensureDragStyles(element.getRootNode() as Document | ShadowRoot);
+  }
+};
+
+export const dragNoDragAttribute: AttributeModule = {
+  name: "dragNoDrag",
+  attribute: "drag-nodrag",
+  handle: () => {}
+};
+
+export const dragAttribute: AttributeModule = {
+  name: "drag",
+  attribute: "drag",
+  handle: (element: HTMLElement, value: string, runtime: RuntimeContext, parsedAttr?: any) => {
+    ensureDragStyles(element.getRootNode() as Document | ShadowRoot);
+
+    const arg = parsedAttr?.argument;
+    if (arg === 'item' || element.hasAttribute('data-drag-item')) {
+      return dragItemAttribute.handle(element, value, runtime, parsedAttr);
+    }
+    if (arg === 'handle' || element.hasAttribute('data-drag-handle')) {
+      return dragHandleAttribute.handle(element, value, runtime, parsedAttr);
+    }
+    if (arg === 'nodrag' || element.hasAttribute('data-drag-nodrag')) {
+      return dragNoDragAttribute.handle(element, value, runtime, parsedAttr);
+    }
+
+    const isContainer = isContainerElement(element);
+    if (!isContainer && !value) {
+      return dragItemAttribute.handle(element, value, runtime, parsedAttr);
+    }
+
+    if ((element as any).__nexusDragBound) return (element as any).__nexusDragCleanup;
+    (element as any).__nexusDragBound = true;
+    const container = element;
+
+    let cleanupEffect: (() => void) | undefined = undefined;
+
+    // Resolve listExpr
+    let listExpr = '';
+    if (value && value.trim()) {
+      try {
+        const evaluated = runtime.evaluate(container, value);
+        if (evaluated && typeof evaluated === 'object' && !Array.isArray(evaluated) && (evaluated as any).list) {
+          listExpr = (evaluated as any).list;
+        } else if (typeof evaluated === 'string') {
+          listExpr = evaluated;
+        } else {
+          listExpr = value.trim();
+        }
+      } catch {
+        listExpr = value.trim();
+      }
+    }
+    if (!listExpr) {
+      listExpr = container.getAttribute("data-drag-container")
+        || container.getAttribute("data-teleport_drop")
+        || "";
+    }
+    (container as any).__dragListExpr = listExpr;
+
+    // Use runtime elementBoundEffect for automatic cleanup
+    const [_, stopEffect] = runtime.elementBoundEffect(container, () => {
+      // ─── Reactive Threshold Bridge ───
+      const swapThreshExpr = container.getAttribute("data-bind-data-drag-swap-threshold")
+        || container.getAttribute("data-bind_data-drag-swap-threshold");
+      const swapThreshVal = swapThreshExpr ? runtime.evaluate(container, swapThreshExpr) : undefined;
+
+      const invertThreshExpr = container.getAttribute("data-bind-data-drag-invert-swap-threshold")
+        || container.getAttribute("data-bind_data-drag-invert-swap-threshold");
+      const invertThreshVal = invertThreshExpr ? runtime.evaluate(container, invertThreshExpr) : undefined;
+
+      if (!(container as any).__draggable) {
+        try {
+          const ghostOpacityAttr = container.getAttribute("data-drag-ghost-opacity");
+          const ghostOpacity = ghostOpacityAttr ? parseFloat(ghostOpacityAttr) : undefined;
+          const ctx = buildReorderContext(container, listExpr, runtime, {
+            ghostOpacity
+          });
+          const engine = new DragReorderEngine(ctx, runtime);
+          (container as any).__draggable = engine;
+
+          // Cleanup engine ONLY when container itself leaves DOM
+          const enhancedContainer = container as any;
+          if (!enhancedContainer[CLEANUP_FUNCTIONS_KEY]) {
+            enhancedContainer[CLEANUP_FUNCTIONS_KEY] = new Map();
+          }
+          const containerCleanups = enhancedContainer[CLEANUP_FUNCTIONS_KEY];
+          const cleanupFn = () => {
+            if (engine.draggable) {
+              engine.draggable.destroy();
+            }
+            delete (container as any).__draggable;
+            delete (container as any).__dragListExpr;
+          };
+          if (containerCleanups instanceof Map) {
+            containerCleanups.set("draggable-cleanup", cleanupFn);
+          } else if (Array.isArray(containerCleanups)) {
+            containerCleanups.push(cleanupFn);
+          }
+        } catch (err) {
+          runtime.reportError(toError(err), container, "drag-init");
+        }
+      }
+
+      const engineNow = (container as any).__draggable as DragReorderEngine<unknown> | undefined;
+      if (engineNow && engineNow.draggable) {
+        if (swapThreshVal !== undefined && swapThreshVal !== null && swapThreshVal !== "") {
+          engineNow.draggable.options.swapThreshold = Number(swapThreshVal);
+        }
+        if (invertThreshVal !== undefined && invertThreshVal !== null && invertThreshVal !== "") {
+          engineNow.draggable.options.invertedSwapThreshold = Number(invertThreshVal);
+        }
+      }
+    });
+
+    cleanupEffect = () => {
+      stopEffect();
+      delete (element as any).__nexusDragBound;
+      delete (element as any).__nexusDragCleanup;
+    };
+
+    (element as any).__nexusDragCleanup = cleanupEffect;
+    return cleanupEffect;
+  },
+};
+
+export default dragAttribute;

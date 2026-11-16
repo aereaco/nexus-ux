@@ -1,0 +1,493 @@
+/**
+ * Dynamic Engine Topology Manager
+ * Spec 5.1: Implements the Adaptive Multimodal Topology for auto-scaling
+ * 
+ * Tiers:
+ * - Tier 0: Mono-Thread (Fallback) - Low-power devices
+ * - Tier 1: Dual-Thread (Standard) - Mid-range devices  
+ * - Tier 2: Tri-Thread (Performance) - High-concurrency hosts
+ * - Tier 3: Quad-Thread (Sovereign) - Enterprise/Elite hosts with dedicated 4D Predictive Engine
+ */
+
+import { ZCZS_SUPPORTED, heap } from './reactivity.ts';
+
+export type TierLevel = 0 | 1 | 2 | 3;
+
+export interface TierConfig {
+  level: TierLevel;
+  name: string;
+  threads: number;
+  usesSharedArrayBuffer: boolean;
+  usesWorkers: boolean;
+  predictiveEngineDedicated: boolean;
+}
+
+const TIER_CONFIGS: Record<TierLevel, TierConfig> = {
+  0: {
+    level: 0,
+    name: 'Mono-Thread (Fallback)',
+    threads: 1,
+    usesSharedArrayBuffer: false,
+    usesWorkers: false,
+    predictiveEngineDedicated: false
+  },
+  1: {
+    level: 1,
+    name: 'Dual-Thread (Standard)',
+    threads: 2,
+    usesSharedArrayBuffer: ZCZS_SUPPORTED,
+    usesWorkers: true,
+    predictiveEngineDedicated: false
+  },
+  2: {
+    level: 2,
+    name: 'Tri-Thread (Performance)',
+    threads: 3,
+    usesSharedArrayBuffer: ZCZS_SUPPORTED,
+    usesWorkers: true,
+    predictiveEngineDedicated: false
+  },
+  3: {
+    level: 3,
+    name: 'Quad-Thread (Sovereign)',
+    threads: 4,
+    usesSharedArrayBuffer: ZCZS_SUPPORTED,
+    usesWorkers: true,
+    predictiveEngineDedicated: true
+  }
+};
+
+class EngineTopology {
+  private currentTier: TierLevel = 0;
+  private workers: Worker[] = [];
+  private sharedBuffer: SharedArrayBuffer | null = null;
+  private lagHistory: number[] = [];
+  private readonly LAG_SAMPLE_SIZE = 60;
+  private readonly LAG_THRESHOLD = 0.4; // 40% of frame budget
+  private readonly FRAME_BUDGET = 16.67; // 60fps = 16.67ms per frame
+  private readonly SCALE_COOLDOWN_MS = 5000; // ignore lag spikes within 5s of a tier change
+  private readonly MIN_SAMPLES_FOR_SCALE_UP = 5; // require history before scaling up
+  private autoScaleEnabled = true;
+  private monitoringInterval: number | null = null;
+  private lastScaleTime = 0;
+
+  constructor() {
+    // Boot is now explicitly started by the framework entrypoint
+  }
+
+  public start() {
+    this.boot();
+  }
+
+  /**
+   * Boot probe - determines optimal tier based on environment
+   * Spec 5.2.1: Auto-Adaptation Logic
+   */
+  private boot() {
+    // Step 1: Check for Cross-Origin Isolation (SAB requirement)
+    const isCrossOriginIsolated = typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated;
+    
+    // Step 2: Check hardware concurrency
+    const cores = navigator.hardwareConcurrency || 2;
+    
+    // Step 3: Check for Nexus-IO runtime bridge
+    const hasNexusIO = typeof (globalThis as any).__NEXUS_IO__ !== 'undefined';
+    
+    // Determine tier based on capabilities
+    if (cores >= 4 && (isCrossOriginIsolated || hasNexusIO)) {
+      this.currentTier = 3; // Quad-Thread Sovereign
+    } else if (cores >= 3 && (isCrossOriginIsolated || hasNexusIO)) {
+      this.currentTier = 2; // Tri-Thread Performance  
+    } else if (cores >= 2 && typeof Worker !== 'undefined') {
+      this.currentTier = 1; // Dual-Thread Standard
+    } else {
+      this.currentTier = 0; // Mono-Thread Fallback
+    }
+
+    console.log(`[Nexus Topology] Boot: Detected ${cores} cores, SAB: ${isCrossOriginIsolated}, NexusIO: ${hasNexusIO}`);
+    console.log(`[Nexus Topology] Selected Tier: ${this.currentTier} (${TIER_CONFIGS[this.currentTier].name})`);
+
+    // Initialize tier-specific resources
+    this.initializeTier();
+  }
+
+  /**
+   * Initialize resources for the selected tier
+   */
+  private async initializeTier() {
+    const config = TIER_CONFIGS[this.currentTier];
+
+    if (config.usesSharedArrayBuffer && ZCZS_SUPPORTED) {
+      try {
+        // Allocate SharedArrayBuffer for cross-thread communication
+        // 1MB buffer - should be enough for most signal heaps
+        this.sharedBuffer = new SharedArrayBuffer(1024 * 1024);
+        
+        // Initialize heap with shared buffer
+        if (heap) {
+          (heap as any).attachSharedBuffer(this.sharedBuffer);
+        }
+        console.log('[Nexus Topology] SharedArrayBuffer initialized');
+      } catch (e) {
+        console.warn('[Nexus Topology] Failed to initialize SAB, falling back:', e);
+        this.currentTier = Math.max(0, this.currentTier - 1) as TierLevel;
+        this.initializeTier();
+        return;
+      }
+    }
+
+    // Terminate existing workers so tier change cleans up; workers are lazily respawned on demand
+    this.terminateWorkers();
+
+    // Start lag monitoring for auto-scaling only if explicitly enabled
+    if (this.autoScaleEnabled && this.currentTier > 0) {
+      this.startMonitoring();
+    } else {
+      this.stopMonitoring();
+    }
+  }
+
+  /**
+   * Lazily ensure workers are spawned for the current tier.
+   * Defers worker thread creation until runInWorker() or an off-thread task is invoked.
+   */
+  public async ensureWorkers(): Promise<void> {
+    const config = TIER_CONFIGS[this.currentTier];
+    if (config.usesWorkers && this.currentTier > 0 && this.workers.length === 0) {
+      await this.spawnWorkers(this.currentTier);
+    }
+  }
+
+  /**
+   * Spawn worker threads based on tier
+   */
+  private async spawnWorkers(tier: TierLevel) {
+    const config = TIER_CONFIGS[tier];
+    const workerCount = config.threads - 1; // Main thread counts as 1
+
+    // Terminate existing workers first
+    this.terminateWorkers();
+
+    for (let i = 0; i < workerCount; i++) {
+      try {
+        let scriptSrc = '/dist/logic.worker.js';
+        if (typeof document !== 'undefined') {
+          let current: string | null = null;
+          if (document.currentScript instanceof HTMLScriptElement) {
+            current = document.currentScript.src;
+          } else {
+            const scriptEl = document.querySelector('script[src*="nexus-ux"]');
+            if (scriptEl instanceof HTMLScriptElement) {
+              current = scriptEl.src;
+            }
+          }
+          if (current) {
+            const isMin = current.includes('.min.js');
+            const base = current.substring(0, current.lastIndexOf('/'));
+            scriptSrc = `${base}/logic.worker.${isMin ? 'min.js' : 'js'}`;
+          }
+        }
+        
+        const worker = new Worker(scriptSrc, { type: 'module' });
+        
+        worker.onmessage = (e) => {
+          const data = e.data;
+          if (data && typeof data === 'object' && 'id' in data) {
+            const pending = pendingWorkerTasks.get(data.id);
+            if (pending) {
+              pendingWorkerTasks.delete(data.id);
+              if (data.type === 'RESULT' || data.type === 'FN_RESULT') {
+                pending.resolve(data.payload);
+              } else if (data.type === 'ERROR' || data.type === 'FN_ERROR') {
+                pending.reject(new Error(data.error || 'Worker task execution failed'));
+              }
+            }
+          }
+        };
+
+        if (this.sharedBuffer) {
+          worker.postMessage({ type: 'INIT_HEAP', payload: this.sharedBuffer });
+        }
+        
+        this.workers.push(worker);
+      } catch (e) {
+        console.warn(`[Nexus Topology] Failed to spawn worker ${i}:`, e);
+      }
+    }
+
+    console.log(`[Nexus Topology] Spawned ${this.workers.length} worker(s) for Tier ${tier}`);
+  }
+
+  /**
+   * Terminate all worker threads
+   */
+  private terminateWorkers() {
+    this.workers.forEach(w => w.terminate());
+    this.workers = [];
+    pendingWorkerTasks.forEach(p => p.reject(new Error('Worker terminated')));
+    pendingWorkerTasks.clear();
+  }
+
+  /**
+   * Start lag variance monitoring for auto-scaling
+   * Spec 5.1.2: The Autoscale Mechanism
+   */
+  private startMonitoring() {
+    if (this.monitoringInterval) return;
+
+    this.monitoringInterval = setInterval(() => {
+      this.measureLag();
+    }, 1000) as unknown as number;
+  }
+
+  private stopMonitoring() {
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
+  }
+
+  /**
+   * Measure frame lag and trigger scale up/down
+   */
+  private measureLag() {
+    requestAnimationFrame((t1) => {
+      requestAnimationFrame((t2) => {
+        const frameTime = t2 - t1;
+        const lag = Math.max(0, frameTime - this.FRAME_BUDGET);
+        const lagRatio = lag / this.FRAME_BUDGET;
+
+        this.lagHistory.push(lagRatio);
+        if (this.lagHistory.length > this.LAG_SAMPLE_SIZE) {
+          this.lagHistory.shift();
+        }
+
+        const avgLag = this.lagHistory.reduce((a, b) => a + b, 0) / this.lagHistory.length;
+
+        const now = performance.now();
+        if (now - this.lastScaleTime < this.SCALE_COOLDOWN_MS) {
+          return;
+        }
+
+        if (avgLag > this.LAG_THRESHOLD && this.currentTier < 3 && this.lagHistory.length >= this.MIN_SAMPLES_FOR_SCALE_UP) {
+          this.scaleUp();
+        } else if (avgLag < 0.1 && this.currentTier > 0 && this.lagHistory.length >= this.LAG_SAMPLE_SIZE) {
+          this.scaleDown();
+        }
+      });
+    });
+  }
+
+  /**
+   * Scale up to higher tier
+   */
+  private async scaleUp() {
+    const newTier = (this.currentTier + 1) as TierLevel;
+    console.log(`[UX Topology] Scaling UP from Tier ${this.currentTier} to Tier ${newTier}`);
+    
+    this.lagHistory = []; // Reset lag history to start fresh under the new tier
+    this.lastScaleTime = performance.now(); // start cooldown; transient worker lag ignored
+    this.currentTier = newTier;
+    await this.initializeTier();
+    
+    // Emit event for predictive engine promotion
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ux:topology-scale', { 
+        detail: { tier: this.currentTier, direction: 'up' } 
+      }));
+    }
+  }
+
+  /**
+   * Scale down to lower tier
+   */
+  private async scaleDown() {
+    const newTier = (this.currentTier - 1) as TierLevel;
+    if (newTier < 0) return;
+    
+    console.log(`[UX Topology] Scaling DOWN from Tier ${this.currentTier} to Tier ${newTier}`);
+    
+    this.lagHistory = []; // Reset lag history to start fresh under the new tier
+    this.lastScaleTime = performance.now();
+    this.currentTier = newTier;
+    await this.initializeTier();
+
+    // Emit event for predictive engine demotion  
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ux:topology-scale', { 
+        detail: { tier: this.currentTier, direction: 'down' } 
+      }));
+    }
+  }
+
+  /**
+   * Get current tier configuration
+   */
+  public getTier(): TierLevel {
+    return this.currentTier;
+  }
+
+  /**
+   * Get tier configuration
+   */
+  public getTierConfig(): TierConfig {
+    return TIER_CONFIGS[this.currentTier];
+  }
+
+  /**
+   * Get number of active workers
+   */
+  public getActiveWorkers(): number {
+    return this.workers.length;
+  }
+
+  /**
+   * Check if SAB is available
+   */
+  public isSABAvailable(): boolean {
+    return !!this.sharedBuffer;
+  }
+
+  /**
+   * Get lag variance
+   */
+  public getLagVariance(): number {
+    if (this.lagHistory.length === 0) return 0;
+    return this.lagHistory.reduce((a, b) => a + b, 0) / this.lagHistory.length;
+  }
+
+  /**
+   * Get SharedArrayBuffer for cross-thread communication
+   */
+  public getSharedBuffer(): SharedArrayBuffer | null {
+    return this.sharedBuffer;
+  }
+
+  /**
+   * Enable/disable auto-scaling
+   */
+  public setAutoScale(enabled: boolean): void {
+    this.autoScaleEnabled = enabled;
+    if (enabled && this.currentTier > 0) {
+      this.startMonitoring();
+    } else if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
+  }
+
+  /**
+   * Force specific tier (for testing or manual override)
+   */
+  public async setTier(tier: TierLevel): Promise<void> {
+    if (tier === this.currentTier) return;
+    
+    console.log(`[Nexus Topology] Manual tier change: ${this.currentTier} -> ${tier}`);
+    this.currentTier = tier;
+    await this.initializeTier();
+  }
+
+  /**
+   * Get worker for task distribution
+   */
+  public getWorker(index: number): Worker | null {
+    return this.workers[index % this.workers.length] || null;
+  }
+
+  /**
+   * Get all active workers
+   */
+  public getWorkers(): Worker[] {
+    return this.workers;
+  }
+
+  /**
+   * Dispatches a named task to a worker thread from the pool.
+   */
+  public async executeTask<T = any>(taskName: string, payload: unknown): Promise<T> {
+    await this.ensureWorkers();
+    if (this.workers.length === 0) {
+      throw new Error(`No workers available to execute task: ${taskName}`);
+    }
+    const id = ++taskIdCounter;
+    const worker = this.workers[workerRoundRobin % this.workers.length];
+    workerRoundRobin = (workerRoundRobin + 1) % this.workers.length;
+
+    return new Promise<T>((resolve, reject) => {
+      pendingWorkerTasks.set(id, { resolve, reject });
+      try {
+        worker.postMessage({
+          type: 'EXECUTE',
+          id,
+          taskName,
+          payload
+        });
+      } catch (err) {
+        pendingWorkerTasks.delete(id);
+        reject(err);
+      }
+    });
+  }
+
+  /**
+   * Cleanup resources
+   */
+  public dispose(): void {
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
+    this.terminateWorkers();
+    this.sharedBuffer = null;
+  }
+}
+
+// Global singleton instance
+export const topology = new EngineTopology();
+
+// Export tier configs for external inspection
+export { TIER_CONFIGS };
+
+let taskIdCounter = 0;
+const pendingWorkerTasks = new Map<number, {
+  resolve: (value: any) => void;
+  reject: (reason: any) => void;
+}>();
+
+let workerRoundRobin = 0;
+
+/**
+ * Executes pure computation off the main thread in a worker from the topology pool.
+ * Falls back to main thread execution if no workers are available (Tier 0).
+ */
+export async function runInWorker<A extends readonly unknown[], R>(
+  fn: (...args: A) => R | Promise<R>,
+  args?: A,
+  transferable?: Transferable[]
+): Promise<R> {
+  const callArgs = (args ? Array.from(args) : []) as unknown as A;
+  await topology.ensureWorkers();
+  const workers = topology.getWorkers();
+  if (workers.length === 0) {
+    return await fn(...callArgs);
+  }
+
+  const id = ++taskIdCounter;
+  const worker = workers[workerRoundRobin % workers.length];
+  workerRoundRobin = (workerRoundRobin + 1) % workers.length;
+
+  return new Promise<R>((resolve, reject) => {
+    pendingWorkerTasks.set(id, { resolve, reject });
+    try {
+      worker.postMessage({
+        type: 'EXECUTE_FN',
+        id,
+        fn: fn.toString(),
+        args: callArgs
+      }, transferable || []);
+    } catch (err) {
+      pendingWorkerTasks.delete(id);
+      reject(err);
+    }
+  });
+}

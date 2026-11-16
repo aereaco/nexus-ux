@@ -1,0 +1,1329 @@
+import { AttributeModule } from '../../engine/modules.ts';
+import { RuntimeContext } from '../../engine/composition.ts';
+import { reactive } from '../../engine/reactivity.ts';
+import { ensureAdoptedStylesheet } from '../../engine/utils/styles.ts';
+import { trackPointerDrag } from '../../engine/utils/pointer.ts';
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+const MIN_ZOOM = 0.2;
+const MAX_ZOOM = 4;
+
+export interface Viewport { x: number; y: number; zoom: number; tick?: number }
+export type FlowElement = HTMLElement & { __flowViewport?: Viewport };
+
+/** Elements that must not initiate a canvas pan when pressed. */
+const NO_PAN = '[data-flow-node],[data-flow-handle],[data-flow-nodrag],[data-flow-resizer],[data-flow-minimap],.flow-edge,.flow-edge-interaction,.flow-edge-label-group,button,a,input,textarea,select,label';
+
+/** Read the shared, live viewport state a [data-flow] element publishes. */
+export const sharedViewport = (el: Element | null): Viewport => {
+  const flow = el?.closest('[data-flow]') as FlowElement | null;
+  const vp = flow?.__flowViewport;
+  if (vp) {
+    const _t = (vp as any).tick;
+    return vp;
+  }
+  return { x: 0, y: 0, zoom: 1 };
+};
+
+export const toFlowCoords = (container: HTMLElement, clientX: number, clientY: number, vp?: Viewport) => {
+  const r = container.getBoundingClientRect();
+  const v = vp || sharedViewport(container);
+  const z = v.zoom || 1;
+  return { x: (clientX - r.left - (v.x || 0)) / z, y: (clientY - r.top - (v.y || 0)) / z };
+};
+
+export const simpleBezier = (x1: number, y1: number, x2: number, y2: number) => {
+  const dx = Math.abs(x1 - x2) / 2;
+  return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+};
+
+const FLOW_CSS = `[data-flow]{position:relative;overflow:hidden;user-select:none;cursor:grab}[data-flow]:active{cursor:grabbing}[data-flow-viewport],[data-flow]>.flow-viewport,[data-flow]>[data-flow="viewport"]{position:absolute;inset:0;width:100%;height:100%;transform-origin:0 0}[data-flow-edges],.flow-edges{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:10}[data-flow-node]{position:absolute;top:0;left:0;cursor:grab;user-select:none}[data-flow-node]:active{cursor:grabbing}[data-flow-node].selected>*:first-child{box-shadow:0 0 0 2px var(--color-primary,#3b82f6),0 20px 25px -5px rgba(0,0,0,0.25)}[data-flow-handle]{position:absolute;width:0.75rem;height:0.75rem;border-radius:9999px;background-color:var(--color-primary,currentColor);border:2px solid var(--color-base-100,#ffffff);cursor:crosshair;z-index:20;box-sizing:border-box;transition:transform 0.15s ease}[data-flow-handle]:hover{transform:scale(1.25)}[data-flow-handle-side="left"],[data-flow-side="left"],[data-flow-handle="target"]:not([data-flow-side]):not([data-flow-handle-side]){left:0;top:50%;transform:translate(-50%,-50%)}[data-flow-handle-side="left"]:hover,[data-flow-side="left"]:hover,[data-flow-handle="target"]:not([data-flow-side]):not([data-flow-handle-side]):hover{transform:translate(-50%,-50%) scale(1.25)}[data-flow-handle-side="right"],[data-flow-side="right"],[data-flow-handle="source"]:not([data-flow-side]):not([data-flow-handle-side]){right:0;top:50%;transform:translate(50%,-50%)}[data-flow-handle-side="right"]:hover,[data-flow-side="right"]:hover,[data-flow-handle="source"]:not([data-flow-side]):not([data-flow-handle-side]):hover{transform:translate(50%,-50%) scale(1.25)}[data-flow-handle-side="top"],[data-flow-side="top"]{top:0;left:50%;transform:translate(-50%,-50%)}[data-flow-handle-side="top"]:hover,[data-flow-side="top"]:hover{transform:translate(-50%,-50%) scale(1.25)}[data-flow-handle-side="bottom"],[data-flow-side="bottom"]{bottom:0;left:50%;transform:translate(-50%,50%)}[data-flow-handle-side="bottom"]:hover,[data-flow-side="bottom"]:hover{transform:translate(-50%,50%) scale(1.25)}.flow-edge-interaction{fill:none;stroke:transparent;stroke-width:20px;cursor:pointer;pointer-events:stroke}.flow-edge{fill:none;stroke:currentColor;stroke-width:2px;opacity:0.75;cursor:pointer;pointer-events:stroke;transition:opacity 0.15s ease,stroke-width 0.15s ease,stroke 0.15s ease}.flow-edge:hover,.flow-edge-interaction:hover + .flow-edge{opacity:1;stroke-width:3.5px;stroke:var(--color-primary,#3b82f6)}.flow-edge.selected{opacity:1;stroke:var(--color-accent,#00cdb7) !important;stroke-width:4px !important;filter:drop-shadow(0 0 6px var(--color-accent,#00cdb7))}.flow-edge-label-group.selected .flow-edge-label-bg{stroke:var(--color-accent,#00cdb7) !important;stroke-width:2px !important;fill:var(--color-base-200,#334155)}.flow-node-toolbar{position:absolute;z-index:40;pointer-events:auto;transition:opacity 0.15s ease,transform 0.15s ease}.flow-node-toolbar-top{bottom:100%;left:50%;transform:translate(-50%,-8px)}.flow-node-toolbar-bottom{top:100%;left:50%;transform:translate(-50%,8px)}.flow-edge-reconnect-handle{width:12px;height:12px;border-radius:9999px;background-color:var(--color-accent,#00cdb7);border:2px solid var(--color-base-100,#1e293b);cursor:grab;position:absolute;transform:translate(-50%,-50%);z-index:60;box-shadow:0 0 8px var(--color-accent,#00cdb7);pointer-events:auto}.flow-edge-reconnect-handle:active{cursor:grabbing}.flow-edge-animated{stroke-dasharray:6 4;animation:flow-edge-dash 0.8s linear infinite}@keyframes flow-edge-dash{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}.flow-edge-preview{pointer-events:none;stroke-dasharray:4 4}.flow-selection-rect{position:absolute;border:1.5px dashed var(--color-primary,#3b82f6);background-color:color-mix(in srgb,var(--color-primary,#3b82f6) 12%,transparent);pointer-events:none;z-index:50;border-radius:4px}[data-flow-node].selected>*{outline:2px solid var(--color-primary,#3b82f6);outline-offset:2px}.flow-resizer{position:absolute;inset:-2px;pointer-events:none;opacity:0;transition:opacity 0.15s ease}[data-flow-node]:hover .flow-resizer,[data-flow-node].selected .flow-resizer{opacity:1}.flow-resize-handle{position:absolute;width:8px;height:8px;background-color:var(--color-base-100,#ffffff);border:1.5px solid var(--color-primary,#3b82f6);border-radius:2px;z-index:30;box-sizing:border-box;pointer-events:all}.flow-resize-handle.top-left{top:-4px;left:-4px;cursor:nwse-resize}.flow-resize-handle.top-right{top:-4px;right:-4px;cursor:nesw-resize}.flow-resize-handle.bottom-left{bottom:-4px;left:-4px;cursor:nesw-resize}.flow-resize-handle.bottom-right{bottom:-4px;right:-4px;cursor:nwse-resize}.flow-resize-handle.top{top:-4px;left:50%;transform:translateX(-50%);cursor:ns-resize}.flow-resize-handle.bottom{bottom:-4px;left:50%;transform:translateX(-50%);cursor:ns-resize}.flow-resize-handle.left{left:-4px;top:50%;transform:translateY(-50%);cursor:ew-resize}.flow-resize-handle.right{right:-4px;top:50%;transform:translateY(-50%);cursor:ew-resize}.flow-minimap{position:absolute;bottom:1rem;right:1rem;width:160px;height:100px;background-color:color-mix(in srgb,var(--color-base-100,#ffffff) 85%,transparent);backdrop-filter:blur(8px);border:1px solid color-mix(in srgb,var(--color-base-content,#000) 15%,transparent);border-radius:0.75rem;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);z-index:35}.flow-minimap-svg{width:100%;height:100%}.flow-minimap-node{fill:var(--color-primary,#3b82f6);opacity:0.7}.flow-minimap-lens{fill:color-mix(in srgb,var(--color-primary,#3b82f6) 15%,transparent);stroke:var(--color-primary,#3b82f6);stroke-width:1.5px;cursor:grab}.flow-minimap-lens:active{cursor:grabbing}.flow-edge-label-group{pointer-events:all;cursor:pointer}.flow-edge-label-bg{fill:var(--color-base-100,#1e293b);stroke:color-mix(in srgb,currentColor 15%,transparent);stroke-width:1px;rx:4px}.flow-edge-label-text{fill:currentColor;font-size:10px;font-weight:600;text-anchor:middle;dominant-baseline:central}`;
+
+const flowSheetRef: { sheet: CSSStyleSheet | null } = { sheet: null };
+let activeFlowElement: HTMLElement | null = null;
+
+function ensureFlowStyles(root?: Document | ShadowRoot | null) {
+  ensureAdoptedStylesheet(FLOW_CSS, flowSheetRef, root);
+}
+
+// ---------------------------------------------------------------------------
+// data-flow-viewport: Transformation Pane Directive
+// ---------------------------------------------------------------------------
+export const flowViewportAttribute: AttributeModule = {
+  name: 'flowViewport',
+  attribute: 'flow-viewport',
+  handle: (element: HTMLElement) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+  }
+};
+
+// ---------------------------------------------------------------------------
+// data-flow: Root Canvas Directive (Infinite Viewport + Marquee + Keyboard)
+// ---------------------------------------------------------------------------
+export const flowAttribute: AttributeModule = {
+  name: 'flow',
+  attribute: 'flow',
+  handle: (element: FlowElement, value: string, runtime: RuntimeContext, parsedAttr?: any) => {
+    const arg = parsedAttr?.argument;
+    if (arg === 'viewport') return flowViewportAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'node') return flowNodeAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'handle') return flowHandleAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'edges') return flowEdgesAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'minimap') return flowMinimapAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'resizer') return flowResizerAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'side') return flowSideAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'nodrag') return flowNoDragAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'grid') return flowGridAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'snap') return flowSnapAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'node-toolbar' || arg === 'toolbar') return flowNodeToolbarAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'edge-toolbar' || arg === 'edge-dock') return flowEdgeToolbarAttribute.handle(element, value, runtime, parsedAttr);
+    if (arg === 'reconnect' || arg === 'edge-reconnect') return flowEdgeReconnectAttribute.handle(element, value, runtime, parsedAttr);
+
+    // Guard: Unrecognized sub-directives or bookkeeping attributes must NEVER instantiate a canvas!
+    if (arg) return;
+
+    // Guard: Only elements explicitly bearing the data-flow canvas attribute can be a canvas
+    if (!element.hasAttribute('data-flow')) return;
+
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+
+    let config: any = {};
+    if (value && value.trim()) {
+      try { config = runtime.evaluate(element, value); } catch { config = {}; }
+    }
+
+    const isViewportObj = config && typeof config === 'object' && !Array.isArray(config)
+      && ('zoom' in config || 'x' in config || 'y' in config);
+
+    let state: Viewport;
+    if (isViewportObj) {
+      state = config;
+    } else {
+      let inScopeVp: any = null;
+      try { inScopeVp = runtime.evaluate(element, 'viewport'); } catch { /* ignore */ }
+      if (inScopeVp && typeof inScopeVp === 'object' && ('zoom' in inScopeVp || 'x' in inScopeVp || 'y' in inScopeVp)) {
+        state = inScopeVp;
+      } else {
+        state = reactive({ x: 0, y: 0, zoom: 1 });
+      }
+    }
+
+    if (state.zoom === undefined) state.zoom = 1;
+    if (state.x === undefined) state.x = 0;
+    if (state.y === undefined) state.y = 0;
+
+    const content = (element.querySelector('[data-flow-viewport], .flow-viewport') as HTMLElement | null)
+      || (element.firstElementChild as HTMLElement | null)
+      || element;
+
+    element.__flowViewport = state;
+
+    const gridAttr = element.getAttribute('data-flow-grid');
+    const gridSize = config?.grid ?? (gridAttr !== null ? (parseFloat(gridAttr) || 0) : 0);
+
+    let isPanning = false;
+    let startX = 0;
+    let startY = 0;
+
+    let isSelecting = false;
+    let selStartX = 0;
+    let selStartY = 0;
+    let selRectEl: HTMLElement | null = null;
+    let didMove = false;
+
+    const canPan = (e: PointerEvent): boolean => {
+      if (e.button === 1) return true;
+      if (e.button === 0 && e.altKey) return true;
+      if (e.button === 0) return !(e.target as HTMLElement).closest(NO_PAN);
+      return false;
+    };
+
+    const stopCanvasDrag = trackPointerDrag(element, {
+      capture: true,
+      onStart: (e) => {
+        if (!canPan(e)) return false;
+        didMove = false;
+
+        // Marquee selection if Shift is held on empty canvas
+        if (e.button === 0 && e.shiftKey) {
+          isSelecting = true;
+          const pt = toFlowCoords(element, e.clientX, e.clientY, state);
+          selStartX = pt.x;
+          selStartY = pt.y;
+          selRectEl = document.createElement('div');
+          selRectEl.className = 'flow-selection-rect';
+          content.appendChild(selRectEl);
+          return true;
+        }
+
+        isPanning = true;
+        startX = e.clientX - state.x;
+        startY = e.clientY - state.y;
+        element.style.cursor = 'grabbing';
+        return true;
+      },
+      onMove: (e) => {
+        if (isSelecting && selRectEl) {
+          didMove = true;
+          const pt = toFlowCoords(element, e.clientX, e.clientY, state);
+          const minX = Math.min(selStartX, pt.x);
+          const minY = Math.min(selStartY, pt.y);
+          const w = Math.abs(pt.x - selStartX);
+          const h = Math.abs(pt.y - selStartY);
+          selRectEl.style.left = `${minX}px`;
+          selRectEl.style.top = `${minY}px`;
+          selRectEl.style.width = `${w}px`;
+          selRectEl.style.height = `${h}px`;
+
+          const nodes = runtime.evaluate(element, 'nodes') as any[];
+          if (Array.isArray(nodes)) {
+            nodes.forEach(n => {
+              const p = n.position || n;
+              const nx = p.x || 0;
+              const ny = p.y || 0;
+              const nw = n.w || n.width || 176;
+              const nh = n.h || n.height || 90;
+              const inside = nx < minX + w && nx + nw > minX && ny < minY + h && ny + nh > minY;
+              n.selected = inside;
+            });
+          }
+          return;
+        }
+
+        if (!isPanning) return;
+        didMove = true;
+        state.x = e.clientX - startX;
+        state.y = e.clientY - startY;
+      },
+      onEnd: (e) => {
+        if (isSelecting) {
+          isSelecting = false;
+          selRectEl?.remove();
+          selRectEl = null;
+          return;
+        }
+
+        if (!isPanning) return;
+        isPanning = false;
+        element.style.cursor = '';
+
+        // Clear selection on plain canvas click without drag
+        if (!didMove && !e.shiftKey) {
+          const nodes = runtime.evaluate(element, 'nodes') as any[];
+          if (Array.isArray(nodes) && nodes.some(n => n.selected)) {
+            nodes.forEach(n => { n.selected = false; });
+          }
+          try {
+            runtime.evaluate(element, `
+              if (typeof activeEdge !== 'undefined') activeEdge = null;
+              if (typeof edges !== 'undefined' && Array.isArray(edges)) {
+                edges.forEach(ed => { ed.selected = false; });
+                edges = [...edges];
+              }
+            `);
+          } catch {}
+        }
+      }
+    });
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = element.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+
+      const factor = Math.exp(-e.deltaY * 0.0015);
+      const prevZoom = state.zoom || 1;
+      const nextZoom = Math.min(Math.max(prevZoom * factor, MIN_ZOOM), MAX_ZOOM);
+      if (nextZoom === prevZoom) return;
+
+      const fx = (px - state.x) / prevZoom;
+      const fy = (py - state.y) / prevZoom;
+      state.x = px - fx * nextZoom;
+      state.y = py - fy * nextZoom;
+      state.zoom = nextZoom;
+    };
+
+    // Keyboard Shortcuts: Delete, Backspace, Arrows, Escape
+    const onActivate = () => {
+      activeFlowElement = element;
+    };
+    element.addEventListener('pointerdown', onActivate, { passive: true });
+    element.addEventListener('focusin', onActivate, { passive: true });
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      const active = document.activeElement;
+      if (!element.isConnected) return;
+      const isTargeted =
+        (active && element.contains(active)) ||
+        element.matches(':hover') ||
+        activeFlowElement === element;
+      if (!isTargeted) return;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as HTMLElement).isContentEditable)) {
+        return;
+      }
+      let nodes: any[] = [];
+      try { nodes = runtime.evaluate(element, 'nodes') as any[] || []; } catch { nodes = []; }
+      if (!Array.isArray(nodes)) return;
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const hasSelected = nodes.some(n => n.selected);
+        let edges: any[] = [];
+        try { edges = (runtime.evaluate(element, 'edges') as any[]) || []; } catch {}
+        const hasSelectedEdge = Array.isArray(edges) && edges.some((ed: any) => ed.selected);
+
+        if (hasSelected || hasSelectedEdge) {
+          e.preventDefault();
+          try {
+            runtime.evaluate(element, `
+              edges = (typeof edges !== 'undefined' && Array.isArray(edges)) ? edges.filter(e => !e.selected && !nodes.some(n => n.selected && (String(n.id) === String(e.source) || String(n.id) === String(e.target)))) : [];
+              nodes = nodes.filter(n => !n.selected);
+              if (typeof activeEdge !== 'undefined') activeEdge = null;
+            `);
+          } catch {
+            if (hasSelected) {
+              const selectedIds = new Set(nodes.filter(n => n.selected).map(n => String(n.id)));
+              const remaining = nodes.filter(n => !selectedIds.has(String(n.id)));
+              nodes.length = 0;
+              nodes.push(...remaining);
+            }
+            if (hasSelectedEdge && Array.isArray(edges)) {
+              const remainingEdges = edges.filter((ed: any) => !ed.selected);
+              edges.length = 0;
+              edges.push(...remainingEdges);
+            }
+          }
+        }
+      } else if (e.key.startsWith('Arrow')) {
+        const selectedNodes = nodes.filter(n => n.selected);
+        if (selectedNodes.length > 0) {
+          e.preventDefault();
+          const step = e.shiftKey ? 10 : 1;
+          selectedNodes.forEach(n => {
+            const p = n.position || n;
+            if (e.key === 'ArrowLeft') p.x = (p.x || 0) - step;
+            if (e.key === 'ArrowRight') p.x = (p.x || 0) + step;
+            if (e.key === 'ArrowUp') p.y = (p.y || 0) - step;
+            if (e.key === 'ArrowDown') p.y = (p.y || 0) + step;
+          });
+        }
+      } else if (e.key === 'Escape') {
+        nodes.forEach(n => { n.selected = false; });
+        try {
+          runtime.evaluate(element, `
+            if (typeof activeEdge !== 'undefined') activeEdge = null;
+            if (typeof edges !== 'undefined' && Array.isArray(edges)) {
+              edges.forEach(ed => { ed.selected = false; });
+              edges = [...edges];
+            }
+          `);
+        } catch {}
+      }
+    };
+
+    element.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('keydown', onKeyDown);
+
+    const stop = runtime.effect(() => {
+      const zoom = state.zoom || 1;
+      const x = state.x || 0;
+      const y = state.y || 0;
+
+      if (content !== element && !content.hasAttribute('data-flow-viewport')) {
+        content.setAttribute('data-flow-viewport', '');
+      }
+      content.style.transformOrigin = '0 0';
+      content.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
+
+      if (gridSize > 0 && element.style.backgroundImage) {
+        const scaled = gridSize * zoom;
+        element.style.backgroundSize = `${scaled}px ${scaled}px`;
+        element.style.backgroundPosition = `${x}px ${y}px`;
+      }
+    });
+
+    return () => {
+      stop();
+      stopCanvasDrag();
+      element.removeEventListener('wheel', onWheel);
+      element.removeEventListener('pointerdown', onActivate);
+      element.removeEventListener('focusin', onActivate);
+      window.removeEventListener('keydown', onKeyDown);
+      if (activeFlowElement === element) activeFlowElement = null;
+      delete element.__flowViewport;
+    };
+  }
+};
+
+// ---------------------------------------------------------------------------
+// data-flow-node: Spatial Node Directive (Multi-selection & Sub-flows)
+// ---------------------------------------------------------------------------
+export const flowNodeAttribute: AttributeModule = {
+  name: 'flowNode',
+  attribute: 'flow-node',
+  handle: (element: HTMLElement, value: string, runtime: RuntimeContext) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+    const nodeState = runtime.evaluate(element, value) as any;
+    if (!nodeState || typeof nodeState !== 'object') return;
+
+    const readPos = (n: any = nodeState) => {
+      const p = n.position;
+      return p ? { x: p.x || 0, y: p.y || 0 } : { x: n.x || 0, y: n.y || 0 };
+    };
+    const writePos = (n: any, x: number, y: number) => {
+      if (n.position) { n.position.x = x; n.position.y = y; }
+      else { n.x = x; n.y = y; }
+    };
+
+    const resolveSnap = (): number => {
+      const local = element.getAttribute('data-flow-snap');
+      if (local !== null) return parseFloat(local) || 0;
+      const flowEl = element.closest('[data-flow]') as HTMLElement | null;
+      const grid = flowEl?.getAttribute('data-flow-grid');
+      if (grid !== null && grid !== undefined) return parseFloat(grid) || 0;
+      return 0;
+    };
+    const snapPoint = (x: number, y: number, s: number) =>
+      s > 0 ? { x: Math.round(x / s) * s, y: Math.round(y / s) * s } : { x, y };
+
+    let dragGroup: Array<{ node: any; initialX: number; initialY: number }> = [];
+
+    const stopNodeDrag = trackPointerDrag(element, {
+      capture: true,
+      onStart: (e) => {
+        if (e.button !== 0 || e.altKey) return false;
+        if ((e.target as HTMLElement).closest(
+          '[data-flow-handle],[data-flow-nodrag],[data-flow-resizer],button,a,input,textarea,select,label'
+        )) return false;
+        e.stopPropagation();
+
+        const flowEl = element.closest('[data-flow]') as HTMLElement | null;
+        let allNodes: any[] = [];
+        try { allNodes = runtime.evaluate(flowEl || element, 'nodes') as any[] || []; } catch { allNodes = []; }
+
+        // Selection toggle / focus
+        if (e.shiftKey) {
+          nodeState.selected = !nodeState.selected;
+        } else {
+          if (!nodeState.selected) {
+            allNodes.forEach(n => { n.selected = false; });
+            nodeState.selected = true;
+          }
+        }
+
+        // Deselect edges when focusing a node
+        try {
+          runtime.evaluate(flowEl || element, `
+            if (typeof activeEdge !== 'undefined') activeEdge = null;
+            if (typeof edges !== 'undefined' && Array.isArray(edges)) {
+              edges.forEach(ed => { ed.selected = false; });
+              edges = [...edges];
+            }
+          `);
+        } catch {}
+
+        // Build drag group: all selected nodes + any nested children (sub-flows)
+        const selectedNodes = allNodes.filter(n => n.selected);
+        const movingNodes = selectedNodes.length > 0 && nodeState.selected ? selectedNodes : [nodeState];
+        
+        const groupSet = new Set(movingNodes);
+        allNodes.forEach(n => {
+          if (n.parentId && movingNodes.some(p => String(p.id) === String(n.parentId))) {
+            groupSet.add(n);
+          }
+        });
+
+        dragGroup = Array.from(groupSet).map(n => {
+          const p = readPos(n);
+          return { node: n, initialX: p.x, initialY: p.y };
+        });
+
+        element.style.zIndex = '1000';
+      },
+      onMove: (_e, delta) => {
+        const flowEl = element.closest('[data-flow]') as FlowElement | null;
+        const vp = flowEl?.__flowViewport;
+        const zoom = vp?.zoom || 1;
+        const dx = delta.dx / zoom;
+        const dy = delta.dy / zoom;
+        const snap = resolveSnap();
+
+        dragGroup.forEach(item => {
+          const snapped = snapPoint(item.initialX + dx, item.initialY + dy, snap);
+          writePos(item.node, snapped.x, snapped.y);
+        });
+      },
+      onEnd: () => {
+        element.style.zIndex = '';
+      }
+    });
+
+    const stop = runtime.effect(() => {
+      element.style.position = 'absolute';
+      element.style.left = '0';
+      element.style.top = '0';
+      const p = readPos();
+      const s = snapPoint(p.x, p.y, resolveSnap());
+      element.style.transform = `translate3d(${s.x}px, ${s.y}px, 0)`;
+
+      if (nodeState.width !== undefined) {
+        element.style.width = typeof nodeState.width === 'number' ? `${nodeState.width}px` : nodeState.width;
+      }
+      if (nodeState.height !== undefined) {
+        element.style.height = typeof nodeState.height === 'number' ? `${nodeState.height}px` : nodeState.height;
+      }
+
+      if (nodeState.selected) {
+        element.classList.add('selected');
+      } else {
+        element.classList.remove('selected');
+      }
+    });
+
+    return () => {
+      stop();
+      stopNodeDrag();
+    };
+  }
+};
+
+// ---------------------------------------------------------------------------
+// data-flow-handle: Port Directive (connection dragging + validation)
+// ---------------------------------------------------------------------------
+export const flowHandleAttribute: AttributeModule = {
+  name: 'flowHandle',
+  attribute: 'flow-handle',
+  handle: (element: HTMLElement, value: string, runtime: RuntimeContext) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+
+    let kind = 'source';
+    const raw = value.trim();
+    if (raw === 'source' || raw === 'target') {
+      kind = raw;
+    } else if (raw) {
+      try {
+        const resolved = runtime.evaluate(element, raw) as any;
+        if (resolved === 'source' || resolved === 'target') kind = resolved;
+      } catch { /* keep default */ }
+    }
+    element.setAttribute('data-flow-handle-type', kind);
+
+    const sideAttr = element.getAttribute('data-flow-side');
+    if (sideAttr) {
+      element.setAttribute('data-flow-handle-side', sideAttr);
+    }
+
+    const viewport = () => element.closest('[data-flow]') as FlowElement | null;
+    const toFlow = (cx: number, cy: number) => toFlowCoords(viewport()!, cx, cy);
+    const anchorFlow = (el: Element) => {
+      const r = el.getBoundingClientRect();
+      return toFlow(r.left + r.width / 2, r.top + r.height / 2);
+    };
+
+    const edgesArray = () => {
+      const vp = viewport();
+      if (!vp) return null;
+      const svg = vp.querySelector('[data-flow-edges]') as HTMLElement | null;
+      const expr = (svg?.getAttribute('data-flow-edges-expr')) || (svg?.getAttribute('data-flow-edges')) || 'edges';
+      try {
+        const arr = runtime.evaluate(vp, expr) as any;
+        return Array.isArray(arr) ? arr : null;
+      } catch { return null; }
+    };
+
+    let preview: SVGPathElement | null = null;
+    let srcId = '';
+    let start = { x: 0, y: 0 };
+    let vp: FlowElement | null = null;
+
+    const stopHandleDrag = trackPointerDrag(element, {
+      onStart: (e) => {
+        if (e.button !== 0) return false;
+        e.stopPropagation();
+        e.preventDefault();
+        vp = viewport();
+        const svg = vp?.querySelector('[data-flow-edges]') as SVGSVGElement | null;
+        if (!vp || !svg) return false;
+
+        const srcNode = element.closest('[data-flow-node]') as HTMLElement | null;
+        srcId = srcNode?.id
+          || srcNode?.getAttribute('data-bind-id')?.replace(/^['"]|['"]$/g, '').replace(/^node-/, '')
+          || element.id
+          || '';
+        start = anchorFlow(element);
+
+        preview = document.createElementNS(SVG_NS, 'path');
+        preview.setAttribute('class', 'flow-edge flow-edge-preview');
+        preview.setAttribute('fill', 'none');
+        preview.setAttribute('stroke', 'currentColor');
+        preview.setAttribute('stroke-width', '2');
+        preview.setAttribute('stroke-dasharray', '4 4');
+        preview.style.pointerEvents = 'none';
+        svg.appendChild(preview);
+      },
+      onMove: (ev) => {
+        if (!preview) return;
+        const pt = toFlow(ev.clientX, ev.clientY);
+        preview.setAttribute('d', simpleBezier(start.x, start.y, pt.x, pt.y));
+      },
+      onEnd: (ev) => {
+        if (preview) {
+          preview.remove();
+          preview = null;
+        }
+        const target = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
+        const targetNode = target?.closest('[data-flow-node]') as HTMLElement | null;
+        const tgtId = targetNode?.id
+          || targetNode?.getAttribute('data-bind-id')?.replace(/^['"]|['"]$/g, '').replace(/^node-/, '')
+          || '';
+        if (tgtId && tgtId !== srcId) {
+          const edges = edgesArray();
+          if (edges && !edges.some((ed: any) => String(ed.source) === String(srcId) && String(ed.target) === String(tgtId))) {
+            edges.push({ source: srcId, target: tgtId });
+          }
+        }
+      }
+    });
+
+    return () => {
+      stopHandleDrag();
+    };
+  }
+};
+
+// ---------------------------------------------------------------------------
+// data-flow-edges: Edge Overlay Directive (Markers, Labels & Diverse Types)
+// ---------------------------------------------------------------------------
+export const flowEdgesAttribute: AttributeModule = {
+  name: 'flowEdges',
+  attribute: 'flow-edges',
+  handle: (element: HTMLElement, value: string, runtime: RuntimeContext) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+    const expr = value.trim() || 'edges';
+    element.setAttribute('data-flow-edges-expr', expr);
+
+    const flowEl = element.closest('[data-flow]') as FlowElement | null;
+    const content = flowEl?.querySelector('[data-flow-viewport], .flow-viewport') as HTMLElement | null;
+    if (content && element.parentElement !== content) {
+      content.insertBefore(element, content.firstChild);
+    }
+
+    // Auto-inject SVG arrowhead markers
+    if (!element.querySelector('#flow-defs')) {
+      const defs = document.createElementNS(SVG_NS, 'defs');
+      defs.id = 'flow-defs';
+      defs.innerHTML = `
+        <marker id="flow-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <polyline points="0,0 10,5 0,10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </marker>
+        <marker id="flow-arrow-closed" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" stroke="none" />
+        </marker>
+      `;
+      element.insertBefore(defs, element.firstChild);
+    }
+
+    const hasCustomTemplate = element.querySelector('template, path[data-for], path[data-effect]');
+    if (hasCustomTemplate) return;
+
+    const stop = runtime.effect(() => {
+      const currentFlow = element.closest('[data-flow]') as FlowElement | null;
+      let edgeList: any[] = [];
+      let nodesList: any[] = [];
+      try {
+        const evaluated = runtime.evaluate(element, expr);
+        if (Array.isArray(evaluated)) edgeList = evaluated;
+      } catch { /* ignore */ }
+
+      try {
+        const nodesVal = runtime.evaluate(currentFlow || element, 'nodes');
+        if (Array.isArray(nodesVal)) nodesList = nodesVal;
+      } catch { /* ignore */ }
+
+      const nodeMap = new Map<string, any>();
+      nodesList.forEach(n => {
+        if (n && n.id !== undefined) nodeMap.set(String(n.id), n);
+      });
+
+      const existingPaths = new Map<string, SVGPathElement>();
+      const existingHitPaths = new Map<string, SVGPathElement>();
+      const existingLabels = new Map<string, SVGGElement>();
+      element.querySelectorAll('path.flow-edge[data-edge-key]').forEach(p => {
+        existingPaths.set(p.getAttribute('data-edge-key')!, p as SVGPathElement);
+      });
+      element.querySelectorAll('path.flow-edge-interaction[data-edge-hit-key]').forEach(p => {
+        existingHitPaths.set(p.getAttribute('data-edge-hit-key')!, p as SVGPathElement);
+      });
+      element.querySelectorAll('g[data-edge-label-key]').forEach(g => {
+        existingLabels.set(g.getAttribute('data-edge-label-key')!, g as SVGGElement);
+      });
+
+      const activeKeys = new Set<string>();
+
+      edgeList.forEach(edge => {
+        const srcId = String(edge.source ?? '');
+        const tgtId = String(edge.target ?? '');
+        if (!srcId || !tgtId) return;
+
+        const key = edge.id || `${srcId}->${tgtId}`;
+        activeKeys.add(key);
+
+        let hitPathEl = existingHitPaths.get(key);
+        if (!hitPathEl) {
+          hitPathEl = document.createElementNS(SVG_NS, 'path');
+          hitPathEl.setAttribute('class', 'flow-edge-interaction');
+          hitPathEl.setAttribute('data-edge-hit-key', key);
+          hitPathEl.setAttribute('data-flow-nodrag', '');
+          hitPathEl.setAttribute('fill', 'none');
+          hitPathEl.setAttribute('stroke', 'transparent');
+          hitPathEl.setAttribute('stroke-width', '20');
+          element.appendChild(hitPathEl);
+        }
+
+        let pathEl = existingPaths.get(key);
+        if (!pathEl) {
+          pathEl = document.createElementNS(SVG_NS, 'path');
+          pathEl.setAttribute('class', 'flow-edge');
+          pathEl.setAttribute('data-edge-key', key);
+          pathEl.setAttribute('data-flow-nodrag', '');
+          pathEl.setAttribute('fill', 'none');
+          pathEl.setAttribute('stroke', 'currentColor');
+          pathEl.setAttribute('stroke-width', '2');
+          element.appendChild(pathEl);
+        }
+
+        const isAnimated = !!edge.animated;
+        if (isAnimated && !pathEl.classList.contains('flow-edge-animated')) {
+          pathEl.classList.add('flow-edge-animated');
+        } else if (!isAnimated && pathEl.classList.contains('flow-edge-animated')) {
+          pathEl.classList.remove('flow-edge-animated');
+        }
+
+        const edgeRes = (runtime as any).$flow?.edge?.(srcId, tgtId, {
+          type: edge.type || 'bezier',
+          curvature: edge.curvature,
+          borderRadius: edge.borderRadius,
+          offset: edge.offset,
+          container: currentFlow || undefined,
+          nodeMap,
+          nodes: nodesList,
+          sourceHandle: edge.sourceHandle,
+          targetHandle: edge.targetHandle
+        });
+
+        if (edgeRes) {
+          edge.labelX = edgeRes.labelX;
+          edge.labelY = edgeRes.labelY;
+          edge.sourceX = edgeRes.sourceX;
+          edge.sourceY = edgeRes.sourceY;
+          edge.targetX = edgeRes.targetX;
+          edge.targetY = edgeRes.targetY;
+          edge.sourceSide = edgeRes.sourceSide;
+          edge.targetSide = edgeRes.targetSide;
+        }
+
+        const isSelected = !!edge.selected;
+        if (isSelected && !pathEl.classList.contains('selected')) {
+          pathEl.classList.add('selected');
+        } else if (!isSelected && pathEl.classList.contains('selected')) {
+          pathEl.classList.remove('selected');
+        }
+
+        const handleEdgeClick = (ev: MouseEvent) => {
+          ev.stopPropagation();
+          ev.preventDefault();
+
+          // 1. Deselect any active nodes
+          if (Array.isArray(nodesList)) {
+            nodesList.forEach((n: any) => { n.selected = false; });
+          }
+
+          // 2. Select this edge across data stack & reactive scopes
+          try {
+            let found = false;
+            let curr: any = element;
+            while (curr) {
+              const sym = Object.getOwnPropertySymbols(curr).find(s => s.toString().includes('local_scopes'));
+              if (sym && Array.isArray(curr[sym])) {
+                for (const scope of curr[sym]) {
+                  if (scope && Array.isArray(scope.edges)) {
+                    scope.edges.forEach((item: any) => { item.selected = (item.id === edge.id); });
+                    scope.edges = [...scope.edges];
+                    if ('activeEdge' in scope) {
+                      const matched = scope.edges.find((e: any) => e.id === edge.id) || edge;
+                      scope.activeEdge = {
+                        ...matched,
+                        labelX: edge.labelX ?? matched.labelX,
+                        labelY: edge.labelY ?? matched.labelY,
+                        sourceX: edge.sourceX ?? matched.sourceX,
+                        sourceY: edge.sourceY ?? matched.sourceY,
+                        targetX: edge.targetX ?? matched.targetX,
+                        targetY: edge.targetY ?? matched.targetY,
+                        sourceSide: edge.sourceSide ?? matched.sourceSide,
+                        targetSide: edge.targetSide ?? matched.targetSide,
+                        selected: true
+                      };
+                    }
+                    if (Array.isArray(scope.nodes)) {
+                      scope.nodes.forEach((n: any) => { n.selected = false; });
+                    }
+                    found = true;
+                    break;
+                  }
+                }
+              }
+              if (found) break;
+              curr = curr.parentElement;
+            }
+          } catch {}
+
+          const edgePayload = {
+            ...edge,
+            labelX: edge.labelX ?? 0,
+            labelY: edge.labelY ?? 0,
+            sourceX: edge.sourceX ?? 0,
+            sourceY: edge.sourceY ?? 0,
+            targetX: edge.targetX ?? 0,
+            targetY: edge.targetY ?? 0,
+            sourceSide: edge.sourceSide,
+            targetSide: edge.targetSide,
+            selected: true
+          };
+
+          try {
+            const targetEl = element.closest('[data-signal]') || currentFlow || element;
+            runtime.evaluate(targetEl, `
+              if (typeof activeEdge !== 'undefined') {
+                activeEdge = activeEdgePayload;
+              }
+              if (typeof edges !== 'undefined' && Array.isArray(edges)) {
+                edges.forEach(e => { e.selected = (e.id === activeEdgePayload.id); });
+                edges = [...edges];
+              }
+            `, { activeEdgePayload: edgePayload });
+          } catch {}
+        };
+
+        if (!(hitPathEl as any).__flowEdgeClickBound) {
+          (hitPathEl as any).__flowEdgeClickBound = true;
+          hitPathEl.addEventListener('click', handleEdgeClick);
+          hitPathEl.addEventListener('pointerdown', (e: PointerEvent) => e.stopPropagation());
+        }
+
+        if (!(pathEl as any).__flowEdgeClickBound) {
+          (pathEl as any).__flowEdgeClickBound = true;
+          pathEl.addEventListener('click', handleEdgeClick);
+          pathEl.addEventListener('pointerdown', (e: PointerEvent) => e.stopPropagation());
+        }
+
+        const d = edgeRes?.d || (typeof edgeRes === 'string' ? edgeRes : '');
+        if (d && hitPathEl.getAttribute('d') !== d) {
+          hitPathEl.setAttribute('d', d);
+        }
+        if (d && pathEl.getAttribute('d') !== d) {
+          pathEl.setAttribute('d', d);
+        }
+
+        if (edge.markerEnd) {
+          const markerId = edge.markerEnd === 'arrowclosed' ? 'url(#flow-arrow-closed)' : 'url(#flow-arrow)';
+          if (pathEl.getAttribute('marker-end') !== markerId) {
+            pathEl.setAttribute('marker-end', markerId);
+          }
+        } else if (pathEl.hasAttribute('marker-end')) {
+          pathEl.removeAttribute('marker-end');
+        }
+
+        if (edge.label && edgeRes?.labelX !== undefined) {
+          let labelG = existingLabels.get(key);
+          if (!labelG) {
+            labelG = document.createElementNS(SVG_NS, 'g');
+            labelG.setAttribute('class', 'flow-edge-label-group');
+            labelG.setAttribute('data-edge-label-key', key);
+            labelG.setAttribute('data-flow-nodrag', '');
+            const labelBg = document.createElementNS(SVG_NS, 'rect');
+            labelBg.setAttribute('class', 'flow-edge-label-bg');
+            labelBg.setAttribute('x', '-32');
+            labelBg.setAttribute('y', '-10');
+            labelBg.setAttribute('width', '64');
+            labelBg.setAttribute('height', '20');
+            const labelText = document.createElementNS(SVG_NS, 'text');
+            labelText.setAttribute('class', 'flow-edge-label-text');
+            labelText.textContent = String(edge.label);
+            labelG.appendChild(labelBg);
+            labelG.appendChild(labelText);
+            element.appendChild(labelG);
+          } else {
+            const textEl = labelG.querySelector('text');
+            if (textEl && textEl.textContent !== edge.label) textEl.textContent = edge.label;
+          }
+
+          if (isSelected && !labelG.classList.contains('selected')) {
+            labelG.classList.add('selected');
+          } else if (!isSelected && labelG.classList.contains('selected')) {
+            labelG.classList.remove('selected');
+          }
+
+          if (!(labelG as any).__flowLabelClickBound) {
+            (labelG as any).__flowLabelClickBound = true;
+            labelG.addEventListener('click', handleEdgeClick);
+            labelG.addEventListener('pointerdown', (e: PointerEvent) => e.stopPropagation());
+          }
+
+          const transformStr = `translate(${edgeRes.labelX}, ${edgeRes.labelY})`;
+          if (labelG.getAttribute('transform') !== transformStr) {
+            labelG.setAttribute('transform', transformStr);
+          }
+        }
+      });
+
+      existingHitPaths.forEach((p, k) => { if (!activeKeys.has(k)) p.remove(); });
+      existingPaths.forEach((p, k) => { if (!activeKeys.has(k)) p.remove(); });
+      existingLabels.forEach((g, k) => { if (!activeKeys.has(k)) g.remove(); });
+    });
+
+    return () => {
+      stop();
+      element.removeAttribute('data-flow-edges-expr');
+    };
+  }
+};
+
+// ---------------------------------------------------------------------------
+// data-flow-resizer: 8-Point Node Resize Directive
+// ---------------------------------------------------------------------------
+export const flowResizerAttribute: AttributeModule = {
+  name: 'flowResizer',
+  attribute: 'flow-resizer',
+  handle: (element: HTMLElement, _value: string, runtime: RuntimeContext) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+
+    const nodeEl = element.closest('[data-flow-node]') as HTMLElement | null;
+    if (!nodeEl) return;
+    element.classList.add('flow-resizer');
+
+    const directions = ['nw', 'ne', 'se', 'sw', 'n', 's', 'e', 'w'];
+    const handleClassMap: Record<string, string> = {
+      nw: 'top-left', ne: 'top-right', se: 'bottom-right', sw: 'bottom-left',
+      n: 'top', s: 'bottom', e: 'right', w: 'left'
+    };
+
+    directions.forEach(dir => {
+      if (!element.querySelector(`.flow-resize-handle.${handleClassMap[dir]}`)) {
+        const h = document.createElement('div');
+        h.className = `flow-resize-handle ${handleClassMap[dir]}`;
+        h.setAttribute('data-flow-nodrag', '');
+        h.setAttribute('data-direction', dir);
+        element.appendChild(h);
+      }
+    });
+
+    let dir = 'se';
+    let zoom = 1;
+    let nodeState: any = null;
+    let initialPos = { x: 0, y: 0 };
+    let initialWidth = 176;
+    let initialHeight = 90;
+    let vp: FlowElement['__flowViewport'] = undefined;
+
+    const stopResizerDrag = trackPointerDrag(element, {
+      onStart: (e) => {
+        const handle = (e.target as HTMLElement).closest('.flow-resize-handle') as HTMLElement | null;
+        if (!handle || e.button !== 0) return false;
+        e.stopPropagation();
+        e.preventDefault();
+
+        dir = handle.getAttribute('data-direction') || 'se';
+        const flowEl = element.closest('[data-flow]') as FlowElement | null;
+        vp = flowEl?.__flowViewport;
+        zoom = vp?.zoom || 1;
+
+        const nodeExpr = nodeEl.getAttribute('data-flow-node') || '';
+        try { nodeState = runtime.evaluate(nodeEl, nodeExpr); } catch { nodeState = null; }
+        if (!nodeState) return false;
+
+        initialPos = nodeState.position ? { ...nodeState.position } : { x: nodeState.x || 0, y: nodeState.y || 0 };
+        initialWidth = nodeState.width || nodeEl.offsetWidth || 176;
+        initialHeight = nodeState.height || nodeEl.offsetHeight || 90;
+      },
+      onMove: (_ev, delta) => {
+        if (!nodeState) return;
+        const dx = delta.dx / zoom;
+        const dy = delta.dy / zoom;
+        let newW = initialWidth;
+        let newH = initialHeight;
+        let newX = initialPos.x;
+        let newY = initialPos.y;
+
+        if (dir.includes('e')) newW = Math.max(80, initialWidth + dx);
+        if (dir.includes('w')) {
+          const clamped = Math.max(80, initialWidth - dx);
+          newX = initialPos.x + (initialWidth - clamped);
+          newW = clamped;
+        }
+        if (dir.includes('s')) newH = Math.max(40, initialHeight + dy);
+        if (dir.includes('n')) {
+          const clamped = Math.max(40, initialHeight - dy);
+          newY = initialPos.y + (initialHeight - clamped);
+          newH = clamped;
+        }
+
+        nodeState.width = newW;
+        nodeState.height = newH;
+        if (nodeState.position) {
+          nodeState.position.x = newX;
+          nodeState.position.y = newY;
+        } else {
+          nodeState.x = newX;
+          nodeState.y = newY;
+        }
+      }
+    });
+
+    return () => {
+      stopResizerDrag();
+    };
+  }
+};
+
+// ---------------------------------------------------------------------------
+// data-flow-minimap: Interactive Canvas Overview & Viewport Scrubber
+// ---------------------------------------------------------------------------
+export const flowMinimapAttribute: AttributeModule = {
+  name: 'flowMinimap',
+  attribute: 'flow-minimap',
+  handle: (element: HTMLElement, _value: string, runtime: RuntimeContext) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+
+    let svg: SVGSVGElement;
+    if (element instanceof SVGSVGElement) {
+      svg = element;
+    } else {
+      element.classList.add('flow-minimap');
+      let existing = element.querySelector('svg.flow-minimap-svg') as SVGSVGElement | null;
+      if (!existing) {
+        existing = document.createElementNS(SVG_NS, 'svg');
+        existing.setAttribute('class', 'flow-minimap-svg');
+        element.appendChild(existing);
+      }
+      svg = existing;
+    }
+
+    const flowEl = element.closest('[data-flow]') as FlowElement | null;
+
+    let minimapBounds: DOMRect | null = null;
+    let currentViewScale = 1;
+    let minX = 0;
+    let minY = 0;
+
+    const updatePanFromMinimap = (clientX: number, clientY: number) => {
+      if (!minimapBounds || !flowEl) return;
+      const vp = flowEl.__flowViewport;
+      if (!vp) return;
+
+      const px = clientX - minimapBounds.left;
+      const py = clientY - minimapBounds.top;
+      const flowX = minX + px * currentViewScale;
+      const flowY = minY + py * currentViewScale;
+
+      const containerW = flowEl.clientWidth || 800;
+      const containerH = flowEl.clientHeight || 600;
+      vp.x = containerW / 2 - flowX * (vp.zoom || 1);
+      vp.y = containerH / 2 - flowY * (vp.zoom || 1);
+    };
+
+    const stopMinimapDrag = trackPointerDrag(svg, {
+      onStart: (e) => {
+        if (e.button !== 0) return false;
+        e.stopPropagation();
+        e.preventDefault();
+        minimapBounds = svg.getBoundingClientRect();
+        updatePanFromMinimap(e.clientX, e.clientY);
+      },
+      onMove: (e) => {
+        updatePanFromMinimap(e.clientX, e.clientY);
+      }
+    });
+
+    const stop = runtime.effect(() => {
+      if (!flowEl) return;
+      const vp = flowEl.__flowViewport;
+
+      let nodesList: any[] = [];
+      try { nodesList = runtime.evaluate(flowEl, 'nodes') as any[] || []; } catch { nodesList = []; }
+
+      const containerW = flowEl.clientWidth || 800;
+      const containerH = flowEl.clientHeight || 600;
+      const z = vp?.zoom || 1;
+      const viewBB = {
+        x: -(vp?.x || 0) / z,
+        y: -(vp?.y || 0) / z,
+        width: containerW / z,
+        height: containerH / z
+      };
+
+      let bMinX = viewBB.x;
+      let bMinY = viewBB.y;
+      let bMaxX = viewBB.x + viewBB.width;
+      let bMaxY = viewBB.y + viewBB.height;
+
+      nodesList.forEach(n => {
+        const p = n.position || n;
+        const nx = p.x || 0;
+        const ny = p.y || 0;
+        const nw = n.w || n.width || 176;
+        const nh = n.h || n.height || 90;
+        bMinX = Math.min(bMinX, nx);
+        bMinY = Math.min(bMinY, ny);
+        bMaxX = Math.max(bMaxX, nx + nw);
+        bMaxY = Math.max(bMaxY, ny + nh);
+      });
+
+      const pad = 40;
+      minX = bMinX - pad;
+      minY = bMinY - pad;
+      const totalW = bMaxX - bMinX + pad * 2;
+      const totalH = bMaxY - bMinY + pad * 2;
+
+      svg.setAttribute('viewBox', `${minX} ${minY} ${totalW} ${totalH}`);
+      currentViewScale = totalW / (svg.clientWidth || 200);
+
+      // Persistent SVG node rects (ZCZS: zero innerHTML destruction)
+      const existingNodeRects = new Map<string, SVGRectElement>();
+      svg.querySelectorAll('rect.flow-minimap-node').forEach(r => {
+        const id = r.getAttribute('data-node-id');
+        if (id) existingNodeRects.set(id, r as SVGRectElement);
+      });
+
+      const activeIds = new Set<string>();
+      let lens = svg.querySelector('rect.flow-minimap-lens') as SVGRectElement | null;
+
+      nodesList.forEach(n => {
+        const id = String(n.id ?? '');
+        if (!id) return;
+        activeIds.add(id);
+        const p = n.position || n;
+        const nx = p.x || 0;
+        const ny = p.y || 0;
+        const nw = n.w || n.width || 176;
+        const nh = n.h || n.height || 90;
+
+        let rect = existingNodeRects.get(id);
+        if (!rect) {
+          rect = document.createElementNS(SVG_NS, 'rect');
+          rect.setAttribute('class', 'flow-minimap-node');
+          rect.setAttribute('data-node-id', id);
+          svg.insertBefore(rect, lens || null);
+        }
+        rect.setAttribute('x', String(nx));
+        rect.setAttribute('y', String(ny));
+        rect.setAttribute('width', String(nw));
+        rect.setAttribute('height', String(nh));
+      });
+
+      existingNodeRects.forEach((r, id) => {
+        if (!activeIds.has(id)) r.remove();
+      });
+
+      if (!lens) {
+        lens = document.createElementNS(SVG_NS, 'rect');
+        lens.setAttribute('class', 'flow-minimap-lens');
+        svg.appendChild(lens);
+      }
+      lens.setAttribute('x', String(viewBB.x));
+      lens.setAttribute('y', String(viewBB.y));
+      lens.setAttribute('width', String(viewBB.width));
+      lens.setAttribute('height', String(viewBB.height));
+    });
+
+    return () => {
+      stop();
+      stopMinimapDrag();
+    };
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Helper Attribute Modules for Canonical Namespaces
+// ---------------------------------------------------------------------------
+export const flowSideAttribute: AttributeModule = {
+  name: 'flowSide',
+  attribute: 'flow-side',
+  handle: (element: HTMLElement, value: string, runtime: RuntimeContext) => {
+    let side = value.trim();
+    if (side) {
+      try {
+        const resolved = runtime.evaluate(element, side);
+        if (typeof resolved === 'string') side = resolved;
+      } catch { /* use raw */ }
+    }
+    if (side) {
+      element.setAttribute('data-flow-handle-side', side);
+    }
+  }
+};
+
+export const flowNoDragAttribute: AttributeModule = {
+  name: 'flowNoDrag',
+  attribute: 'flow-nodrag',
+  handle: () => {}
+};
+
+export const flowGridAttribute: AttributeModule = {
+  name: 'flowGrid',
+  attribute: 'flow-grid',
+  handle: () => {}
+};
+
+export const flowSnapAttribute: AttributeModule = {
+  name: 'flowSnap',
+  attribute: 'flow-snap',
+  handle: () => {}
+};
+
+// ---------------------------------------------------------------------------
+// data-flow-node-toolbar: Floating Node Toolbar Directive
+// ---------------------------------------------------------------------------
+export const flowNodeToolbarAttribute: AttributeModule = {
+  name: 'flowNodeToolbar',
+  attribute: 'flow-node-toolbar',
+  handle: (element: HTMLElement, value: string) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+    const position = value ? value.trim() : 'top';
+    element.classList.add('flow-node-toolbar', `flow-node-toolbar-${position}`);
+    element.setAttribute('data-flow-nodrag', '');
+  }
+};
+
+// ---------------------------------------------------------------------------
+// data-flow-edge-toolbar: Floating Edge Quick Actions Toolbar Directive
+// ---------------------------------------------------------------------------
+export const flowEdgeToolbarAttribute: AttributeModule = {
+  name: 'flowEdgeToolbar',
+  attribute: 'flow-edge-toolbar',
+  handle: (element: HTMLElement, _value: string, runtime: RuntimeContext) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+    element.setAttribute('data-flow-nodrag', '');
+
+    const stop = runtime.effect(() => {
+      let active: any = null;
+      try {
+        active = runtime.evaluate(element, 'activeEdge');
+      } catch {}
+
+      if (active && (active.labelX !== undefined || active.labelY !== undefined)) {
+        const lx = Number(active.labelX) || 0;
+        const ly = Number(active.labelY) || 0;
+        element.style.left = `${lx}px`;
+        element.style.top = `${ly}px`;
+        element.style.transform = 'translate(-50%, -140%)';
+      }
+    });
+
+    return () => {
+      stop();
+    };
+  }
+};
+
+// ---------------------------------------------------------------------------
+// data-flow-edge-reconnect: Terminal Edge Reconnecting Directive
+// ---------------------------------------------------------------------------
+export const flowEdgeReconnectAttribute: AttributeModule = {
+  name: 'flowEdgeReconnect',
+  attribute: 'flow-edge-reconnect',
+  handle: (element: HTMLElement, value: string, runtime: RuntimeContext) => {
+    ensureFlowStyles(element.getRootNode() as Document | ShadowRoot);
+    const terminal = value ? value.trim() : 'target'; // 'source' or 'target'
+    element.classList.add('flow-edge-reconnect-handle');
+    element.setAttribute('data-flow-nodrag', '');
+
+    let preview: SVGPathElement | null = null;
+    let staticPt = { x: 0, y: 0 };
+    let flowEl: FlowElement | null = null;
+
+    const stopDrag = trackPointerDrag(element, {
+      onStart: (e) => {
+        if (e.button !== 0) return false;
+        e.stopPropagation();
+        e.preventDefault();
+        flowEl = element.closest('[data-flow]') as FlowElement | null;
+        const svg = flowEl?.querySelector('[data-flow-edges]') as SVGSVGElement | null;
+        if (!flowEl || !svg) return false;
+
+        let edge: any = null;
+        try {
+          edge = runtime.evaluate(element, 'activeEdge');
+        } catch {
+          edge = null;
+        }
+        if (!edge) return false;
+
+        staticPt = terminal === 'target'
+          ? { x: edge.sourceX || 0, y: edge.sourceY || 0 }
+          : { x: edge.targetX || 0, y: edge.targetY || 0 };
+
+        preview = document.createElementNS(SVG_NS, 'path');
+        preview.setAttribute('class', 'flow-edge flow-edge-preview selected');
+        preview.setAttribute('fill', 'none');
+        preview.setAttribute('stroke', 'currentColor');
+        preview.setAttribute('stroke-width', '2.5');
+        preview.setAttribute('stroke-dasharray', '4 4');
+        preview.style.pointerEvents = 'none';
+        svg.appendChild(preview);
+        return true;
+      },
+      onMove: (ev) => {
+        if (!preview || !flowEl) return;
+        const pt = toFlowCoords(flowEl, ev.clientX, ev.clientY);
+        const s = terminal === 'target' ? staticPt : pt;
+        const t = terminal === 'target' ? pt : staticPt;
+        preview.setAttribute('d', simpleBezier(s.x, s.y, t.x, t.y));
+      },
+      onEnd: (ev) => {
+        if (preview) {
+          preview.remove();
+          preview = null;
+        }
+        const target = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
+        const targetNode = target?.closest('[data-flow-node]') as HTMLElement | null;
+        const newId = targetNode?.id
+          || targetNode?.getAttribute('data-bind-id')?.replace(/^['"]|['"]$/g, '').replace(/^node-/, '')
+          || '';
+        if (newId) {
+          try {
+            const edge = runtime.evaluate(element, 'activeEdge') as any;
+            if (edge) {
+              if (terminal === 'target' && String(edge.source) !== String(newId)) {
+                edge.target = newId;
+              } else if (terminal === 'source' && String(edge.target) !== String(newId)) {
+                edge.source = newId;
+              }
+            }
+          } catch {}
+        }
+      }
+    });
+
+    const stopPos = runtime.effect(() => {
+      let active: any = null;
+      try {
+        active = runtime.evaluate(element, 'activeEdge');
+      } catch {}
+
+      if (active) {
+        const x = Number(terminal === 'target' ? active.targetX : active.sourceX) || 0;
+        const y = Number(terminal === 'target' ? active.targetY : active.sourceY) || 0;
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+      }
+    });
+
+    return () => {
+      stopPos();
+      stopDrag();
+    };
+  }
+};
+
+export default flowAttribute;

@@ -1,0 +1,1867 @@
+/**
+ * Nexus-UX Router Directive Module
+ *
+ * Handles `data-router` for client-side routing. Initializes the #router
+ * signal, manages navigation, and supports section/outlet rendering models.
+ *
+ * Rendering Paradigms:
+ *   - Section model: `<element data-route="/x">` with children; matched
+ *     element shown via reconcileStyle(display)
+ *   - Outlet model: `<element data-component="#router.route">` renders
+ *     component reactively when signal changes
+ *
+ * Capabilities:
+ *   - Native Navigation API interception with History fallback
+ *   - Per-route lifecycle hooks: beforeLeave, beforeEnter, handler,
+ *     afterEnter, afterLeave (async-awaited; false aborts, string redirects)
+ *   - Declarative redirect via route.redirect
+ *   - Routing modes: 'signal' (default) | 'static' | 'hybrid'
+ *   - Default route: `data-router="{ default: '/home' }"`
+ *
+ * ZCZS Guarantees:
+ *   - Zero-copy: Route config is a plain object; no cloning.
+ *   - Zero-serialization: DOM updates via reconcileStyle/morphDOM by reference.
+ *
+ * Coordination:
+ *   - evaluator.ts resolves #router.route in expression scope
+ *   - component.ts renders outlet components reactively
+ *   - stylesheet.ts adopts route-specific styles
+ *   - ModuleCoordinator registers via registerAttributeModule
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Signal-based routing with reactive outlet binding
+ *   - Hybrid static/signal routing mode
+ *   - Lifecycle hook system with abort/redirect support
+ */
+
+import { AttributeModule } from '../../engine/modules.ts';
+import { RuntimeContext } from '../../engine/composition.ts';
+import { reportError, toError } from '../../engine/debug.ts';
+import { CUSTOM_EVENT_PREFIX } from '../../engine/consts.ts';
+
+
+/**
+ * data-router: The Core Router
+ * Initializes the #router signal and manages navigation.
+ *
+ * Rendering paradigms (both supported simultaneously):
+ *  1. Section model  — <element data-route="/x"> with children. The matched
+ *     element is shown and the rest hidden via reconcileStyle(display).
+ *  2. Outlet model   — <element data-route="/x" data-component="/pages/x.html">.
+ *     The matched route's component URL is published to `#router.route`, and its
+ *     `data-route-layout` URL to `#router.layout`. A dynamic outlet such as
+ *     `<main data-component="#router.route">` renders the component reactively
+ *     (data-component re-runs its effect when the signal changes). Layouts are
+ *     composed the same way: `<div data-component="#router.layout">` shell with a
+ *     nested `<main data-component="#router.route">` outlet.
+ *
+ * Capabilities:
+ *  - Native Navigation API interception (with History fallback).
+ *  - Per-route lifecycle hooks: beforeLeave, beforeEnter, handler, afterEnter,
+ *    afterLeave. Hooks are async-awaited. Returning `false` aborts navigation;
+ *    returning a string performs a redirect (replace).
+ *  - route.redirect: declarative redirect to another path.
+ *  - Routing modes: 'signal' (default) | 'static' | 'hybrid'. In static/hybrid,
+ *    an unmatched path resolves to a filesystem component (`/path` -> `/path.html`)
+ *    published to `#router.route`, before falling back to 404.
+ *  - `default` route: `data-router="{ default: '/home' }"` redirects the base path.
+ *  - 404 fallback to /404.html when nothing matches/resolves.
+ *  - basePath auto-detection with `data-router.base-path` override; stripped from
+ *    incoming paths and prepended to outgoing navigations.
+ *  - Scroll save/restore via history.state.scrollY, plus hash `scrollIntoView`.
+ *  - Wildcard `*` captured into params.wildcard.
+ *  - Helpers: navigateByName(name, params?, query?), isActive(path, exact?),
+ *    buildQuery(obj).
+ *
+ * Declarative routing strategy (config object on data-router):
+ *  - `mode`, `default`, `basePath` — as above.
+ *  - `manifest` — URL of a static auto-route manifest (JSON array of route
+ *    descriptors). Merged into `#router.manifest` at boot.
+ *  - `dynamic` — when true, the router also folds runtime-discovered routes into
+ *    `#router.manifest` (e.g. a sibling `manifest.json` produced by the server/build).
+ *  - `shadow` — glob(s) marking internal routes (e.g. `'/_internal/**'`). Shadow
+ *    routes resolve/ render through the router's internal fetch but are excluded
+ *    from the public `#router.manifest` so the client has no discoverable URL.
+ *  - `error` — override the single error-handling component path.
+ *
+ * Intuitive API surface:
+ *  - `#router.config` — reactive snapshot of the strategy object.
+ *  - `#router.manifest` — resolved route manifest (declared + manifest + dynamic).
+ *  - `#router.match(path?)` — RouteInfo the router *would* match for a path.
+ *  - `#router.go(target, opts?)` — navigate by name or path (the friendly entrypoint).
+ */
+
+export interface RouteInfo {
+  path: string;
+  params: Record<string, string>;
+  query: Record<string, string>;
+  hash: string;
+  name?: string;
+  meta?: unknown;
+  component?: string;
+  layout?: string;
+}
+
+type RouteHook = (to: RouteInfo, from: RouteInfo | null) => unknown;
+
+interface RouteRecord {
+  path: string;
+  element?: HTMLElement;
+  name?: string;
+  redirect?: string;
+  layout?: string;
+  component?: string;
+  meta?: unknown;
+  beforeEnter?: RouteHook;
+  afterEnter?: RouteHook;
+  beforeLeave?: RouteHook;
+  afterLeave?: RouteHook;
+  handler?: RouteHook;
+  matcher?: RegExp;
+  keys?: string[];
+  hasWildcard?: boolean;
+  // Shadow/internal route: resolved & rendered by the router, excluded from the
+  // public `#router.manifest` so the client has no discoverable URL.
+  internal?: boolean;
+  // Provenance tag for manifest entries ('declared' | 'manifest' | 'dynamic').
+  source?: string;
+  category?: string;
+  keywords?: string[];
+}
+
+type RouterMode = 'signal' | 'static' | 'hybrid';
+
+export interface DiscoveredPage {
+  href: string;
+  title: string;
+  icon?: string;
+  tabTitle: string;
+  tabIcon?: string;
+  path?: string;
+  parent?: string | null;
+  children?: DiscoveredPage[];
+  meta?: Record<string, any>;
+  category?: string;
+}
+
+export interface PageTab {
+  id: string;
+  source: string;
+  route?: string;
+  meta?: Record<string, any>;
+  title?: string;
+  tabTitle?: string;
+  icon?: string;
+  tabIcon?: string;
+  isLoading?: boolean;
+  linkedContent?: any;
+}
+
+export interface RouterConfig {
+  mode: RouterMode;
+  default: string | null;
+  basePath: string;
+  // URL of a static auto-route manifest (JSON array of route descriptors).
+  manifest?: string;
+  // When true, fold runtime-discovered routes into #router.manifest.
+  dynamic?: boolean;
+  // Declarative component/page to load for new page tabs.
+  newPageTab?: string;
+  // Default index page filename inside pagesDir (e.g. 'home.html').
+  index?: string;
+  // Declarative directory that clean routes resolve into (no hardcoded path).
+  // e.g. '_pages' => '/profile' -> '_pages/profile.html'. Defaults to '_pages'.
+  pagesDir?: string;
+  // Internal shadow routes excluded from public manifest
+  shadow?: string | string[];
+  // Single error-handling page for ALL errors (404 + 5xx…).
+  error?: string;
+}
+
+export interface RouterState {
+  path: string;
+  params: Record<string, string>;
+  query: Record<string, string>;
+  hash: string;
+  loading: boolean;
+  error: unknown;
+  // Active HTTP/server error code driving the generic error page (500/502/…).
+  errorCode: string | null;
+  basePath: string;
+  mode: RouterMode;
+  // Outlet-driving signals (component URLs) + metadata.
+  route: string | null;
+  layout: string | null;
+  outlet: string | null;
+  meta: unknown;
+  name: string | null;
+  previous: { path: string; meta: unknown } | null;
+  scrollPosition: { x: number; y: number };
+  currentRoute: RouteRecord | null;
+  routes: RouteRecord[];
+  pages: DiscoveredPage[];
+  discoverPages(): Promise<void>;
+  lineage: Array<{ title: string; href: string; icon?: string }>;
+  getLineage(targetHref?: string): Array<{ title: string; href: string; icon?: string }>;
+  setPageMeta(meta: { title?: string; icon?: string; parent?: string }): void;
+  config: RouterConfig;
+  manifest: RouteRecord[];
+  match(path?: string): RouteInfo | null;
+  go(target: string, opts?: { replace?: boolean; tabId?: string; title?: string; icon?: string }): void;
+
+  // --- First-Class Page Tab Workspaces ---
+  pageTabs: PageTab[];
+  activePageTabId: string | null;
+  pinnedPageTabs: string[];
+  tabSeq: number;
+  activePageTab: PageTab | null;
+  createPageTab(source?: string, route?: string): void;
+  switchPageTab(id: string): void;
+  closePageTab(id: string): void;
+  duplicatePageTab(id: string): void;
+  pinPageTab(id: string): void;
+
+  // --- Per-tab history (woven into the native browser history) ---
+  activeTabId: string | null;
+  tabPaths: Record<string, string>;
+  tabMeta: Record<string, { title?: string; icon?: string }>;
+  back(opts?: { tabId?: string }): void;
+  forward(opts?: { tabId?: string }): void;
+  canBack(tabId?: string): boolean;
+  canForward(tabId?: string): boolean;
+
+  // Methods
+  navigate(url: string, opts?: { replace?: boolean; tabId?: string; title?: string; icon?: string }): void;
+  navigateByName(
+    name: string,
+    params?: Record<string, string | number>,
+    query?: Record<string, unknown>,
+    opts?: { replace?: boolean },
+  ): void;
+  isActive(path: string, exact?: boolean): boolean;
+  buildQuery(obj: Record<string, unknown>): string;
+  setError(code?: string | number | null): void;
+  addRoute(route: RouteRecord): void;
+  removeRoute(route: RouteRecord): void;
+  renderActiveTab(): void;
+  setActiveTab(id: string): void;
+  // Pre-warm a component's HTML into the (sticky) fetch cache so the panel
+  // swap is instant when the user arrives. Driven by the predictive engine's
+  // projected interaction frustum: a hovered route link's destination is
+  // fetched ahead of the click. Pass an href, a name, or a component URL.
+  prewarm(ref: string): void;
+}
+
+interface RouteMeta {
+  regex: RegExp;
+  keys: string[];
+  hasWildcard: boolean;
+}
+
+function pathToRegex(path: string): RouteMeta {
+  const keys: string[] = [];
+  let hasWildcard = false;
+  let pattern = path
+    .replace(/:([a-zA-Z0-9_]+)\?/g, (_, key) => { keys.push(key); return '(?:/([^/]+))?'; })
+    .replace(/:([a-zA-Z0-9_]+)/g, (_, key) => { keys.push(key); return '([^/]+)'; });
+  if (pattern.endsWith('*')) {
+    hasWildcard = true;
+    pattern = pattern.slice(0, -1) + '(.*)';
+  } else {
+    pattern = pattern.replace(/\*/g, '.*');
+  }
+  return { regex: new RegExp(`^${pattern}$`), keys, hasWildcard };
+}
+
+function fillPath(pattern: string, params: Record<string, string | number>): string {
+  let out = pattern
+    .replace(/:([a-zA-Z0-9_]+)\??/g, (_, key) => (params[key] != null ? String(params[key]) : ''))
+    .replace(/\*$/, () => (params.wildcard != null ? String(params.wildcard) : ''));
+  out = out.replace(/\/{2,}/g, '/');
+  if (out.length > 1 && out.endsWith('/')) out = out.slice(0, -1);
+  return out || '/';
+}
+
+function findRoute(
+  path: string,
+  routeList: RouteRecord[],
+  matchMeta: WeakMap<RouteRecord, RouteMeta>,
+  params: Record<string, string>
+): RouteRecord | null {
+  const exact = routeList.find((r) => !r.internal && r.path === path);
+  if (exact) return exact;
+  for (const route of routeList) {
+    if (route.internal || !route.path) continue;
+    const meta = matchMeta.get(route);
+    if (!meta || (!meta.keys.length && !meta.hasWildcard)) continue;
+    const m = path.match(meta.regex);
+    if (m) {
+      meta.keys.forEach((key: string, i: number) => { params[key] = m[i + 1] || ''; });
+      if (meta.hasWildcard) params.wildcard = m[meta.keys.length + 1] || '';
+      return route;
+    }
+  }
+  return null;
+}
+
+// Detect a base path from the current location when not explicitly configured.
+function autoDetectBasePath(): string {
+  // Honor an explicit <base href> when present — it is the authoritative
+  // base for relative URLs and survives SPA deep links (the shell is served
+  // at any clean path, so the location pathname is a ROUTE, not a file).
+  const baseEl = document.querySelector('base[href]') as HTMLBaseElement | null;
+  if (baseEl && baseEl.href) {
+    try {
+      const u = new URL(baseEl.href, globalThis.location.href);
+      const p = u.pathname;
+      return p.endsWith('/') ? p : p + '/';
+    } catch { /* fall through */ }
+  }
+  const pathname = globalThis.location.pathname;
+  const lastSlash = pathname.lastIndexOf('/');
+  const lastSeg = pathname.substring(lastSlash + 1);
+  if (lastSeg.includes('.')) {
+    // Location points to a file (e.g. /app/index.html) -> base is the directory.
+    return pathname.substring(0, lastSlash + 1);
+  }
+  // A clean route (e.g. /profile) is NOT a base directory — the SPA shell
+  // is served at "/", so the base stays root. Otherwise deep links would
+  // double the route segment into every outgoing navigation/asset URL.
+  return '/';
+}
+
+export const routerAttributeModule: AttributeModule = {
+  name: 'router-attribute',
+  attribute: 'router',
+  handle: (el: HTMLElement, initConfig: string, runtime: RuntimeContext) => {
+    try {
+      runtime.debug('Initializing data-router on', el);
+
+      // Stable app base captured at init. SPA navigations mutate location.pathname,
+      // so relative links would otherwise resolve against the virtual URL and
+      // double the path (e.g. /_pages/_pages/...). Resolve against this instead.
+      const appBase = globalThis.location.href;
+
+      // Parse optional config object: data-router="{ mode: 'hybrid', default: '/home' }"
+      let cfg: {
+        signal?: string;
+        mode?: RouterMode;
+        default?: string;
+        pagesDir?: string;
+        manifest?: string;
+        dynamic?: boolean;
+        shadow?: string | string[];
+        error?: string;
+        index?: string;
+        routes?: Array<{
+          id?: string;
+          name?: string;
+          route?: string;
+          path?: string;
+          component?: string;
+          protected?: boolean;
+          redirect?: string;
+          layout?: string;
+          meta?: unknown;
+        }>;
+      } = {};
+      if (initConfig && initConfig.trim()) {
+        try {
+          const evaluated = runtime.evaluate(el, initConfig);
+          if (evaluated && typeof evaluated === 'object') {
+            cfg = evaluated as typeof cfg;
+          }
+        } catch {
+          // Non-object config (e.g. bare attribute) is fine; ignore.
+        }
+      }
+      // Default mode is 'signal' (declared-route apps: unmatched paths -> 404),
+      // preserving backward-compatible behavior. Opt into filesystem resolution
+      // with mode: 'static' | 'hybrid'.
+      const mode: RouterMode = cfg.mode === 'static' || cfg.mode === 'hybrid' ? cfg.mode : 'signal';
+      const defaultPath = typeof cfg.default === 'string' && cfg.default ? cfg.default : null;
+
+      // The specific document file the app was served from (e.g. "router.html").
+      // Only this exact file collapses to "/" so SPA paths like "/404.html"
+      // are not clobbered by the html-normalization rule.
+      const initialFile = globalThis.location.pathname.split('/').pop() || '';
+
+      // Resolve base path: explicit override wins, else auto-detect.
+      const manualBase = document.documentElement.getAttribute('data-router.base-path');
+      const basePath = manualBase !== null && manualBase !== ''
+        ? (manualBase.endsWith('/') ? manualBase : manualBase + '/')
+        : autoDetectBasePath();
+
+      // Declarative routing strategy — reactive snapshot exposed as #router.config.
+      // The `_pages` folder path is NOT hardcoded: `pagesDir` (default '_pages')
+      // drives every filesystem resolution below.
+      const pagesDir = typeof cfg.pagesDir === 'string' && cfg.pagesDir
+        ? cfg.pagesDir.replace(/\/+$/, '')
+        : '_pages';
+
+      // Resolve a bare page name against `pagesDir`; pass-through absolute URLs.
+      // Relative refs are returned with a leading slash so they compare equal to
+      // `path` (which is always slash-led after stripBase) and to the
+      // base-applied URL used in the `alreadyOnError` / `onErrorPage` checks.
+      const resolvePagesPath = (ref: string | undefined, fallback: string): string => {
+        const raw = ref && ref.trim() ? ref.trim() : fallback;
+        if (raw.startsWith('/') || raw.startsWith('http')) return raw;
+        return `/${pagesDir}/${raw.replace(/^\/+/, '')}`;
+      };
+
+      // Single error-handling page for 404 + 5xx. No separate 404 page.
+      const errorPage = resolvePagesPath(cfg.error, 'error.html');
+
+      const routerConfig: RouterConfig = {
+        mode,
+        default: defaultPath,
+        basePath,
+        manifest: typeof cfg.manifest === 'string' && cfg.manifest ? cfg.manifest : undefined,
+        dynamic: cfg.dynamic === true,
+        shadow: cfg.shadow ?? undefined,
+        pagesDir,
+        error: errorPage,
+      };
+
+      // Strip basePath from an incoming absolute pathname, keeping a leading slash.
+      const stripBase = (pathname: string): string => {
+        let p = pathname;
+        if (basePath !== '/' && p.startsWith(basePath)) {
+          p = p.substring(basePath.length - 1); // keep leading slash
+        }
+        if (!p.startsWith('/')) p = '/' + p;
+        return p;
+      };
+
+      // Prepend basePath to an app-relative path for history / links.
+      const applyBase = (path: string): string => {
+        if (basePath === '/' || basePath === '') return path;
+        if (path.startsWith('/')) return basePath + path.substring(1);
+        return basePath + path;
+      };
+
+      // Normalize a (possibly browser-resolved, doubled) URL against the stable
+      // app base so repeated SPA navigations don't accumulate path segments.
+      const normalizeHref = (href: string): string => {
+        let resolved: URL;
+        try {
+          resolved = new URL(href, appBase);
+        } catch {
+          return href;
+        }
+        return resolved.pathname + resolved.search + resolved.hash;
+      };
+
+      // Glob → RegExp (supports `*` and `**`; `**` matches across slashes).
+      const globToRegex = (glob: string): RegExp => {
+        let pattern = glob
+          .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+          .replace(/\*\*\/?/g, '::globstar::')
+          .replace(/\*/g, '[^/]*')
+          .replace(/::globstar::/g, '.*');
+        return new RegExp(`^${pattern}$`);
+      };
+
+      // Test whether a path is shadow/internal per the config's `shadow` glob(s).
+      const shadowMatch = (path: string): boolean => {
+        const shadows = state.config.shadow;
+        if (!shadows) return false;
+        const globs = Array.isArray(shadows) ? shadows : [shadows];
+        return globs.some((g) => globToRegex(g).test(path));
+      };
+
+      // Build the resolved manifest: declared data-route entries + optional static
+      // manifest file + dynamic scan. Internal (shadow) routes are tagged and kept
+      let cachedManifestUrl: string | null = null;
+      let cachedManifestList: any[] | null = null;
+
+      // out of the *public* array.
+      const buildManifest = async () => {
+        const entries: RouteRecord[] = routeList.slice();
+
+        const manifestUrl = state.config.manifest;
+        if (manifestUrl) {
+          const resolvedManifestUrl = applyBase(manifestUrl);
+          try {
+            let list: any[];
+            if (cachedManifestList && cachedManifestUrl === resolvedManifestUrl) {
+              list = cachedManifestList;
+            } else {
+              let raw: string;
+              if (runtime.fetch) {
+                raw = (await runtime.fetch.request(resolvedManifestUrl, { responseType: 'text' }, el)) as string;
+              } else {
+                raw = await (await fetch(resolvedManifestUrl)).text();
+              }
+              const parsed = JSON.parse(raw);
+              list = Array.isArray(parsed) ? parsed : (parsed.routes ?? []);
+              cachedManifestUrl = resolvedManifestUrl;
+              cachedManifestList = list;
+            }
+            for (const entry of list) {
+              if (!entry || typeof entry !== 'object') continue;
+              const routePath = entry.route !== undefined ? entry.route : (entry.path || '');
+              const compPath = entry.path || entry.component || '';
+              const id = entry.id || entry.name || '';
+              const isInternal = entry.internal === true || !routePath || shadowMatch(routePath) || shadowMatch(compPath);
+              const meta = routePath ? pathToRegex(routePath) : null;
+              const rec: RouteRecord = {
+                path: routePath,
+                element: document.documentElement,
+                name: id,
+                redirect: entry.redirect,
+                layout: entry.layout,
+                component: compPath,
+                category: entry.category,
+                keywords: entry.keywords,
+                meta: {
+                  title: entry.title,
+                  icon: entry.icon,
+                  order: entry.order,
+                  category: entry.category,
+                  keywords: entry.keywords,
+                  ...(entry.meta || {}),
+                },
+                internal: isInternal,
+                source: 'manifest',
+                ...(meta || {}),
+              } as RouteRecord;
+              if (meta) {
+                (rec as any).matcher = meta.regex;
+              }
+              entries.push(rec);
+            }
+          } catch (e) {
+            reportError(new Error(`router: failed to load manifest "${manifestUrl}": ${e}`), el);
+          }
+        }
+
+        // Public manifest = non-internal entries (what the app advertises).
+        state.manifest = entries.filter((r) => !r.internal).slice();
+        state.routes = entries.slice();
+        for (const rec of entries) {
+          const existing = routeList.find((r) => r.name === rec.name || (rec.path && r.path === rec.path));
+          if (!existing) {
+            routeList.push(rec);
+            if ((rec as any).matcher) {
+              matchMeta.set(rec, { regex: (rec as any).matcher, keys: (rec as any).keys || [], hasWildcard: (rec as any).hasWildcard || false });
+            }
+          } else {
+            if ((rec as any).matcher && !matchMeta.has(existing)) {
+              matchMeta.set(existing, { regex: (rec as any).matcher, keys: (rec as any).keys || [], hasWildcard: (rec as any).hasWildcard || false });
+            }
+          }
+        }
+      };
+
+      // Raw (non-reactive) route registry. RegExp matchers must never enter the
+      // reactive graph, or `path.match(proxiedRegExp)` throws
+      // "RegExp.prototype.hasIndices getter called on non-RegExp object".
+      const routeList: RouteRecord[] = [];
+      const matchMeta = new WeakMap<RouteRecord, RouteMeta>();
+
+      if (Array.isArray(cfg.routes)) {
+        for (const r of cfg.routes) {
+          if (r && (r.route || r.path)) {
+            const path = r.route || r.path || '/';
+            const meta = pathToRegex(path);
+            const rec: RouteRecord = {
+              path,
+              element: el,
+              name: r.id || r.name,
+              redirect: r.redirect,
+              layout: r.layout,
+              component: r.path || r.component,
+              meta: r.meta,
+              source: 'declared',
+              ...meta
+            } as RouteRecord;
+            (rec as any).matcher = meta.regex;
+            matchMeta.set(rec, meta);
+            routeList.push(rec);
+          }
+        }
+      }
+
+      const initialRoutes = routeList.map((r) => ({
+        id: r.name || r.path,
+        name: r.name,
+        route: r.path,
+        path: r.component || r.path,
+        meta: r.meta || {},
+        layout: r.layout,
+      }));
+
+      let state: RouterState;
+
+      const resolveStaticComponent = (path: string): string => {
+        const clean = path.replace(/^\/+/, '');
+        if (clean.startsWith('_internal/') || clean.startsWith('_pages/')) {
+          const withExt = (clean.endsWith('.html') || clean.endsWith('.md')) ? clean : clean + '.html';
+          return applyBase('/' + withExt);
+        }
+        const dir = (routerConfig.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
+        const defaultIndex = routerConfig.index || cfg.index || 'home.html';
+        if (path === '/' || path === '') {
+          return applyBase(`/${dir}/${defaultIndex}`);
+        }
+        const allRoutes = (state && state.routes) ? state.routes : routeList;
+        const matchedRec = allRoutes.find((r) => r.path === path || r.path === '/' + clean);
+        if (matchedRec?.component) {
+          return applyBase(matchedRec.component);
+        }
+        if (state && state.pages) {
+          const matchedPage = state.pages.find((p) => p.href === path || p.href === '/' + clean);
+          if (matchedPage?.path) {
+            return applyBase(matchedPage.path);
+          }
+        }
+        if (clean.startsWith('docs/')) {
+          const withExt = clean.endsWith('.md') ? clean : clean + '.md';
+          return applyBase(`/${dir}/${withExt}`);
+        }
+        const withExt = (clean.endsWith('.html') || clean.endsWith('.md')) ? clean : clean + '.html';
+        return applyBase(`/${dir}/${withExt}`);
+      };
+
+      // Build a RouteInfo snapshot for hook consumers and matchers.
+      const buildInfo = (
+        route: RouteRecord | null,
+        path: string,
+        params: Record<string, string>,
+        query: Record<string, string>,
+        hash: string,
+      ): RouteInfo => ({
+        path,
+        params,
+        query,
+        hash,
+        name: route?.name,
+        meta: route?.meta,
+        component: route?.component,
+        layout: route?.layout,
+      });
+
+      const initialPath = stripBase(globalThis.location.pathname) || '/';
+      const initialMatched = routeList.find((r) => r.path === initialPath);
+      const hasPendingManifest = Boolean(routerConfig.manifest || cfg.manifest);
+      const initialSource = initialMatched?.component || (hasPendingManifest && initialPath !== '/' ? '' : resolveStaticComponent(initialPath));
+
+      const syncTabState = (tabId: string, source?: string | null, route?: string | null, meta?: Record<string, any>) => {
+        const curPageTab = state.pageTabs?.find((t: PageTab) => t && t.id === tabId);
+        if (curPageTab) {
+          if (source && curPageTab.source !== source) {
+            curPageTab.source = source;
+            curPageTab.isLoading = true;
+            if (curPageTab.linkedContent) curPageTab.linkedContent.isLoading = true;
+          }
+          if (route && curPageTab.route !== route) curPageTab.route = route;
+          if (meta && Object.keys(meta).length > 0) {
+            curPageTab.meta = { ...(curPageTab.meta || {}), ...meta };
+          }
+          state.pageTabs = [...state.pageTabs];
+        }
+        if (meta && (meta.title !== undefined || meta.icon !== undefined)) {
+          state.tabMeta[tabId] = {
+            ...(state.tabMeta[tabId] || {}),
+            ...(meta.title !== undefined ? { title: meta.title } : {}),
+            ...(meta.icon !== undefined ? { icon: meta.icon } : {}),
+          };
+        }
+        const g = runtime.globalSignals ? (runtime.globalSignals() as any) : null;
+        if (g && Array.isArray(g.tabs)) {
+          const tab = g.tabs.find((t: any) => t && t.id === tabId);
+          if (tab) {
+            if (source && tab.source !== source) tab.source = source;
+            if (route && tab.route !== route) tab.route = route;
+            if (meta && Object.keys(meta).length > 0) {
+              tab.meta = { ...(tab.meta || {}), ...meta };
+            }
+          }
+        }
+      };
+
+      const formatRouteTitle = (path: string, fallback?: string): string => {
+        if (!path || path === '/') return 'Home';
+        return path.replace(/^\/+/, '').replace(/\.html$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) || (fallback || 'Home');
+      };
+
+      const findPageDeep = (pages: DiscoveredPage[], predicate: (p: DiscoveredPage) => boolean): DiscoveredPage | null => {
+        for (const p of pages) {
+          if (predicate(p)) return p;
+          if (p.children) {
+            const ch = findPageDeep(p.children, predicate);
+            if (ch) return ch;
+          }
+        }
+        return null;
+      };
+
+      // 1. Create Reactive State
+      // shallowReactive prevents deep proxying of HTMLElements held in routes.
+      state = runtime.shallowReactive<RouterState>({
+        path: initialPath,
+        params: {},
+        query: {},
+        hash: globalThis.location.hash,
+        loading: false,
+        error: null,
+        errorCode: null,
+        basePath,
+        mode,
+        route: initialSource,
+        layout: initialMatched?.layout ?? null,
+        outlet: initialSource,
+        meta: initialMatched?.meta || {},
+        name: initialMatched?.name ?? null,
+        previous: null,
+        scrollPosition: { x: 0, y: 0 },
+        currentRoute: initialMatched || null,
+        routes: initialRoutes,
+        pages: [] as DiscoveredPage[],
+
+        async discoverPages() {
+          const fetchFn = typeof globalThis.fetch === 'function' ? globalThis.fetch.bind(globalThis) : null;
+          if (!fetchFn) return;
+
+          const pDir = (state.config.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
+          const manifestUrl = state.config.manifest || `/${pDir}/manifest.json`;
+          const resolvedManifestUrl = applyBase(manifestUrl);
+          let rawList: any[] = [];
+
+          // 1. Reuse already-loaded manifest if identical URL, else fetch manifest.json
+          if (cachedManifestList && cachedManifestUrl === resolvedManifestUrl) {
+            rawList = cachedManifestList;
+          } else {
+            try {
+              const manifestRes = await fetchFn(resolvedManifestUrl);
+              if (manifestRes && manifestRes.ok) {
+                const json = await manifestRes.json();
+                if (Array.isArray(json)) {
+                  rawList = json;
+                } else if (Array.isArray(json.routes)) {
+                  rawList = json.routes;
+                }
+                cachedManifestUrl = resolvedManifestUrl;
+                cachedManifestList = rawList;
+              }
+            } catch {
+              /* ignore manifest fetch error */
+            }
+          }
+
+          const discovered: DiscoveredPage[] = [];
+
+          if (rawList.length > 0) {
+            for (const item of rawList) {
+              const isObj = typeof item === 'object' && item !== null;
+              if (isObj && (item.internal === true || item.id === 'admin' || item.id === 'error')) {
+                continue;
+              }
+
+              const isSubmenu = isObj && (item.isSubmenu || item.path === '' || item.route === '');
+              const fname = isObj ? (item.path?.split('/').pop() || item.id || '') : item;
+              const cleanName = isObj ? (item.id || item.name || fname.replace(/\.(html|htm|md|markdown)$/i, '')) : fname.replace(/\.(html|htm|md|markdown)$/i, '');
+              const parent = isObj ? (item.parent !== undefined ? item.parent : (item.meta?.parent !== undefined ? item.meta.parent : (cleanName === 'home' ? null : '/'))) : (cleanName === 'home' ? null : '/');
+              const defaultRoute = (parent && parent !== '/') ? `${parent.replace(/\/+$/, '')}/${cleanName}` : (cleanName === 'home' ? '/' : `/${cleanName}`);
+              const href = isSubmenu ? '' : (isObj ? (item.route !== undefined ? item.route : defaultRoute) : defaultRoute);
+              const compPath = isSubmenu ? '' : (isObj ? (item.path || `/${pDir}/${fname}`) : `/${pDir}/${fname}`);
+              let title = isObj ? (item.title || item.meta?.title || '') : '';
+              let icon = isObj ? (item.icon || item.meta?.icon || '') : '';
+              const order = isObj ? (item.order !== undefined ? item.order : item.meta?.order) : undefined;
+              const category = isObj ? (item.category !== undefined ? item.category : item.meta?.category) : undefined;
+
+              const defaultTitle = formatRouteTitle(href, cleanName);
+              const finalTitle = title || defaultTitle;
+              const finalIcon = icon || (parent ? undefined : 'material-symbols-light:article-outline');
+
+              // Parse children if declared in manifest
+              const children: DiscoveredPage[] = [];
+              if (isObj && Array.isArray(item.children)) {
+                for (const ch of item.children) {
+                  const chObj = typeof ch === 'object' && ch !== null;
+                  const chName = chObj ? (ch.id || ch.name || ch.title || '') : ch;
+                  const chHref = chObj ? (ch.route || `/${chName}`) : `/${chName}`;
+                  const chPath = chObj ? (ch.path || `/${pDir}/${chName}.html`) : `/${pDir}/${chName}.html`;
+                  const chTitle = chObj ? (ch.title || chName) : chName;
+                  const chParent = chObj ? (ch.parent || href) : href;
+
+                  children.push({
+                    id: chName,
+                    href: chHref,
+                    title: chTitle,
+                    tabTitle: chTitle,
+                    path: chPath,
+                    parent: chParent,
+                    meta: { title: chTitle, parent: chParent }
+                  } as DiscoveredPage);
+
+                  // Register route in state.routes if not already present
+                  if (chHref && !state.routes.find((r) => r.path === chHref)) {
+                    state.routes.push({
+                      path: chHref,
+                      component: chPath,
+                      name: chName,
+                      meta: { title: chTitle, parent: chParent }
+                    } as any);
+                  }
+                }
+              }
+
+              discovered.push({
+                id: item.id || cleanName,
+                href,
+                title: finalTitle,
+                icon: finalIcon || '',
+                tabTitle: finalTitle,
+                tabIcon: finalIcon || '',
+                path: compPath,
+                parent,
+                category: category || undefined,
+                children: children.length > 0 ? children : undefined,
+                meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined, isSubmenu }
+              } as any);
+
+              // Dynamically register route in state.routes if not already present
+              if (href) {
+                const existing = state.routes.find((r) => r.path === href);
+                if (!existing) {
+                  state.routes.push({
+                    path: href,
+                    component: compPath,
+                    name: cleanName,
+                    meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined }
+                  } as any);
+                }
+              }
+            }
+
+            // Assemble parent-child tree hierarchy recursively across arbitrary depth
+            const rootPages: DiscoveredPage[] = [];
+
+            const attachChild = (nodes: DiscoveredPage[], item: DiscoveredPage, targetParentRoute: string): boolean => {
+              for (const node of nodes) {
+                if (node.href === targetParentRoute || (node as any).id === targetParentRoute) {
+                  node.children = node.children || [];
+                  if (!node.children.some((c) => (c.href && c.href === item.href) || (c as any).id === (item as any).id)) {
+                    node.children.push(item);
+                    node.children.sort((a: any, b: any) => {
+                      const aOrder = a.meta?.order;
+                      const bOrder = b.meta?.order;
+                      if (aOrder !== undefined && bOrder !== undefined) return aOrder - bOrder;
+                      if (aOrder !== undefined) return -1;
+                      if (bOrder !== undefined) return 1;
+                      return (a.title || a.href).localeCompare(b.title || b.href);
+                    });
+                  }
+                  return true;
+                }
+                if (node.children && attachChild(node.children, item, targetParentRoute)) {
+                  return true;
+                }
+              }
+              return false;
+            };
+
+            for (const p of discovered) {
+              if (!p.parent || p.parent === '/' || p.parent === '') {
+                rootPages.push(p);
+              }
+            }
+
+            let unattached = discovered.filter((p) => p.parent && p.parent !== '/' && p.parent !== '');
+            let maxPasses = 10;
+            while (unattached.length > 0 && maxPasses-- > 0) {
+              const remaining: DiscoveredPage[] = [];
+              for (const p of unattached) {
+                const parentRoute = p.parent!.startsWith('/') ? p.parent! : '/' + p.parent!;
+                const attached = attachChild(rootPages, p, parentRoute) || attachChild(discovered, p, parentRoute);
+                if (!attached) {
+                  remaining.push(p);
+                }
+              }
+              if (remaining.length === unattached.length) {
+                rootPages.push(...remaining);
+                break;
+              }
+              unattached = remaining;
+            }
+
+            // Sort root pages by declared order priority (numeric ascending), then alphabetical fallback
+            rootPages.sort((a: any, b: any) => {
+              const aOrder = a.meta?.order;
+              const bOrder = b.meta?.order;
+              if (aOrder !== undefined && bOrder !== undefined) return aOrder - bOrder;
+              if (aOrder !== undefined) return -1;
+              if (bOrder !== undefined) return 1;
+              return (a.title || a.href).localeCompare(b.title || b.href);
+            });
+            discovered.length = 0;
+            discovered.push(...rootPages);
+          } else {
+            // Fallback to routeList if manifest was not available
+            const publicRoutes = routeList.filter((r) => {
+              const p = r.path || '';
+              const comp = r.component || '';
+              if (p.startsWith('/_internal') || comp.startsWith('/_internal') || comp.startsWith('_internal/')) return false;
+              if (r.name === 'error' || r.name === 'admin' || (r as any).protected) return false;
+              return true;
+            });
+
+            for (const r of publicRoutes) {
+              const href = r.path || '/';
+              const compPath = r.component || (href === '/' ? `/${pDir}/home.html` : `/${pDir}/${href.replace(/^\/+/, '')}.html`);
+              const finalTitle = (r.meta as any)?.title || r.name || formatRouteTitle(href);
+              const finalIcon = (r.meta as any)?.icon || 'material-symbols-light:article-outline';
+
+              discovered.push({
+                href,
+                title: finalTitle,
+                icon: finalIcon,
+                tabTitle: finalTitle,
+                tabIcon: finalIcon,
+                path: compPath,
+                parent: href === '/' ? null : '/',
+                meta: { title: finalTitle, icon: finalIcon, parent: href === '/' ? null : '/' }
+              });
+            }
+          }
+
+          state.pages = discovered;
+          state.lineage = state.getLineage(state.route || state.path);
+
+          // Re-sync initial pageTab source if resolved from discovered manifest
+          const activeTab = state.pageTabs.find((t) => t.id === state.activePageTabId);
+          if (activeTab && activeTab.route) {
+            const resolvedPage = findPageDeep(state.pages, (p) => p.href === activeTab.route);
+            if (resolvedPage && resolvedPage.path && activeTab.source !== resolvedPage.path) {
+              activeTab.source = resolvedPage.path;
+              if (resolvedPage.title && !activeTab.title) activeTab.title = resolvedPage.title;
+              if (resolvedPage.icon && !activeTab.icon) activeTab.icon = resolvedPage.icon;
+              state.pageTabs = [...state.pageTabs];
+            }
+          }
+        },
+
+        lineage: [] as Array<{ title: string; href: string; icon?: string }>,
+        getLineage(targetHref?: string): Array<{ title: string; href: string; icon?: string }> {
+          const raw = targetHref || state.path || state.route || '/';
+          const stripped = raw.startsWith('/_pages/') ? raw.slice(8).replace(/\.html$/, '') : raw;
+          const currentHref = (stripped === 'home' || stripped === '/home' || stripped === '') ? '/' : (stripped.startsWith('/') ? stripped : `/${stripped}`);
+          const chain: Array<{ title: string; href: string; icon?: string }> = [];
+          const visited = new Set<string>();
+
+          let curr: string | null = currentHref;
+          while (curr && !visited.has(curr)) {
+            visited.add(curr);
+            let found: any = findPageDeep(state.pages, (p) => p.href === curr || p.path === curr);
+            if (!found) {
+              found = state.routes.find((r) => r.path === curr);
+            }
+            if (!found && curr === state.route) {
+              found = state.activePageTab;
+            }
+
+            const title = found?.tabTitle || found?.title || found?.meta?.title || formatRouteTitle(curr);
+            const icon = found?.tabIcon || found?.icon || found?.meta?.icon || (curr === '/' ? 'material-symbols-light:home-outline' : undefined);
+            const parent: string | null = (found as any)?.parent !== undefined ? (found as any).parent : ((found as any)?.meta?.parent !== undefined ? (found as any).meta.parent : (curr === '/' ? null : '/'));
+
+            chain.unshift({ title, href: curr, icon });
+
+            if (!parent || curr === '/' || parent === curr) {
+              break;
+            }
+            curr = parent;
+          }
+
+          if (chain.length > 0 && chain[0].href !== '/') {
+            const homePage = state.pages.find((p) => p.href === '/');
+            chain.unshift({
+              title: homePage?.title || 'Home',
+              href: '/',
+              icon: homePage?.icon || 'material-symbols-light:home-outline'
+            });
+          }
+
+          return chain.length > 0 ? chain : [{ title: 'Home', href: '/', icon: 'material-symbols-light:home-outline' }];
+        },
+
+        setPageMeta(meta: { title?: string; icon?: string; parent?: string }) {
+          if (state.activePageTab) {
+            state.activePageTab.meta = { ...state.activePageTab.meta, ...meta };
+            if (meta.title) (state.activePageTab as any).tabTitle = meta.title;
+            if (meta.icon) (state.activePageTab as any).tabIcon = meta.icon;
+          }
+          state.lineage = state.getLineage(state.path);
+        },
+
+        // Declarative strategy snapshot + resolved manifest.
+        config: routerConfig,
+        manifest: [],
+
+        // --- First-Class Page Tab Workspaces ---
+        pageTabs: [
+          {
+            id: 'tab-0',
+            source: initialSource,
+            route: initialPath,
+            meta: (initialMatched?.meta as Record<string, any>) || {},
+            isLoading: true
+          }
+        ] as PageTab[],
+        activePageTabId: 'tab-0',
+        pinnedPageTabs: [] as string[],
+        tabSeq: 0,
+        get activePageTab(): PageTab | null {
+          return (this as any).pageTabs?.find((t: PageTab) => t && t.id === (this as any).activePageTabId) || null;
+        },
+        createPageTab(source?: string, route?: string) {
+          if (!source && !route) return;
+          state.tabSeq++;
+          const id = 'tab-' + state.tabSeq;
+
+          const rawSource = (source || '').trim();
+          const rawRoute = (route !== undefined ? route : '').trim();
+
+          // Match canonical route definition if route or component source is provided
+          const candidatePath = rawRoute || (!rawSource.endsWith('.html') && !rawSource.endsWith('.md') && !rawSource.startsWith('_components/') ? rawSource : '');
+          const matched = candidatePath
+            ? (routeList.find((r) => r.path === candidatePath || r.path === stripBase(candidatePath)) || null)
+            : (rawSource ? (routeList.find((r) => r.path === rawSource || r.component === rawSource || r.path === stripBase(rawSource)) || null) : null);
+
+          let resolvedSource = rawSource;
+          let resolvedRoute = rawRoute;
+          let resolvedMeta: Record<string, any> = {};
+
+          if (matched) {
+            resolvedSource = matched.component || resolvedSource || resolveStaticComponent(matched.path);
+            resolvedRoute = matched.path;
+            resolvedMeta = (matched.meta as Record<string, any>) || {};
+          } else if (rawSource.startsWith('_components/')) {
+            resolvedSource = rawSource;
+            resolvedRoute = rawRoute || '';
+            resolvedMeta = rawRoute ? (routeList.find((r) => r.path === rawRoute)?.meta || {}) : { title: 'New Tab' };
+          } else {
+            resolvedSource = rawSource || state.config.newPageTab || '_components/tab-new.html';
+            resolvedRoute = rawRoute || (resolvedSource.startsWith('_components/') ? '' : resolvedSource);
+          }
+
+          state.tabPaths[id] = resolvedSource.startsWith('_components/') ? 'custom-component' : (resolvedRoute || resolvedSource);
+          if (resolvedMeta.title || resolvedMeta.icon) {
+            state.tabMeta[id] = { title: resolvedMeta.title, icon: resolvedMeta.icon };
+          }
+          state.pageTabs = [...state.pageTabs, { id, source: resolvedSource, route: resolvedRoute, meta: resolvedMeta, isLoading: true }];
+          state.activePageTabId = id;
+          state.setActiveTab(id);
+        },
+        switchPageTab(id: string) {
+          state.activePageTabId = id;
+          state.setActiveTab(id);
+          const tab = state.pageTabs.find((t: PageTab) => t.id === id);
+          if (tab && tab.route && typeof globalThis.history !== 'undefined') {
+            globalThis.history.replaceState({ pageTabId: id, tabId: id }, '', tab.route);
+          }
+        },
+        closePageTab(id: string) {
+          const wasActive = state.activePageTabId === id;
+          state.pageTabs = state.pageTabs.filter((t: PageTab) => t.id !== id);
+          state.pinnedPageTabs = state.pinnedPageTabs.filter((p: string) => p !== id);
+          if (wasActive && state.pageTabs.length > 0) {
+            state.switchPageTab(state.pageTabs[0].id);
+          }
+        },
+        duplicatePageTab(id: string) {
+          const srcTab = state.pageTabs.find((t: PageTab) => t.id === id);
+          if (!srcTab) return;
+          state.tabSeq++;
+          const newId = 'tab-' + state.tabSeq;
+          const source = srcTab.source;
+          const route = srcTab.route || '';
+          state.tabPaths[newId] = source.startsWith('_components/') ? 'custom-component' : (state.tabPaths[id] || route);
+          state.pageTabs = [...state.pageTabs, { id: newId, source, route, meta: { ...(srcTab.meta || {}) }, isLoading: true }];
+          state.activePageTabId = newId;
+          state.setActiveTab(newId);
+        },
+        pinPageTab(id: string) {
+          if (state.pinnedPageTabs.includes(id)) {
+            state.pinnedPageTabs = state.pinnedPageTabs.filter((p: string) => p !== id);
+          } else {
+            state.pinnedPageTabs = [...state.pinnedPageTabs, id];
+          }
+        },
+
+        // Per-tab history bookkeeping (native history is the single store).
+        activeTabId: null,
+        tabPaths: {} as Record<string, string>,
+        tabMeta: {} as Record<string, { title?: string; icon?: string }>,
+
+        navigate(url: string, opts?: { replace?: boolean; tabId?: string; title?: string; icon?: string }) {
+          if (url.startsWith('http') || url.startsWith('//')) {
+            globalThis.location.href = url;
+            return;
+          }
+
+          const target = applyBase(url);
+          const tabId = opts?.tabId || state.activePageTabId || getActiveTabId() || state.activeTabId || null;
+          const cleanPath = stripBase(target);
+          const cleanPathname = (cleanPath.split(/[?#]/)[0] || '/').replace(/\/+$/, '') || '/';
+          const matched = findRoute(cleanPathname, routeList, matchMeta, {}) ||
+            routeList.find((r) => r.path === cleanPathname || r.path === cleanPath || r.path === url) ||
+            state.routes?.find((r) => r.path === cleanPathname || r.path === cleanPath);
+          const isShadow = matched?.internal || shadowMatch(cleanPathname);
+
+          // Track this tab's current path + metadata so switching the active
+          // tab (or back/forward) re-renders the correct outlet.
+          if (tabId) {
+            state.tabPaths[tabId] = cleanPathname;
+            if (opts?.title !== undefined || opts?.icon !== undefined) {
+              state.tabMeta[tabId] = {
+                ...(state.tabMeta[tabId] || {}),
+                ...(opts?.title !== undefined ? { title: opts.title } : {}),
+                ...(opts?.icon !== undefined ? { icon: opts.icon } : {}),
+              };
+            }
+          }
+
+          // ZCZS: update active tab's source/route directly via the reactive proxy
+          const _activeId = tabId || state.activePageTabId || getActiveTabId();
+          if (_activeId) {
+            state.tabPaths[_activeId] = cleanPathname;
+            const resolvedSource = matched?.component || resolveStaticComponent(cleanPathname);
+            const routeMeta = matched?.meta as Record<string, any> | undefined;
+            syncTabState(_activeId, resolvedSource, cleanPathname, {
+              ...(routeMeta || {}),
+              ...(opts?.title !== undefined ? { title: opts.title } : {}),
+              ...(opts?.icon !== undefined ? { icon: opts.icon } : {}),
+            });
+          }
+
+          if (isShadow) {
+            // Shadow routes resolve and render in memory but NEVER pollute the address bar
+            updateRoute(target);
+            return;
+          }
+
+          if ('navigation' in globalThis) {
+            (globalThis as any).navigation.navigate(target, {
+              history: opts?.replace ? 'replace' : 'push',
+              state: { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon },
+            });
+          } else {
+            const histState = { tabId, scrollY: globalThis.scrollY, title: opts?.title, icon: opts?.icon };
+            if (opts?.replace) globalThis.history.replaceState(histState, '', target);
+            else globalThis.history.pushState(histState, '', target);
+            updateRoute(target);
+          }
+        },
+
+        // Back/forward for a tab. Drives the native history; the popstate /
+        // navigation handler resolves which tab the destination belongs to and
+        // switches the active tab if it lands on another tab's entry.
+        back(_opts?: { tabId?: string }) {
+          if ('navigation' in globalThis) (globalThis as any).navigation.back();
+          else globalThis.history.back();
+        },
+        forward(_opts?: { tabId?: string }) {
+          if ('navigation' in globalThis) (globalThis as any).navigation.forward();
+          else globalThis.history.forward();
+        },
+        canBack(_tabId?: string) {
+          if ('navigation' in globalThis) {
+            const nav = (globalThis as any).navigation;
+            return nav && typeof nav.canGoBack === 'function' ? nav.canGoBack : true;
+          }
+          return globalThis.history.length > 1;
+        },
+        canForward(_tabId?: string) {
+          if ('navigation' in globalThis) {
+            const nav = (globalThis as any).navigation;
+            return nav && typeof nav.canGoForward === 'function' ? nav.canGoForward : true;
+          }
+          return globalThis.history.length > 1;
+        },
+
+        navigateByName(name, params = {}, query, opts) {
+          const route = routeList.find((r) => r.name === name);
+          if (!route) {
+            reportError(new Error(`navigateByName: no route named "${name}"`), el);
+            return;
+          }
+          let target = fillPath(route.path, params);
+          if (query && Object.keys(query).length) {
+            target += '?' + state.buildQuery(query);
+          }
+          state.navigate(target, opts);
+        },
+
+        isActive(path: string, exact = false): boolean {
+          const current = state.path;
+          if (exact) return current === path;
+          if (path === '/') return current === '/';
+          return current === path || current.startsWith(path + '/');
+        },
+
+        buildQuery(obj: Record<string, unknown>) {
+          const usp = new URLSearchParams();
+          for (const [k, v] of Object.entries(obj)) {
+            if (v != null) usp.append(k, String(v));
+          }
+          return usp.toString();
+        },
+
+        addRoute(route: RouteRecord) {
+          runtime.debug('addRoute called with path:', route.path);
+          const meta = pathToRegex(route.path);
+          matchMeta.set(route, meta);
+          routeList.push(route);
+          state.routes = routeList.slice();
+          queueMicrotask(() => {
+            buildManifest();
+            updateRoute(globalThis.location.href);
+          });
+        },
+
+        removeRoute(route: RouteRecord) {
+          const idx = routeList.indexOf(route);
+          if (idx > -1) routeList.splice(idx, 1);
+          matchMeta.delete(route);
+          state.routes = routeList.slice();
+          queueMicrotask(() => buildManifest());
+        },
+
+        // Intuitive navigate: resolve an ID/name via the manifest or route registry.
+        go(target: string, opts?: { replace?: boolean; tabId?: string; title?: string; icon?: string }) {
+          if (!target) return;
+          const named = routeList.find((r) => r.name === target || r.path === target) ||
+            (Array.isArray(state.routes) ? (state.routes as any[]).find((r: any) => r.name === target || r.id === target || r.path === target) : null);
+          if (!named) {
+            reportError(new Error(`router.go: no route with id "${target}"`), el);
+            return;
+          }
+          if (named.internal || !named.path || named.path === '') {
+            const _activeId = opts?.tabId ?? getActiveTabId() ?? state.activePageTabId ?? state.activeTabId ?? null;
+            if (_activeId) {
+              const comp = named.component || named.path;
+              const title = named.meta?.title || named.name;
+              const icon = named.meta?.icon;
+              syncTabState(_activeId, comp, null, {
+                ...(title ? { title } : {}),
+                ...(icon ? { icon } : {}),
+              });
+            }
+            return;
+          }
+          state.navigate(named.path || named.route, opts);
+        },
+
+        // Match a path (default: current) and return the RouteInfo the router
+        // would use — without navigating. Useful for guards/preview UI.
+        match(path?: string): RouteInfo | null {
+          const p = path ? stripBase(path) : state.path;
+          const params: Record<string, string> = {};
+          const matched = findRoute(p, routeList, matchMeta, params);
+          if (matched) {
+            return buildInfo(matched, p, params, state.query, state.hash);
+          }
+          if (mode === 'static' || mode === 'hybrid') {
+            return buildInfo(null, p, {}, state.query, state.hash);
+          }
+          return null;
+        },
+
+        // Render the active tab's stored path through the outlet. Tab switching
+        // uses a direct synchronous state commit — it skips ALL lifecycle hooks
+        // (beforeLeave, beforeEnter, handler, afterEnter) to avoid cascading
+        // re-renders and clobbering.
+        renderActiveTab() {
+          const id = getActiveTabId();
+          if (!id) return;
+          let path = state.tabPaths[id];
+          if (!path) {
+            // Seed from current location on first paint.
+            path = stripBase(globalThis.location.pathname) || '/';
+            state.tabPaths[id] = path;
+          }
+
+          if (path === 'custom-component') {
+            // Component-based tab (e.g. new-tab launchpad): clear routing state.
+            state.route = null;
+            state.layout = null;
+            publishOutlet(null);
+            // The panel now derives its component from the active tab's own
+            // `content` field (same source as the tab header), so no parallel
+            // `outletContent` signal is needed here.
+            const _ct = (globals.tabs as any[])?.find((t: any) => t.id === id);
+            // Keep browser URL, just sync the tabId in history.
+            const url = globalThis.location.pathname + globalThis.location.search + globalThis.location.hash;
+            suppressNavIntercept = true;
+            globalThis.history.replaceState({ tabId: id, scrollY: globalThis.scrollY }, '', url);
+            suppressNavIntercept = false;
+            return;
+          }
+
+          // --- Synchronous state commit for tab switch ---
+          // Parse path/query/hash from the stored tab path.
+          const fakeUrl = new URL(applyBase(path), globalThis.location.origin);
+          const switchPath = path;
+          const query: Record<string, string> = {};
+          fakeUrl.searchParams.forEach((val, key) => (query[key] = val));
+
+          // Match a route record synchronously.
+          const params: Record<string, string> = {};
+          let matched = findRoute(switchPath, routeList, matchMeta, params);
+
+          // Resolve static component for hybrid/static modes if no signal match.
+          let staticComponent: string | null = null;
+          if (!matched && (mode === 'static' || mode === 'hybrid')) {
+            staticComponent = resolveStaticComponent(switchPath);
+          }
+
+          // Commit display state directly — no hooks, no loading flag.
+          state.path = switchPath;
+          state.hash = fakeUrl.hash;
+          state.query = query;
+          state.params = params;
+          state.currentRoute = matched;
+          state.meta = matched?.meta ?? {};
+          state.name = matched?.name ?? null;
+          state.route = matched?.component ?? staticComponent ?? null;
+          state.layout = matched?.layout ?? null;
+          publishOutlet(state.layout ?? state.route);
+          state.error = null;
+
+          // The panel derives its component from the dedicated `outlet` global
+          // (kept in lockstep via publishOutlet), so no other write is needed.
+
+          commitVisibility(matched);
+
+          // Update browser address bar to reflect the active tab's path (unless shadow route).
+          if (!matched?.internal && !shadowMatch(switchPath)) {
+            const target = applyBase(switchPath);
+            const meta = state.tabMeta[id] || {};
+            suppressNavIntercept = true;
+            globalThis.history.replaceState(
+              { tabId: id, scrollY: globalThis.scrollY, title: meta.title, icon: meta.icon },
+              '',
+              target,
+            );
+            suppressNavIntercept = false;
+          }
+        },
+
+        // Switch the active tab (also updates the layout's global signal so the
+        // tab bar + panels react).
+        setActiveTab(id: string) {
+          setActiveTabId(id);
+          state.renderActiveTab();
+        },
+
+        // Surface a server/HTTP error and render the generic `error` page.
+        // A numeric/string code (500/502/503/504…) is published to
+        // `#router.errorCode` so a single error page can present the right
+        // message. Omit or pass null to clear the error and resume routing.
+        setError(code?: string | number | null) {
+          if (code === undefined || code === null || code === '') {
+            state.error = null;
+            state.errorCode = null;
+            return;
+          }
+          // Publish the code so the single dynamic /error page can present
+          // 404/500/502/… copy via #router.errorCode. The address bar
+          // just shows the clean /error route — a normal route like any
+          // other, so no _pages/ path is ever leaked.
+          state.errorCode = String(code);
+          const onErr = globalThis.location.pathname === applyBase('/error');
+          if (!onErr) {
+            state.navigate('/error', { replace: true });
+          }
+        },
+
+        // Map an href / name / component URL to its component file URL and
+        // fire a (de-duplicated, sticky-cached) fetch so the panel swap is
+        // instant on arrival. Driven by the predictive engine for hover-intent
+        // pre-warming, and at boot for the known route surface.
+        prewarm(ref: string) {
+          if (!ref) return;
+          // 1) Already a component URL?
+          let url: string | null = null;
+          if (ref.startsWith('_') || ref.startsWith('/_')) {
+            url = applyBase(ref.replace(/^\/+/, ''));
+          } else {
+            // 2) Named route?
+            const named = routeList.find((r) => r.name === ref);
+            if (named?.component) {
+              url = applyBase(named.component.replace(/^\/+/, ''));
+            } else {
+              // 3) Resolve as a clean path under pagesDir (same as navigation).
+              try {
+                const resolved = resolveStaticComponent(stripBase(ref));
+                // Only warm if it actually maps to a declared route component.
+                const maps = routeList.some((r) =>
+                  r.component && r.component.endsWith(resolved.replace(/^\/+/, '')),
+                );
+                if (maps) url = resolved;
+              } catch { /* noop */ }
+            }
+          }
+          if (!url) return;
+          // Fire into the sticky fetch cache; dedup is handled by fetchCache key.
+          try {
+            runtime.fetch.request(url, { responseType: 'text' }, el);
+          } catch { /* noop */ }
+        },
+      });
+
+      // 2. Register Global Signal
+      const routerSignalName = cfg.signal || 'router';
+      runtime.setGlobalSignal(routerSignalName, state);
+
+      // Flush any declared routes queued before router initialized
+      const pendingRoutes = (runtime as any)._pendingDeclaredRoutes as any[] | undefined;
+      if (pendingRoutes && pendingRoutes.length > 0) {
+        pendingRoutes.forEach((rec) => state.addRoute(rec));
+        (runtime as any)._pendingDeclaredRoutes = [];
+      }
+
+      // --- Per-tab history: active tab is owned by the layout's global signal.
+      // The router reads/writes `activePageTabId` there so the tab bar + panels
+      // (which bind `activePageTabId`) and the router's outlet stay in sync.
+      const globals = runtime.globalSignals() as Record<string, unknown>;
+      const getActiveTabId = (): string | null =>
+        (typeof globals.activePageTabId === 'string' && globals.activePageTabId) ||
+        (typeof globals.activeTabId === 'string' && globals.activeTabId) || null;
+      const setActiveTabId = (id: string) => {
+        runtime.setGlobalSignal('activePageTabId', id);
+        runtime.setGlobalSignal('activeTabId', id);
+      };
+
+      // When the layout switches the active tab, re-render the outlet for it.
+      // (globalSignals() is a reactive object, so watch() fires on change.)
+      // Guard against re-entrant calls (e.g. commitTabSwitch writing activePageTabId).
+      let tabSwitching = false;
+      const stopTabWatch = runtime.watch(
+        () => globals.activePageTabId || globals.activeTabId,
+        () => {
+          if (tabSwitching) return;
+          try { state.renderActiveTab(); } catch (_e) { /* noop */ }
+        },
+      );
+
+      // Suppress the Navigation API `navigate` intercept while WE drive history
+      // via replaceState (tab switch / launchpad activation). Without this, our
+      // internal replaceState would be re-intercepted and run updateRoute(),
+      // which overwrites the new/active tab's tabPaths sentinel (e.g.
+      // 'custom-component') with the previous page's path — clobbering the
+      // freshly opened new-tab launchpad with the prior tab's content.
+      let suppressNavIntercept = false;
+
+      // Track previous route for leave hooks.
+      let previousInfo: RouteInfo | null = null;
+      let navToken = 0;
+
+      // Run a single hook; returns:
+      //   { abort: true } when the hook returned false
+      //   { redirect: string } when the hook returned a string
+      //   {} otherwise
+      const runHook = async (
+        hook: RouteHook | undefined,
+        to: RouteInfo,
+        from: RouteInfo | null,
+      ): Promise<{ abort?: boolean; redirect?: string }> => {
+        if (!hook) return {};
+        try {
+          const result = await Promise.resolve(hook(to, from));
+          if (result === false) return { abort: true };
+          if (typeof result === 'string') return { redirect: result };
+          return {};
+        } catch (e) {
+          state.error = { type: 'hook_error', error: e };
+          reportError(toError(e), el);
+          return { abort: true };
+        }
+      };
+
+      // Show the matched element, hide the rest. Route sections are tracked per
+      // element so the matched view is only re-shown once (avoids a hidden flag
+      // per record). Use reconcileStyle so visibility survives reconcile passes
+      // and does not clobber other inline styles.
+      const shownDisplay = new WeakMap<HTMLElement, string>();
+      const commitVisibility = (matched: RouteRecord | null) => {
+        routeList.forEach((r: RouteRecord) => {
+          // Never hide root document or body element
+          if (!r.element || r.element === document.documentElement || r.element === document.body) {
+            return;
+          }
+          // Only section-model routes (no data-component) render inline. Routes
+          // that declare a component are outlet-driven and their declaration
+          // element stays hidden.
+          const showable = r === matched && !r.component;
+          if (showable) {
+            // Capture the element's intended display once (before we ever hide it).
+            if (!shownDisplay.has(r.element)) {
+              const inline = r.element.style.display;
+              shownDisplay.set(r.element, inline === 'none' ? '' : inline);
+            }
+            runtime.reconcileStyle(r.element, { display: shownDisplay.get(r.element) || '' });
+          } else {
+            if (!shownDisplay.has(r.element)) {
+              const inline = r.element.style.display;
+              shownDisplay.set(r.element, inline === 'none' ? '' : inline);
+            }
+            runtime.reconcileStyle(r.element, { display: 'none' });
+          }
+        });
+      };
+
+      // Restore scroll: saved position > hash target > top.
+      const restoreScroll = (hash: string) => {
+        const savedScrollY = (globalThis.history.state as any)?.scrollY;
+        if (savedScrollY !== undefined && savedScrollY !== null) {
+          globalThis.scrollTo(0, savedScrollY);
+        } else if (hash) {
+          const targetEl = document.getElementById(hash.substring(1));
+          if (targetEl) targetEl.scrollIntoView();
+          else globalThis.scrollTo(0, 0);
+        } else {
+          globalThis.scrollTo(0, 0);
+        }
+        state.scrollPosition = { x: globalThis.scrollX, y: globalThis.scrollY };
+      };
+
+      // Publish the resolved component URL into state.outlet. The content
+      // panel binds to tabs[].content (driven by the layout's data-effect
+      // sync), so this is the router-internal state used by renderActiveTab
+      // and any outlet-model consumer (`data-component="#router.outlet"`).
+      const publishOutlet = (url: string | null) => {
+        state.outlet = url;
+      };
+
+      // 3. Update Logic (async to support awaited hooks)
+      const updateRoute = async (fullPath: string) => {
+        const token = ++navToken;
+        const url = new URL(fullPath, globalThis.location.origin);
+        let path = stripBase(url.pathname);
+
+        if (url.hash && url.hash.startsWith('#/')) {
+          path = url.hash.substring(1);
+        } else if (
+          !url.hash &&
+          initialFile &&
+          initialFile !== '404.html' &&
+          // Only collapse when the served document is an actual HTML file
+          // (e.g. /router.html). A clean route like /profile must NOT be
+          // collapsed to "/", or deep links lose their path.
+          /\.html?$/i.test(initialFile) &&
+          path === '/' + initialFile
+        ) {
+          // Collapse only the served document file (e.g. /router.html) to "/".
+          path = '/';
+        }
+
+        // Default route: redirect the base path to the configured default.
+        if (defaultPath && path === '/' && defaultPath !== '/') {
+          state.navigate(defaultPath, { replace: true });
+          return;
+        }
+
+        const query: Record<string, string> = {};
+        url.searchParams.forEach((val, key) => (query[key] = val));
+
+        // Match a signal route.
+        const params: Record<string, string> = {};
+        let matched = findRoute(path, routeList, matchMeta, params);
+        if (matched) {
+          runtime.debug(`Matched route: ${matched.path} via path ${path}`);
+        }
+
+        const errorPage = state.config.error ?? resolvePagesPath(undefined, 'error.html');
+        const cleanErrorPath = '/error';
+        let staticComponent: string | null = null;
+
+        if (!matched && (mode === 'static' || mode === 'hybrid')) {
+          staticComponent = resolveStaticComponent(path);
+          if (staticComponent) {
+            matched = {
+              path,
+              component: staticComponent,
+              name: path.replace(/^\/+/, '').replace(/[-_]/g, ' '),
+              meta: {},
+              source: 'dynamic',
+            } as RouteRecord;
+          }
+        }
+
+        // Direct URL access protection for wallgarden shadow routes
+        if (matched && matched.internal && path !== '/') {
+          const isDirectAddressBarNav = !suppressNavIntercept && typeof globalThis.location !== 'undefined' &&
+            stripBase(globalThis.location.pathname) === matched.path;
+          if (isDirectAddressBarNav) {
+            state.errorCode = '404';
+            staticComponent = errorPage;
+            if (typeof globalThis.history !== 'undefined') {
+              try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
+            }
+          }
+        }
+
+        // Declarative redirect: follow route.redirect before committing.
+        if (matched && matched.redirect) {
+          state.navigate(matched.redirect, { replace: true });
+          return;
+        }
+
+        // Direct Catch-All for unmatched routes: fall through to declared /error route
+        if (!matched) {
+          matched = routeList.find((r) => r.path === cleanErrorPath) || {
+            path: cleanErrorPath,
+            name: 'error',
+            component: errorPage,
+            meta: { title: 'Error', icon: 'material-symbols-light:error-outline' },
+            source: 'declared',
+          } as RouteRecord;
+          state.errorCode = '404';
+          path = cleanErrorPath;
+          if (typeof globalThis.history !== 'undefined') {
+            try { globalThis.history.replaceState(null, '', applyBase(cleanErrorPath)); } catch {}
+          }
+        }
+
+        const toInfo = buildInfo(matched, path, params, query, url.hash);
+        const fromRoute = state.currentRoute;
+        const fromInfo = previousInfo;
+        const prevPath = state.path;
+
+        // Clear transient error state on any NORMAL route, but preserve
+        // it when the matched route IS the error page (it reads
+        // #router.errorCode to present 404/500/… copy).
+        if (path !== cleanErrorPath && url.pathname !== applyBase(cleanErrorPath)) {
+          state.error = null;
+          state.errorCode = null;
+        }
+
+        state.loading = true;
+
+        // beforeLeave (current route).
+        if (fromRoute?.beforeLeave) {
+          const r = await runHook(fromRoute.beforeLeave, toInfo, fromInfo);
+          if (token !== navToken) { state.loading = false; return; }
+          if (r.abort) { state.loading = false; return; }
+          if (r.redirect) { state.loading = false; state.navigate(r.redirect, { replace: true }); return; }
+        }
+
+        // beforeEnter & handler (matched route).
+        if (matched) {
+          if (matched.beforeEnter) {
+            const r = await runHook(matched.beforeEnter, toInfo, fromInfo);
+            if (token !== navToken) { state.loading = false; return; }
+            if (r.abort) { state.loading = false; return; }
+            if (r.redirect) { state.loading = false; state.navigate(r.redirect, { replace: true }); return; }
+          }
+
+          if (matched.handler) {
+            const h = await runHook(matched.handler, toInfo, fromInfo);
+            if (token !== navToken) { state.loading = false; return; }
+            if (h.abort) { state.loading = false; return; }
+            if (h.redirect) { state.loading = false; state.navigate(h.redirect, { replace: true }); return; }
+          }
+        }
+
+        // Final guard before committing any state.
+        if (token !== navToken) { state.loading = false; return; }
+
+        // Remember the outgoing route for `#router.previous`.
+        const outgoingPrevious = fromRoute
+          ? { path: prevPath, meta: fromRoute.meta }
+          : (previousInfo ? { path: previousInfo.path, meta: previousInfo.meta } : null);
+
+        // Commit state only after guards succeed.
+        state.path = path;
+        state.hash = url.hash;
+        state.query = query;
+        state.params = params;
+        state.currentRoute = matched;
+        state.meta = matched?.meta ?? {};
+        state.name = matched?.name ?? null;
+        state.previous = outgoingPrevious;
+
+        // Publish outlet-driving signals.
+        // Section-model routes (no data-component) leave `route` null and rely on
+        // commitVisibility; outlet-model routes publish their component/layout URL.
+        state.route = matched?.component ?? null;
+        state.layout = matched?.layout ?? null;
+        state.lineage = state.getLineage(path);
+        // Single effective outlet: prefer the layout (which contains its own
+        // inner `#router.route` outlet), else render the route component directly.
+        publishOutlet(state.layout ?? state.route);
+
+        // Per-tab: remember the resolved path for the active tab so switching
+        // back to it (or a back/forward that lands here) re-renders correctly.
+        const _at = state.activePageTabId || getActiveTabId();
+        if (_at) {
+          const isCustomComp = state.tabPaths[_at] === 'custom-component';
+          if (!isCustomComp) {
+            state.tabPaths[_at] = path;
+            const resolvedSource = matched?.component ?? null;
+            if (resolvedSource) {
+              syncTabState(_at, resolvedSource, path, matched?.meta as Record<string, any>);
+            }
+          }
+        }
+
+        if (matched || staticComponent) {
+          commitVisibility(matched); // section model (no-op visually for outlet-only)
+          state.error = null;
+          state.errorCode = null;
+          state.loading = false;
+
+          restoreScroll(url.hash);
+
+          // Update recent path list directly (excluding error page and internal tools).
+          if (path && path !== '/index.html' && path !== errorPage && !path.startsWith('/_internal/')) {
+            const recent = (globals.recent as any[]) || [];
+            const curTab = state.pageTabs.find((t) => t.id === _at);
+            const routeTitle = (curTab?.meta as any)?.title || (curTab?.linkedContent?.meta as any)?.title || (matched?.meta as any)?.title || path.replace(/^\//, '').replace(/-/g, ' ');
+            const routeIcon = (curTab?.meta as any)?.icon || (curTab?.linkedContent?.meta as any)?.icon || (matched?.meta as any)?.icon || 'material-symbols-light:article-outline';
+            const entry = { path, title: routeTitle, icon: routeIcon };
+            const next = [entry, ...recent.filter((r: any) => r.path !== path && r.path !== '/index.html')].slice(0, 5);
+            runtime.setGlobalSignal('recent', next);
+          }
+
+
+          // afterEnter / afterLeave.
+          if (matched) {
+            queueMicrotask(async () => {
+              await runHook(matched.afterEnter, toInfo, fromInfo);
+              if (fromRoute && fromRoute !== matched) {
+                await runHook(fromRoute.afterLeave, toInfo, fromInfo);
+              }
+            });
+          }
+
+          previousInfo = toInfo;
+        } else {
+          // Nothing resolved. This is only reached when already sitting on the
+          // /error route (it IS a declared route, so it matches via `matched`
+          // on arrival). Render its component directly so state.route + the
+          // outlet/tab-sync effect can display it; the page switches copy
+          // by #router.errorCode. Never re-navigate (would recurse).
+          state.loading = false;
+          const onErrorPage = path === cleanErrorPath
+            || url.pathname === applyBase(cleanErrorPath);
+          if (onErrorPage) {
+            staticComponent = errorPage;
+            commitVisibility(null);
+            state.route = staticComponent;
+            publishOutlet(staticComponent);
+          }
+        }
+      };
+
+      // 4. Native Navigation Interception
+      const onNavigate = (e: any) => {
+        if (suppressNavIntercept) return;
+        if (!e.canIntercept || e.hashChange || e.downloadRequest !== null) {
+          return;
+        }
+
+        const url = new URL(e.destination.url);
+        if (url.origin !== globalThis.location.origin) return;
+
+        // Per-tab history: the destination entry carries its owning tabId. If it
+        // belongs to a different (non-active) tab, switch the active tab to it
+        // (real-browser interleaving of tab timelines in one history).
+        const destState = e.destination?.state;
+        const destTab = destState && (typeof destState.pageTabId === 'string' ? destState.pageTabId : (typeof destState.tabId === 'string' ? destState.tabId : null));
+        if (destTab && destTab !== state.activePageTabId) {
+          state.switchPageTab(destTab);
+        }
+        if (destTab && destState && (destState.title !== undefined || destState.icon !== undefined)) {
+          syncTabState(destTab, null, null, { title: destState.title, icon: destState.icon });
+        }
+
+        e.intercept({
+          async handler() {
+            await updateRoute(url.href);
+          },
+        });
+      };
+
+      if ('navigation' in globalThis) {
+        (globalThis as any).navigation.addEventListener('navigate', onNavigate);
+      }
+
+      // React to back/forward bridged via custom ux-popstate event (from history listener / linkRewriter).
+      const onPopState = (event?: any) => {
+        // Per-tab: resolve the owning tab from the history entry state.
+        const st = (event?.detail && event.detail.state !== undefined) ? event.detail.state : (event && event.state);
+        const tab = st && (typeof st.pageTabId === 'string' ? st.pageTabId : (typeof st.tabId === 'string' ? st.tabId : null));
+        if (tab && tab !== state.activePageTabId) {
+          state.switchPageTab(tab);
+        }
+        if (tab && st && (st.title !== undefined || st.icon !== undefined)) {
+          syncTabState(tab, null, null, { title: st.title, icon: st.icon });
+        }
+        updateRoute(globalThis.location.href);
+      };
+      const popStateEvent = `${CUSTOM_EVENT_PREFIX}popstate`;
+      document.addEventListener(popStateEvent, onPopState);
+
+      queueMicrotask(async () => {
+        await buildManifest();
+        await state.discoverPages();
+        updateRoute(globalThis.location.href);
+      });
+
+      // Reactive synchronization of extracted metadata into the global recent signal list
+      const stopRecentEffect = runtime.effect(() => {
+        const activeTab = state.activePageTab;
+        if (!activeTab || !activeTab.route || activeTab.route.startsWith('/_internal')) return;
+        const meta = activeTab.meta || activeTab.linkedContent?.meta;
+        const title = meta?.title;
+        const icon = meta?.icon;
+        if (title || icon) {
+          const globals = runtime.globalSignals ? runtime.globalSignals() : {};
+          const recent = (globals.recent as any[]) || [];
+          const idx = recent.findIndex((r: any) => r.path === activeTab.route);
+          if (idx >= 0 && (recent[idx].title !== title || recent[idx].icon !== icon)) {
+            const updated = [...recent];
+            updated[idx] = {
+              ...updated[idx],
+              title: title || updated[idx].title,
+              icon: icon || updated[idx].icon || 'material-symbols-light:article-outline',
+            };
+            runtime.setGlobalSignal('recent', updated);
+          }
+        }
+      });
+
+      // Reactive synchronization of active page tab title to the native browser window/tab title
+      const stopTitleEffect = runtime.effect(() => {
+        const activeTab = state.activePageTab;
+        if (!activeTab || typeof document === 'undefined') return;
+        const meta = activeTab.meta || activeTab.linkedContent?.meta;
+        const title = meta?.title
+          || (activeTab.source?.includes('tab-new.html') ? 'New Tab' : '')
+          || (activeTab.route && activeTab.route !== '/' ? activeTab.route.replace(/^\//, '').replace(/-/g, ' ') : '')
+          || 'Nexus-UX';
+        if (title && document.title !== title) {
+          document.title = title;
+        }
+      });
+
+      return () => {
+        stopTabWatch?.();
+        stopRecentEffect?.();
+        stopTitleEffect?.();
+        if ('navigation' in globalThis) {
+          (globalThis as any).navigation.removeEventListener('navigate', onNavigate);
+        }
+        document.removeEventListener(popStateEvent, onPopState);
+      };
+    } catch (e) {
+      reportError(toError(e), el);
+    }
+  },
+};
+
+export default routerAttributeModule;

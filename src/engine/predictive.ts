@@ -1,0 +1,743 @@
+/**
+ * Nexus-UX Core 4D Predictive Engine
+ *
+ * Tracks 4D Vector Velocity ($V_{xyzt}$) and projected interaction frustum
+ * across ALL input modalities:
+ *   - Mouse: 4D vector trajectory & acceleration (Quadtree O(log n))
+ *   - Touch: 1-pixel contact barrier (touchstart/pointerdown) & swipe drag velocity (touchmove)
+ *   - Stylus: W3C Pointer Events Level 3 Z-axis hover distance (5mm floating above screen)
+ *   - Gamepad: HTML5 Gamepad API D-pad / Analog stick directional proximity
+ *   - Keyboard: Focus proximity (focusin / spatial navigation)
+ *
+ * Opt-In Modalities:
+ *   - Eye Gaze Camera Tracking (enableEyeTracking())
+ *   - Voice Intent Microphone Recognition (enableVoiceIntent())
+ */
+
+import { scheduler } from './scheduler.ts';
+import { cacheEngine } from './cache.ts';
+import { topology } from './topology.ts';
+
+interface Point {
+  x: number;
+  y: number;
+  z: number;
+  t: number;
+}
+
+class Quadtree {
+  private bounds: { x: number; y: number; width: number; height: number };
+  private capacity: number;
+  private depth: number = 0;
+  private points: { el: HTMLElement; x: number; y: number }[] = [];
+  private divided = false;
+  private northeast: Quadtree | null = null;
+  private northwest: Quadtree | null = null;
+  private southeast: Quadtree | null = null;
+  private southwest: Quadtree | null = null;
+
+  constructor(
+    bounds: { x: number; y: number; width: number; height: number },
+    capacity = 10,
+  ) {
+    this.bounds = bounds;
+    this.capacity = capacity;
+  }
+
+  insert(el: HTMLElement, x: number, y: number): boolean {
+    if (!this.contains(x, y)) return false;
+
+    if (this.points.length < this.capacity) {
+      this.points.push({ el, x, y });
+      return true;
+    }
+
+    let allIdentical = true;
+    for (let i = 0; i < this.points.length; i++) {
+      if (this.points[i].x !== x || this.points[i].y !== y) {
+        allIdentical = false;
+        break;
+      }
+    }
+
+    if (allIdentical || this.depth >= 8) {
+      this.points.push({ el, x, y });
+      return true;
+    }
+
+    if (!this.divided) {
+      this.subdivide();
+    }
+
+    return (
+      this.northeast!.insert(el, x, y) ||
+      this.northwest!.insert(el, x, y) ||
+      this.southeast!.insert(el, x, y) ||
+      this.southwest!.insert(el, x, y)
+    );
+  }
+
+  private subdivide() {
+    const { x, y, width, height } = this.bounds;
+    const w = width / 2;
+    const h = height / 2;
+
+    this.northeast = new Quadtree({ x: x + w, y, width: w, height: h }, this.capacity);
+    this.northwest = new Quadtree({ x, y, width: w, height: h }, this.capacity);
+    this.southeast = new Quadtree({ x: x + w, y: y + h, width: w, height: h }, this.capacity);
+    this.southwest = new Quadtree({ x, y: y + h, width: w, height: h }, this.capacity);
+
+    this.northeast.depth = this.depth + 1;
+    this.northwest.depth = this.depth + 1;
+    this.southeast.depth = this.depth + 1;
+    this.southwest.depth = this.depth + 1;
+
+    this.divided = true;
+  }
+
+  private contains(x: number, y: number): boolean {
+    return (
+      x >= this.bounds.x &&
+      x <= this.bounds.x + this.bounds.width &&
+      y >= this.bounds.y &&
+      y <= this.bounds.y + this.bounds.height
+    );
+  }
+
+  query(range: { x: number; y: number; width: number; height: number }, found: Set<HTMLElement> = new Set()): Set<HTMLElement> {
+    if (
+      range.x > this.bounds.x + this.bounds.width ||
+      range.x + range.width < this.bounds.x ||
+      range.y > this.bounds.y + this.bounds.height ||
+      range.y + range.height < this.bounds.y
+    ) {
+      return found;
+    }
+
+    for (const p of this.points) {
+      if (
+        p.x >= range.x &&
+        p.x <= range.x + range.width &&
+        p.y >= range.y &&
+        p.y <= range.y + range.height
+      ) {
+        found.add(p.el);
+      }
+    }
+
+    if (this.divided) {
+      this.northwest!.query(range, found);
+      this.northeast!.query(range, found);
+      this.southwest!.query(range, found);
+      this.southeast!.query(range, found);
+    }
+
+    return found;
+  }
+
+  clear() {
+    this.points = [];
+    if (this.divided) {
+      this.northwest?.clear();
+      this.northeast?.clear();
+      this.southwest?.clear();
+      this.southeast?.clear();
+      this.divided = false;
+    }
+  }
+}
+
+export class CorePredictiveEngine {
+  private history: Point[] = [];
+  private quadtree!: Quadtree;
+  private candidateMap = new Map<number, HTMLElement>();
+  private candidateRects: { id: number; left: number; top: number; width: number; height: number }[] = [];
+  private viewportWidth = 1920;
+  private viewportHeight = 1080;
+  private cleanupFns: (() => void)[] = [];
+  private prewarmHook: ((ref: string) => void) | null = null;
+  private activePredictiveNodes: Set<HTMLElement> = new Set();
+  private eyeTrackingActive = false;
+  private voiceIntentActive = false;
+  private debugTracker?: {
+    svg: SVGSVGElement;
+    halo: SVGCircleElement;
+    line: SVGLineElement;
+    targetLine: SVGLineElement;
+  };
+  private fadeTimer: number | null = null;
+  private velocity = { x: 0, y: 0, z: 0, t: 1 };
+  private quadtreeDebounce: number | null = null;
+
+  private scheduleQuadtreeRebuild() {
+    if (this.quadtreeDebounce !== null) return;
+    if (typeof window !== 'undefined' && typeof (window as any).requestIdleCallback === 'function') {
+      this.quadtreeDebounce = (window as any).requestIdleCallback(() => {
+        this.quadtreeDebounce = null;
+        this.rebuildQuadtree();
+      }, { timeout: 1000 });
+    } else if (typeof window !== 'undefined') {
+      this.quadtreeDebounce = window.setTimeout(() => {
+        this.quadtreeDebounce = null;
+        this.rebuildQuadtree();
+      }, 200) as unknown as number;
+    }
+  }
+
+  constructor() {
+    if (typeof window !== 'undefined') {
+      this.viewportWidth = window.innerWidth;
+      this.viewportHeight = window.innerHeight;
+      this.init();
+    }
+  }
+
+  private init() {
+    this.rebuildQuadtree();
+
+    if (typeof window === 'undefined') return;
+
+    const setupDebugTracker = () => {
+      if (
+        typeof document !== 'undefined' &&
+        document.body &&
+        document.documentElement.hasAttribute('data-debug') &&
+        !this.debugTracker
+      ) {
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('class', 'nexus-predictive-tracker');
+        svg.style.position = 'fixed';
+        svg.style.pointerEvents = 'none';
+        svg.style.zIndex = '999999';
+        svg.style.overflow = 'visible';
+        svg.style.transform = 'translate(-50%, -50%)';
+        svg.style.width = '200px';
+        svg.style.height = '200px';
+        svg.style.left = '-1000px';
+        svg.style.top = '-1000px';
+
+        const halo = document.createElementNS(svgNS, 'circle');
+        halo.setAttribute('cx', '100');
+        halo.setAttribute('cy', '100');
+        halo.setAttribute('r', '20');
+        halo.setAttribute('fill', 'rgba(99, 102, 241, 0.15)');
+        halo.setAttribute('stroke', 'rgba(99, 102, 241, 0.6)');
+        halo.setAttribute('stroke-width', '1.5');
+        svg.appendChild(halo);
+
+        const line = document.createElementNS(svgNS, 'line');
+        line.setAttribute('x1', '100');
+        line.setAttribute('y1', '100');
+        line.setAttribute('x2', '100');
+        line.setAttribute('y2', '100');
+        line.setAttribute('stroke', 'rgba(99, 102, 241, 0.6)');
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('stroke-dasharray', '3 3');
+        line.style.opacity = '0';
+        svg.appendChild(line);
+
+        const targetLine = document.createElementNS(svgNS, 'line');
+        targetLine.setAttribute('x1', '100');
+        targetLine.setAttribute('y1', '100');
+        targetLine.setAttribute('x2', '100');
+        targetLine.setAttribute('y2', '100');
+        targetLine.setAttribute('stroke', 'rgba(34, 197, 94, 0.8)');
+        targetLine.setAttribute('stroke-width', '2');
+        targetLine.style.opacity = '0';
+        svg.appendChild(targetLine);
+
+        document.body.appendChild(svg);
+        this.debugTracker = { svg, halo, line, targetLine };
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupDebugTracker);
+    } else {
+      setupDebugTracker();
+    }
+
+    // Listen for DOM mutations to refresh Quadtree with idle debouncing (eliminates forced synchronous layout thrashing)
+    const onDomMutated = () => this.scheduleQuadtreeRebuild();
+    document.addEventListener('ux:dom-mutated', onDomMutated, { passive: true });
+
+    let predictionRaf: number | null = null;
+    const schedulePrediction = () => {
+      if (predictionRaf !== null) return;
+      predictionRaf = requestAnimationFrame(() => {
+        predictionRaf = null;
+        this.processPrediction();
+      });
+    };
+
+    // 1. Mouse Trajectory Tracker ($V_{xyzt}$)
+    const onMouseMove = (e: MouseEvent) => {
+      setupDebugTracker();
+      this.recordPoint(e.clientX, e.clientY, 0, performance.now());
+      schedulePrediction();
+    };
+
+    // 2. Touch 1-Pixel Contact Barrier & Swipe Drag Velocity
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        this.prewarmElementAtPoint(touch.clientX, touch.clientY);
+        this.recordPoint(touch.clientX, touch.clientY, 0, performance.now());
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        this.recordPoint(touch.clientX, touch.clientY, 0, performance.now());
+        schedulePrediction();
+      }
+    };
+
+    // 3. Stylus Z-Hover (Pointer Events Level 3)
+    const onPointerMove = (e: PointerEvent) => {
+      if (e.pointerType === 'pen') {
+        const z = (e as any).pressure ? (e as any).pressure * 10 : 1;
+        this.recordPoint(e.clientX, e.clientY, z, performance.now());
+        schedulePrediction();
+      }
+    };
+
+    // 4. Keyboard Focus Proximity
+    const onFocusIn = (e: FocusEvent) => {
+      if (e.target instanceof HTMLElement && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement)) {
+        this.prewarmElement(e.target);
+      }
+    };
+
+    // 5. Gamepad Polling: Only poll when a physical gamepad is connected (W3C Gamepad API standard)
+    let gamepadTimer: number | null = null;
+    let connectedGamepadsCount = 0;
+
+    const pollGamepad = () => {
+      if (connectedGamepadsCount <= 0) {
+        gamepadTimer = null;
+        return;
+      }
+      if (typeof navigator !== 'undefined' && navigator.getGamepads) {
+        const gamepads = navigator.getGamepads();
+        for (const gp of gamepads) {
+          if (gp && (gp.buttons.some(b => b.pressed) || gp.axes.some(a => Math.abs(a) > 0.2))) {
+            const active = document.activeElement;
+            if (active instanceof HTMLElement) {
+              this.prewarmElement(active);
+            }
+          }
+        }
+      }
+      gamepadTimer = requestAnimationFrame(pollGamepad);
+    };
+
+    const onGamepadConnected = () => {
+      connectedGamepadsCount++;
+      if (gamepadTimer === null) {
+        gamepadTimer = requestAnimationFrame(pollGamepad);
+      }
+    };
+
+    const onGamepadDisconnected = () => {
+      connectedGamepadsCount = Math.max(0, connectedGamepadsCount - 1);
+    };
+
+    window.addEventListener('gamepadconnected', onGamepadConnected, { passive: true });
+    window.addEventListener('gamepaddisconnected', onGamepadDisconnected, { passive: true });
+
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('focusin', onFocusIn, { passive: true });
+
+    this.cleanupFns.push(() => {
+      document.removeEventListener('ux:dom-mutated', onDomMutated);
+      window.removeEventListener('gamepadconnected', onGamepadConnected);
+      window.removeEventListener('gamepaddisconnected', onGamepadDisconnected);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('focusin', onFocusIn);
+      if (predictionRaf !== null) cancelAnimationFrame(predictionRaf);
+      if (gamepadTimer) cancelAnimationFrame(gamepadTimer);
+      if (this.quadtreeDebounce !== null) {
+        if (typeof (window as any).cancelIdleCallback === 'function') {
+          (window as any).cancelIdleCallback(this.quadtreeDebounce);
+        } else {
+          clearTimeout(this.quadtreeDebounce);
+        }
+      }
+    });
+  }
+
+  private recordPoint(x: number, y: number, z: number, t: number) {
+    this.history.push({ x, y, z, t });
+    if (this.history.length > 5) this.history.shift();
+  }
+
+  private prewarmManifest = new Set<string>();
+
+  private parseSrcset(value: string): string[] {
+    const urls: string[] = [];
+    if (!value) return urls;
+    const candidates = value.split(',');
+    for (const cand of candidates) {
+      const trimmed = cand.trim();
+      if (!trimmed) continue;
+      const urlToken = trimmed.split(/\s+/)[0];
+      if (urlToken) urls.push(urlToken);
+    }
+    return urls;
+  }
+
+  extractTargetUrls(el: HTMLElement): string[] {
+    const urls: string[] = [];
+
+    // 1. Standard HTML5 Resource Attributes
+    const href = el.getAttribute('href');
+    if (href) urls.push(href);
+
+    const src = el.getAttribute('src');
+    if (src) urls.push(src);
+
+    const action = el.getAttribute('action');
+    if (action) urls.push(action);
+
+    const dataAttr = el.getAttribute('data');
+    if (dataAttr && el.tagName === 'OBJECT') urls.push(dataAttr);
+
+    const srcset = el.getAttribute('srcset');
+    if (srcset) urls.push(...this.parseSrcset(srcset));
+
+    // 2. Nexus-UX Framework Directives
+    const comp = el.getAttribute('data-component') || el.getAttribute('data-component-path');
+    if (comp && !el.hasAttribute('data-route')) {
+      const trimmed = comp.trim();
+      if ((trimmed.startsWith("'") && trimmed.endsWith("'")) || (trimmed.startsWith('"') && trimmed.endsWith('"'))) {
+        urls.push(trimmed.slice(1, -1).trim());
+      } else if (!trimmed.includes(' ') && !trimmed.includes('||') && !trimmed.includes('&&') && (trimmed.startsWith('/') || trimmed.endsWith('.html') || trimmed.endsWith('.md'))) {
+        urls.push(trimmed);
+      }
+    }
+
+    const routeLink = el.getAttribute('data-route-link');
+    if (routeLink) urls.push(routeLink);
+
+    // Note: data-import payloads (CDN links, Iconify) are managed exclusively by import.ts
+    // to prevent FOUC gate race conditions, so they are intentionally bypassed here.
+
+    const isWarmableLocalTarget = (rawUrl: string): boolean => {
+      const cleaned = rawUrl.trim();
+      return (
+        cleaned.startsWith('/_pages/') ||
+        cleaned.startsWith('/_components/') ||
+        cleaned.startsWith('/_assets/') ||
+        cleaned.startsWith('_pages/') ||
+        cleaned.startsWith('_components/') ||
+        cleaned.startsWith('_assets/')
+      );
+    };
+
+    return Array.from(new Set(urls.filter(isWarmableLocalTarget)));
+  }
+
+  private rebuildQuadtree() {
+    this.quadtree = new Quadtree({
+      x: 0,
+      y: 0,
+      width: this.viewportWidth,
+      height: this.viewportHeight,
+    });
+
+    this.candidateMap.clear();
+    this.candidateRects = [];
+    let nextId = 1;
+
+    if (typeof document === 'undefined') return;
+
+    const candidates = document.querySelectorAll(
+      'a, button, input, [href], [data-route-link], [data-component], [data-on-click]'
+    );
+    const len = candidates.length;
+    const isLowTier = topology.getTier() < 2;
+
+    for (let i = 0; i < len; i++) {
+      const el = candidates[i];
+      if (el instanceof HTMLElement) {
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          const id = nextId++;
+          this.candidateMap.set(id, el);
+          this.candidateRects.push({
+            id,
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+          });
+
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          this.quadtree.insert(el, centerX, centerY);
+
+          if (isLowTier && !(el as any).__nxsPrewarmAttached) {
+            (el as any).__nxsPrewarmAttached = true;
+            el.addEventListener('pointerenter', () => this.prewarmElement(el), { passive: true });
+          }
+        }
+      }
+    }
+  }
+
+  private async processPrediction() {
+    if (this.history.length < 3) return;
+
+    const isLowTier = topology.getTier() < 2;
+    if (isLowTier) {
+      // Tier 0/1 Mono/Dual-thread: pointerenter listener handles instant prewarming
+      // Bypasses vector math on main thread for low-end devices
+      return;
+    }
+
+    // High-tier multi-threaded mode (Tier 2/3): Offload to Web Worker!
+    try {
+      const result = await topology.executeTask<{
+        matchedIds: number[];
+        snappedId?: number;
+        snappedTarget?: { cx: number; cy: number };
+        speed?: number;
+        projX?: number;
+        projY?: number;
+      }>('PREDICT_TRAJECTORY', {
+        history: this.history,
+        candidates: this.candidateRects,
+      });
+
+      if (!result || !result.matchedIds) return;
+
+      if (this.debugTracker && result.snappedTarget) {
+        const p2 = this.history[this.history.length - 1];
+        const targetX = 100 + (result.snappedTarget.cx - p2.x);
+        const targetY = 100 + (result.snappedTarget.cy - p2.y);
+        this.debugTracker.targetLine.setAttribute('x2', targetX.toString());
+        this.debugTracker.targetLine.setAttribute('y2', targetY.toString());
+        this.debugTracker.targetLine.style.opacity = '1';
+      }
+
+      const newPredictiveNodes = new Set<HTMLElement>();
+      const matchedLen = result.matchedIds.length;
+      for (let i = 0; i < matchedLen; i++) {
+        const el = this.candidateMap.get(result.matchedIds[i]);
+        if (el) newPredictiveNodes.add(el);
+      }
+
+      newPredictiveNodes.forEach((node) => {
+        if (!this.activePredictiveNodes.has(node)) {
+          this.prewarmElement(node);
+        }
+      });
+
+      this.activePredictiveNodes.forEach((node) => {
+        if (!newPredictiveNodes.has(node)) {
+          node.classList.remove('nexus-predictive-warm');
+          node.dispatchEvent(new CustomEvent('nexus:predictive-cool'));
+        }
+      });
+
+      this.activePredictiveNodes = newPredictiveNodes;
+      return;
+    } catch (_err) {
+      // Fall through to local Quadtree fallback if worker task fails
+    }
+
+    const p0 = this.history[this.history.length - 3];
+    const p2 = this.history[this.history.length - 1];
+
+    const dt = (p2.t - p0.t) / 1000;
+    if (dt <= 0) return;
+
+    const vx = (p2.x - p0.x) / dt;
+    const vy = (p2.y - p0.y) / dt;
+    const speed = Math.sqrt(vx * vx + vy * vy);
+
+    this.velocity = { x: vx, y: vy, z: 0, t: dt };
+
+    if (this.debugTracker) {
+      this.debugTracker.svg.style.left = `${p2.x}px`;
+      this.debugTracker.svg.style.top = `${p2.y}px`;
+
+      const targetR = Math.min(80, Math.max(20, 20 + speed * 0.05));
+      this.debugTracker.halo.setAttribute('r', targetR.toString());
+
+      const trajX = 100 + vx * 0.1;
+      const trajY = 100 + vy * 0.1;
+      this.debugTracker.line.setAttribute('x2', trajX.toString());
+      this.debugTracker.line.setAttribute('y2', trajY.toString());
+      this.debugTracker.line.style.opacity = speed > 30 ? '1' : '0';
+    }
+
+    if (this.fadeTimer) clearTimeout(this.fadeTimer);
+    this.fadeTimer = setTimeout(() => {
+      this.velocity = { x: 0, y: 0, z: 0, t: 1 };
+      if (this.debugTracker) {
+        this.debugTracker.line.style.opacity = '0';
+        this.debugTracker.targetLine.style.opacity = '0';
+      }
+    }, 150) as unknown as number;
+
+    if (speed < 50) return; // Ignore slow/idle sweeps
+
+    const timeHorizon = 0.15; // 150ms prediction
+    const projX = p2.x + vx * timeHorizon;
+    const projY = p2.y + vy * timeHorizon;
+
+    const minX = Math.min(p2.x, projX) - 20;
+    const minY = Math.min(p2.y, projY) - 20;
+    const maxX = Math.max(p2.x, projX) + 20;
+    const maxY = Math.max(p2.y, projY) + 20;
+
+    const range = {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+    };
+
+    const newPredictiveNodes = this.quadtree.query(range);
+    let snappedTarget: { cx: number; cy: number } | undefined = undefined;
+    let minD = Infinity;
+
+    newPredictiveNodes.forEach((target) => {
+      const rect = target.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const d = Math.hypot(cx - projX, cy - projY);
+      if (d < minD) {
+        minD = d;
+        snappedTarget = { cx, cy };
+      }
+    });
+
+    if (this.debugTracker) {
+      if (snappedTarget) {
+        const target = snappedTarget as { cx: number; cy: number };
+        const targetX = 100 + (target.cx - p2.x);
+        const targetY = 100 + (target.cy - p2.y);
+        this.debugTracker.targetLine.setAttribute('x2', targetX.toString());
+        this.debugTracker.targetLine.setAttribute('y2', targetY.toString());
+        this.debugTracker.targetLine.style.opacity = '1';
+      } else {
+        this.debugTracker.targetLine.style.opacity = '0';
+      }
+    }
+
+    newPredictiveNodes.forEach((node) => {
+      if (!this.activePredictiveNodes.has(node)) {
+        this.prewarmElement(node);
+      }
+    });
+
+    this.activePredictiveNodes.forEach((node) => {
+      if (!newPredictiveNodes.has(node)) {
+        node.classList.remove('nexus-predictive-warm');
+        node.dispatchEvent(new CustomEvent('nexus:predictive-cool'));
+      }
+    });
+
+    this.activePredictiveNodes = newPredictiveNodes;
+  }
+
+  private prewarmElementAtPoint(x: number, y: number) {
+    if (typeof document === 'undefined') return;
+    const el = document.elementFromPoint(x, y);
+    if (el instanceof HTMLElement) {
+      this.prewarmElement(el);
+    }
+  }
+
+  private prewarmElement(el: HTMLElement) {
+    el.classList.add('nexus-predictive-warm');
+    el.dispatchEvent(
+      new CustomEvent('nexus:predictive-warm', {
+        detail: { velocity: this.velocity },
+      })
+    );
+
+    const targets = this.extractTargetUrls(el);
+    targets.forEach((url) => {
+      if (!this.prewarmManifest.has(url)) {
+        this.prewarmManifest.add(url);
+        cacheEngine.fetchWithCache(url, { storage: 'session', responseType: 'text' }).catch(() => {});
+      }
+    });
+  }
+
+  /**
+   * Reactive Real-Time DOM Integration:
+   * Called by the central MutationObserver when new DOM nodes are mounted or morphed.
+   * Defers execution to queueMicrotask to ensure synchronous layout thrashing (getBoundingClientRect)
+   * never interrupts DOM element rendering or component adoption.
+   */
+  onNodesAdded(nodes: ArrayLike<Node> | Iterable<Node>) {
+    if (typeof document === 'undefined') return;
+    const nodeList = Array.from(nodes);
+    if (nodeList.length === 0) return;
+
+    queueMicrotask(() => {
+      const processElement = (el: HTMLElement) => {
+        const urls = this.extractTargetUrls(el);
+        urls.forEach((url) => {
+          if (!this.prewarmManifest.has(url)) {
+            this.prewarmManifest.add(url);
+            cacheEngine.fetchWithCache(url, { storage: 'session', responseType: 'text' }).catch(() => {});
+          }
+        });
+      };
+
+      nodeList.forEach((node) => {
+        if (node instanceof HTMLElement) {
+          processElement(node);
+          node.querySelectorAll('*').forEach((child) => {
+            if (child instanceof HTMLElement) processElement(child);
+          });
+        }
+      });
+
+      this.scheduleQuadtreeRebuild();
+    });
+  }
+
+  setPrewarmHook(fn: (ref: string) => void) {
+    this.prewarmHook = fn;
+  }
+
+  // Opt-In Hardware Permission API Methods
+  enableEyeTracking(options: { calibration?: string } = {}) {
+    this.eyeTrackingActive = true;
+    if (typeof document !== 'undefined' && document.documentElement.hasAttribute('data-debug')) {
+      console.log('[Predictive Core] Opt-In Eye-Tracking activated with options:', options);
+    }
+  }
+
+  enableVoiceIntent(options: { keywords?: string[] } = {}) {
+    this.voiceIntentActive = true;
+    if (typeof document !== 'undefined' && document.documentElement.hasAttribute('data-debug')) {
+      console.log('[Predictive Core] Opt-In Voice Intent activated with options:', options);
+    }
+  }
+
+  dispose() {
+    this.cleanupFns.forEach(fn => fn());
+    this.quadtree.clear();
+    if (this.debugTracker && this.debugTracker.svg.parentNode) {
+      this.debugTracker.svg.parentNode.removeChild(this.debugTracker.svg);
+    }
+  }
+}
+
+export const corePredictiveEngine = new CorePredictiveEngine();

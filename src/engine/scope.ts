@@ -1,0 +1,504 @@
+/**
+ * Nexus-UX Scope Resolution Engine
+ *
+ * Manages the data stack (scope chain) and scope providers for expression
+ * evaluation. Every HTMLElement can carry a stack of reactive scope objects,
+ * and scope providers inject additional namespaces (like $, $animate) into
+ * the evaluation context.
+ *
+ * Data Stack:
+ *   The data stack is an array of reactive objects attached to each element
+ * via DATA_STACK_KEY. The most local scope is at index 0. When evaluating
+ * an expression, the stack is walked from local to global to resolve
+ * property access.
+ *
+ * Scope Providers:
+ *   Named functions registered via registerScopeProvider() that inject
+ *   namespaces into the evaluation Proxy. Examples: '$' (selector),
+ *   '$animate' (animation), '$predictive' (quadtree predictive engine).
+ *
+ * ZCZS Role:
+ *   - Zero-copy: Scope objects are shared by reference; no cloning.
+ *   - Zero-serialization: The data stack is a live array of live objects.
+ *
+ * Coordination:
+ *   - evaluator.ts uses getDataStack() for live scope resolution.
+ *   - index.ts registers built-in scope providers ($, $animate).
+ *   - ModuleCoordinator uses addScopeToNode() for component scoping.
+ *
+ * Nexus-UX Innovations Preserved:
+ *   - Live scope resolution via Proxy with data stack precedence
+ *   - Scope provider injection for dynamic namespaces
+ *   - Shadow DOM boundary traversal for isolated contexts
+ */
+
+import { DATA_STACK_KEY, LOCAL_SCOPES_KEY } from './consts.ts';
+import { NexusEnhancedElement, track, trigger } from './reactivity.ts';
+import {
+  createReflectProxy,
+  getIndexedDBProxy,
+  createStoreOperations,
+  wrapGlobalFunction,
+  DEFAULT_IDB_DATABASE,
+  type IndexedDBStoreOperations
+} from './reflect.ts';
+import { getEvalFrame, advanceEvalFrame } from './scheduler.ts';
+
+export {
+  createReflectProxy,
+  getIndexedDBProxy,
+  createStoreOperations,
+  wrapGlobalFunction,
+  DEFAULT_IDB_DATABASE,
+  type IndexedDBStoreOperations
+};
+
+const frameDataStackCache = new WeakMap<Node, { frame: number; stack: Record<string, unknown>[] }>();
+
+/**
+ * Retrieves the data stack associated with a given HTMLElement by dynamically
+ * traversing ancestors in the live DOM hierarchy (Zero-Copy Zero-Serialization).
+ * Local scopes on the immediate element appear first, followed by ancestor scopes,
+ * ending with root/host scopes. Frame-memoized (Alpine.js & W3C Context Protocol).
+ */
+export function getDataStack(element: HTMLElement | Text | Comment | Element): Record<string, unknown>[] {
+  const currentFrame = getEvalFrame();
+  const cached = frameDataStackCache.get(element);
+  if (cached && cached.frame === currentFrame) {
+    return cached.stack;
+  }
+
+  const stack: Record<string, unknown>[] = [];
+  let curr: Node | null = element;
+
+  while (curr) {
+    if (curr !== element) {
+      const cachedAncestor = frameDataStackCache.get(curr);
+      if (cachedAncestor && cachedAncestor.frame === currentFrame) {
+        stack.push(...cachedAncestor.stack);
+        break;
+      }
+    }
+
+    const enhanced = curr as unknown as NexusEnhancedElement;
+
+    // 1. If explicit legacy/cloned DATA_STACK_KEY is attached (e.g. Teleport or Draggable clone), include it
+    if (enhanced[DATA_STACK_KEY] && enhanced[DATA_STACK_KEY]!.length > 0) {
+      stack.push(...enhanced[DATA_STACK_KEY]!);
+      break;
+    }
+
+    // 2. Add local scopes declared directly on this element
+    if (enhanced[LOCAL_SCOPES_KEY] && enhanced[LOCAL_SCOPES_KEY]!.length > 0) {
+      stack.push(...enhanced[LOCAL_SCOPES_KEY]!);
+    }
+
+    // 3. Ascend to parent / ShadowRoot boundary
+    if (typeof ShadowRoot !== 'undefined' && curr instanceof ShadowRoot) {
+      curr = curr.host;
+    } else {
+      const parent: Node | null = curr.parentElement || curr.parentNode || (curr as any).__scopeParent;
+      if (typeof ShadowRoot !== 'undefined' && parent instanceof ShadowRoot) {
+        const shadow = parent as unknown as NexusEnhancedElement;
+        if (shadow[LOCAL_SCOPES_KEY] && shadow[LOCAL_SCOPES_KEY]!.length > 0) {
+          stack.push(...shadow[LOCAL_SCOPES_KEY]!);
+        } else if (shadow[DATA_STACK_KEY] && shadow[DATA_STACK_KEY]!.length > 0) {
+          stack.push(...shadow[DATA_STACK_KEY]!);
+        }
+        curr = (parent as ShadowRoot).host;
+      } else if (parent instanceof DocumentFragment) {
+        curr = (parent as any).host || (curr as any).__scopeParent || null;
+      } else {
+        curr = parent;
+      }
+    }
+  }
+
+  frameDataStackCache.set(element, { frame: currentFrame, stack });
+  return stack;
+}
+
+/**
+ * Adds a new data scope to a node's local scopes (ZCZS live reference).
+ */
+export function addScopeToNode(element: Element, data: Record<string, unknown>, referenceNode?: Element): () => void {
+  const node = element as NexusEnhancedElement;
+  if (!node[LOCAL_SCOPES_KEY]) {
+    node[LOCAL_SCOPES_KEY] = [];
+  }
+  node[LOCAL_SCOPES_KEY]!.unshift(data);
+  if (referenceNode && !node.parentElement) {
+    (node as any).__scopeParent = referenceNode;
+  }
+  advanceEvalFrame();
+
+  return () => {
+    if (node[LOCAL_SCOPES_KEY]) {
+      node[LOCAL_SCOPES_KEY] = node[LOCAL_SCOPES_KEY]!.filter((item) => item !== data);
+      if (node[LOCAL_SCOPES_KEY]!.length === 0) {
+        delete node[LOCAL_SCOPES_KEY];
+      }
+    }
+    advanceEvalFrame();
+  };
+}
+
+/**
+ * Checks if a node has any associated local or explicit data scopes.
+ */
+export function hasScope(element: HTMLElement): boolean {
+  const node = element as NexusEnhancedElement;
+  return !!(node[LOCAL_SCOPES_KEY]?.length || node[DATA_STACK_KEY]?.length);
+}
+
+/**
+ * Disposes a list of cleanup functions (executing each safely and clearing the list)
+ * or removes scope tracking keys from an element.
+ */
+export function disposeScope(target?: Element | (() => void)[]): void {
+  if (Array.isArray(target)) {
+    for (const fn of target) {
+      try {
+        fn();
+      } catch (err) {
+        console.error('Error disposing scope:', err);
+      }
+    }
+    target.length = 0;
+    return;
+  }
+  if (target) {
+    const node = target as NexusEnhancedElement;
+    if (node[LOCAL_SCOPES_KEY]) {
+      delete node[LOCAL_SCOPES_KEY];
+    }
+    if (node[DATA_STACK_KEY]) {
+      delete node[DATA_STACK_KEY];
+    }
+  }
+  advanceEvalFrame();
+}
+
+// ---------------------------------------------------------------------------
+// Scope Provider Registry
+// ---------------------------------------------------------------------------
+// Allows sprites to register themselves as scope providers that the evaluator
+// queries at evaluation time. Providers receive the current element and runtime
+// context, enabling both static providers (e.g. $global) and context-aware
+// providers (e.g. $el, $dispatch).
+// ---------------------------------------------------------------------------
+
+import type { RuntimeContext } from './composition.ts';
+
+/**
+ * A scope provider resolves a value given the current element and runtime context.
+ */
+export type ScopeProvider = (el: Element | Text | Comment, runtime: RuntimeContext) => unknown;
+
+const scopeProviderRegistry = new Map<string, ScopeProvider>();
+
+/**
+ * Registers a scope provider under the given key.
+ * Sprites call this during module initialization to make themselves
+ * available in expression evaluation scope.
+ */
+export function registerScopeProvider(key: string, provider: ScopeProvider): void {
+  scopeProviderRegistry.set(key, provider);
+}
+
+/**
+ * Returns true if a scope provider is registered for the given key.
+ */
+export function hasScopeProvider(key: string): boolean {
+  return scopeProviderRegistry.has(key);
+}
+
+/**
+ * Resolves a scope provider for the given key, passing the current element
+ * and runtime context to the provider function.
+ */
+export function resolveScopeProvider(key: string, el: Element | Text | Comment, runtime: RuntimeContext): unknown {
+  const provider = scopeProviderRegistry.get(key);
+  return provider ? provider(el, runtime) : undefined;
+}
+
+/**
+ * Parses an object literal expression to identify "ghost keys" and infer their types.
+ * Ghost keys are used for pre-allocating ZCZS heap slots.
+ */
+export function parseGhostKeys(expression: string): {
+  ghostKeys: string[];
+  typeHints: Record<string, 'number' | 'boolean' | 'string' | 'object'>
+} {
+  const ghostKeys: string[] = [];
+  const typeHints: Record<string, 'number' | 'boolean' | 'string' | 'object'> = {};
+
+  const trimmed = expression.trim();
+  if (!trimmed.startsWith('{') && !trimmed.startsWith('({')) return { ghostKeys, typeHints };
+
+  const start = trimmed.indexOf('{');
+  let i = start + 1;
+  const len = trimmed.length;
+
+  while (i < len) {
+    // Skip whitespace
+    while (i < len && /\s/.test(trimmed[i])) i++;
+
+    // Parse key
+    let key = '';
+    if (trimmed[i] === '"' || trimmed[i] === "'") {
+      const quote = trimmed[i++];
+      while (i < len && trimmed[i] !== quote) key += trimmed[i++];
+      i++; // closing quote
+    } else {
+      while (i < len && /[\w$]/.test(trimmed[i])) key += trimmed[i++];
+    }
+
+    if (!key) break;
+
+    // Skip whitespace and colon
+    while (i < len && /[\s:]/.test(trimmed[i])) i++;
+
+    // Parse value with full nesting + string awareness
+    let value = '';
+    let depth = 0;
+    let inString: string | null = null;
+
+    while (i < len) {
+      const ch = trimmed[i];
+
+      if (inString) {
+        if (ch === '\\') {
+          value += ch + (trimmed[i + 1] || '');
+          i += 2;
+          continue;
+        }
+        if (ch === inString) inString = null;
+        value += ch; i++;
+        continue;
+      }
+
+      if (ch === '"' || ch === "'" || ch === '`') { inString = ch; value += ch; i++; continue; }
+      if (ch === '{' || ch === '[' || ch === '(') { depth++; value += ch; i++; continue; }
+      if (ch === '}' || ch === ']' || ch === ')') {
+        if (depth === 0) break; // end of object
+        depth--;
+        value += ch; i++;
+        continue;
+      }
+      if (ch === ',' && depth === 0) { i++; break; }
+      value += ch; i++;
+    }
+
+    const valToken = value.trim();
+    if (key) {
+      ghostKeys.push(key);
+      if (valToken.startsWith('true') || valToken.startsWith('false')) typeHints[key] = 'boolean';
+      else if (/^-?\d/.test(valToken)) typeHints[key] = 'number';
+      else if (/^['"`]/.test(valToken)) typeHints[key] = 'string';
+      else if (valToken.startsWith('[') || valToken.startsWith('{')) typeHints[key] = 'object';
+    }
+  }
+
+  return { ghostKeys, typeHints };
+}
+
+/**
+ * Creates a reactive proxy for a state object to be used as a scope.
+ */
+export function createScopeProxy(
+  stateRef: { value: Record<string, unknown> },
+  onSet?: (key: string, value: unknown) => void,
+  onTrigger?: () => void
+): Record<string, unknown> {
+  return new Proxy({}, {
+    has(_, key) { 
+      const target = stateRef.value;
+      if (typeof key === 'string') track(target, key);
+      return Reflect.has(target, key); 
+    },
+    get(_, key) { 
+      const target = stateRef.value;
+      if (typeof key === 'string') track(target, key);
+      return Reflect.get(target, key); 
+    },
+    set(_, key, value) {
+      const target = stateRef.value;
+      const res = Reflect.set(target, key, value);
+      if (typeof key === 'string') trigger(target, key);
+      if (onSet) onSet(key as string, value);
+      if (onTrigger) onTrigger();
+      return res;
+    },
+    ownKeys() { 
+      const target = stateRef.value;
+      track(target, Symbol.for('iterate'));
+      return Reflect.ownKeys(target); 
+    },
+    getOwnPropertyDescriptor(_, key) { 
+      const target = stateRef.value;
+      return Reflect.getOwnPropertyDescriptor(target, key); 
+    }
+  });
+}
+
+// ============================================================================
+// Authoritative Scope Resolution Engine
+// ============================================================================
+
+const elementScopeCache = new WeakMap<Node, Record<string | symbol, unknown>>();
+
+const JS_BUILTIN_GLOBALS = new Set([
+  'Math', 'Number', 'String', 'Boolean', 'Array', 'Object', 'Date', 'RegExp',
+  'JSON', 'console', 'parseInt', 'parseFloat', 'isNaN', 'isFinite',
+  'undefined', 'NaN', 'Infinity', 'window', 'document', 'globalThis',
+  'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Error', 'TypeError', 'RangeError'
+]);
+
+/**
+ * Assembles the full authoritative scope chain for an element:
+ *   1. Initial extras & call-site extras
+ *   2. Scope providers ($ sprites)
+ *   3. Data stack (local scopes, walked bottom-to-top)
+ *   4. Global signals
+ *   5. Global actions
+ *   6. Runtime context (excluding 'fetch' object)
+ *   7. Reflect proxy (native Web APIs: localStorage, sessionStorage, indexedDB, fetch, window)
+ */
+export function getElementScope(
+  el: Element | Text | Comment,
+  runtime: RuntimeContext,
+  initialExtras?: Record<string, unknown>
+): Record<string | symbol, unknown> {
+  const hasExtras = initialExtras && Object.keys(initialExtras).length > 0;
+  if (!hasExtras) {
+    const cached = elementScopeCache.get(el);
+    if (cached) return cached;
+  }
+
+  const reflectProxy = createReflectProxy(runtime, el instanceof Element ? el : undefined);
+
+  let cachedDataStack: Record<string, unknown>[] | null = null;
+  let lastFrame = -1;
+
+  const resolveStack = (): Record<string, unknown>[] => {
+    const frame = getEvalFrame();
+    if (frame !== lastFrame || !cachedDataStack) {
+      cachedDataStack = getDataStack(el);
+      lastFrame = frame;
+    }
+    return cachedDataStack;
+  };
+
+  const proxy = new Proxy({}, {
+    has(target, key): boolean {
+      if (key === Symbol.unscopables) return false;
+      if (typeof key === 'string') return true; // Route through get to eliminate ReferenceError crashes
+      return Reflect.has(target, key);
+    },
+
+    get(target, key): unknown {
+      if (key === Symbol.unscopables) return undefined;
+      if (typeof key === 'string') {
+        // 0. Fast-path JS standard globals & built-ins (O(1) bypass of all ancestor walks)
+        if (JS_BUILTIN_GLOBALS.has(key)) {
+          const val = (globalThis as any)[key];
+          if (val !== undefined) return val;
+        }
+
+        // 1. Extras provided directly to the evaluation
+        if (initialExtras && key in initialExtras) {
+          return initialExtras[key];
+        }
+
+        // 2. Scope Providers (e.g. $, $animate, $dispatch)
+        if (hasScopeProvider(key)) {
+          return resolveScopeProvider(key, el, runtime);
+        }
+
+        // 3. Local Data Stack (ZCZS live ancestor traversal, frame-memoized)
+        const dataStack = resolveStack();
+        for (const data of dataStack) {
+          if (key in data) {
+            return runtime.unref((data as any)[key]);
+          }
+        }
+
+        // 4. Global Signals (#name or direct global signal)
+        const globalSignals = runtime.globalSignals();
+        if (key in globalSignals) {
+          return runtime.unref((globalSignals as any)[key]);
+        }
+
+        // 5. Global Actions
+        const globalActions = runtime.globalActions();
+        if (key in globalActions) {
+          return (globalActions as any)[key];
+        }
+
+        // 6. Runtime methods/properties (excluding 'fetch' object to prevent shadowing callable fetch)
+        if (key !== 'fetch' && key in runtime) {
+          return (runtime as any)[key];
+        }
+
+        // 7. Terminal fallback: Reflect Proxy for native Web APIs
+        if (key in reflectProxy) {
+          return (reflectProxy as any)[key];
+        }
+      }
+
+      return Reflect.get(target, key);
+    },
+
+    set(target, key, value): boolean {
+      if (typeof key === 'string') {
+        // 1. Extras update
+        if (initialExtras && key in initialExtras) {
+          initialExtras[key] = value;
+          return true;
+        }
+
+        // 2. Local Data Stack (frame-memoized)
+        const dataStack = resolveStack();
+        for (const data of dataStack) {
+          if (key in data) {
+            (data as any)[key] = value;
+            return true;
+          }
+        }
+
+        // 3. Global Signals
+        const globalSignals = runtime.globalSignals();
+        if (key in globalSignals) {
+          (globalSignals as any)[key] = value;
+          return true;
+        }
+
+        // 4. Auto-create in closest local scope if available
+        if (dataStack.length > 0) {
+          (dataStack[0] as any)[key] = value;
+          return true;
+        }
+
+        // 5. Reflect Proxy (e.g. setting global properties)
+        if (key in reflectProxy) {
+          (reflectProxy as any)[key] = value;
+          return true;
+        }
+
+        (globalSignals as any)[key] = value;
+        return true;
+      }
+
+      return Reflect.set(target, key, value);
+    }
+  });
+
+  if (!hasExtras) {
+    elementScopeCache.set(el, proxy);
+  }
+
+  return proxy;
+}
+
+
