@@ -7536,102 +7536,103 @@ ${match}</ul>
         };
         let cachedManifestUrl = null;
         let cachedManifestList = null;
+        const loadManifestEntries = async (manifestUrl) => {
+          if (!manifestUrl)
+            return [];
+          const resolvedManifestUrl = applyBase(manifestUrl);
+          if (cachedManifestList && cachedManifestUrl === resolvedManifestUrl) {
+            return cachedManifestList;
+          }
+          try {
+            let raw;
+            if (runtime.fetch) {
+              raw = await runtime.fetch.request(resolvedManifestUrl, { responseType: "text" }, el);
+            } else {
+              const res = await fetch(resolvedManifestUrl);
+              if (!res.ok)
+                return [];
+              raw = await res.text();
+            }
+            const parsed = JSON.parse(raw);
+            const list = Array.isArray(parsed) ? parsed : parsed.routes ?? [];
+            cachedManifestUrl = resolvedManifestUrl;
+            cachedManifestList = list;
+            return list;
+          } catch (e) {
+            reportError(new Error(`router: failed to load manifest "${manifestUrl}": ${e}`), el);
+            return [];
+          }
+        };
+        const upsertRouteRecord = (rec, entries) => {
+          if (rec.path && !rec.matcher) {
+            const meta = pathToRegex(rec.path);
+            Object.assign(rec, meta);
+            rec.matcher = meta.regex;
+          }
+          if (entries)
+            entries.push(rec);
+          const existing = routeList.find((r) => rec.name && r.name === rec.name || rec.path && r.path === rec.path);
+          const targetRec = existing || rec;
+          if (!existing) {
+            routeList.push(rec);
+          }
+          if (rec.matcher && !matchMeta.has(targetRec)) {
+            matchMeta.set(targetRec, {
+              regex: rec.matcher,
+              keys: rec.keys || [],
+              hasWildcard: rec.hasWildcard || false
+            });
+          }
+        };
         const buildManifest = async () => {
           const entries = routeList.slice();
-          const manifestUrl = state.config.manifest;
-          if (manifestUrl) {
-            const resolvedManifestUrl = applyBase(manifestUrl);
-            try {
-              let list;
-              if (cachedManifestList && cachedManifestUrl === resolvedManifestUrl) {
-                list = cachedManifestList;
-              } else {
-                let raw;
-                if (runtime.fetch) {
-                  raw = await runtime.fetch.request(resolvedManifestUrl, { responseType: "text" }, el);
-                } else {
-                  raw = await (await fetch(resolvedManifestUrl)).text();
-                }
-                const parsed = JSON.parse(raw);
-                list = Array.isArray(parsed) ? parsed : parsed.routes ?? [];
-                cachedManifestUrl = resolvedManifestUrl;
-                cachedManifestList = list;
-              }
-              for (const entry of list) {
-                if (!entry || typeof entry !== "object")
-                  continue;
-                const routePath = entry.route !== void 0 ? entry.route : entry.path || "";
-                const compPath = entry.path || entry.component || "";
-                const id = entry.id || entry.name || "";
-                const isInternal = entry.internal === true || !routePath || shadowMatch(routePath) || shadowMatch(compPath);
-                const meta = routePath ? pathToRegex(routePath) : null;
-                const rec = {
-                  path: routePath,
-                  element: document.documentElement,
-                  name: id,
-                  redirect: entry.redirect,
-                  layout: entry.layout,
-                  component: compPath,
-                  category: entry.category,
-                  keywords: entry.keywords,
-                  meta: {
-                    title: entry.title,
-                    icon: entry.icon,
-                    order: entry.order,
-                    category: entry.category,
-                    keywords: entry.keywords,
-                    ...entry.meta || {}
-                  },
-                  internal: isInternal,
-                  source: "manifest",
-                  ...meta || {}
-                };
-                if (meta) {
-                  rec.matcher = meta.regex;
-                }
-                entries.push(rec);
-              }
-            } catch (e) {
-              reportError(new Error(`router: failed to load manifest "${manifestUrl}": ${e}`), el);
-            }
+          const list = await loadManifestEntries(state.config.manifest);
+          for (const entry of list) {
+            if (!entry || typeof entry !== "object")
+              continue;
+            const routePath = entry.route !== void 0 ? entry.route : entry.path || "";
+            const compPath = entry.path || entry.component || "";
+            const id = entry.id || entry.name || "";
+            const isInternal = entry.internal === true || !routePath || shadowMatch(routePath) || shadowMatch(compPath);
+            upsertRouteRecord({
+              path: routePath,
+              element: document.documentElement,
+              name: id,
+              redirect: entry.redirect,
+              layout: entry.layout,
+              component: compPath,
+              category: entry.category,
+              keywords: entry.keywords,
+              meta: {
+                title: entry.title,
+                icon: entry.icon,
+                order: entry.order,
+                category: entry.category,
+                keywords: entry.keywords,
+                ...entry.meta || {}
+              },
+              internal: isInternal,
+              source: "manifest"
+            }, entries);
           }
           state.manifest = entries.filter((r) => !r.internal).slice();
           state.routes = entries.slice();
-          for (const rec of entries) {
-            const existing = routeList.find((r) => r.name === rec.name || rec.path && r.path === rec.path);
-            if (!existing) {
-              routeList.push(rec);
-              if (rec.matcher) {
-                matchMeta.set(rec, { regex: rec.matcher, keys: rec.keys || [], hasWildcard: rec.hasWildcard || false });
-              }
-            } else {
-              if (rec.matcher && !matchMeta.has(existing)) {
-                matchMeta.set(existing, { regex: rec.matcher, keys: rec.keys || [], hasWildcard: rec.hasWildcard || false });
-              }
-            }
-          }
         };
         const routeList = [];
         const matchMeta = /* @__PURE__ */ new WeakMap();
         if (Array.isArray(cfg.routes)) {
           for (const r of cfg.routes) {
             if (r && (r.route || r.path)) {
-              const path = r.route || r.path || "/";
-              const meta = pathToRegex(path);
-              const rec = {
-                path,
+              upsertRouteRecord({
+                path: r.route || r.path || "/",
                 element: el,
                 name: r.id || r.name,
                 redirect: r.redirect,
                 layout: r.layout,
                 component: r.path || r.component,
                 meta: r.meta,
-                source: "declared",
-                ...meta
-              };
-              rec.matcher = meta.regex;
-              matchMeta.set(rec, meta);
-              routeList.push(rec);
+                source: "declared"
+              });
             }
           }
         }
@@ -7762,32 +7763,28 @@ ${match}</ul>
           routes: initialRoutes,
           pages: [],
           async discoverPages() {
-            const fetchFn = typeof globalThis.fetch === "function" ? globalThis.fetch.bind(globalThis) : null;
-            if (!fetchFn)
-              return;
             const pDir = (state.config.pagesDir || pagesDir || "_pages").replace(/^\/+|\/+$/g, "");
             const manifestUrl = state.config.manifest || `/${pDir}/manifest.json`;
-            const resolvedManifestUrl = applyBase(manifestUrl);
-            let rawList = [];
-            if (cachedManifestList && cachedManifestUrl === resolvedManifestUrl) {
-              rawList = cachedManifestList;
-            } else {
-              try {
-                const manifestRes = await fetchFn(resolvedManifestUrl);
-                if (manifestRes && manifestRes.ok) {
-                  const json = await manifestRes.json();
-                  if (Array.isArray(json)) {
-                    rawList = json;
-                  } else if (Array.isArray(json.routes)) {
-                    rawList = json.routes;
-                  }
-                  cachedManifestUrl = resolvedManifestUrl;
-                  cachedManifestList = rawList;
-                }
-              } catch {
-              }
-            }
+            const rawList = await loadManifestEntries(manifestUrl);
             const discovered = [];
+            const compareByOrderAndTitle = (a, b) => {
+              const aOrder = a.meta?.order;
+              const bOrder = b.meta?.order;
+              if (aOrder !== void 0 && bOrder !== void 0)
+                return aOrder - bOrder;
+              if (aOrder !== void 0)
+                return -1;
+              if (bOrder !== void 0)
+                return 1;
+              return (a.title || a.href).localeCompare(b.title || b.href);
+            };
+            const ensureStateRoute = (path, component, name, meta) => {
+              if (path && !state.routes.find((r) => r.path === path)) {
+                const rec = { path, component, name, meta };
+                state.routes.push(rec);
+                upsertRouteRecord(rec);
+              }
+            };
             if (rawList.length > 0) {
               for (const item of rawList) {
                 const isObj = typeof item === "object" && item !== null;
@@ -7801,12 +7798,11 @@ ${match}</ul>
                 const defaultRoute = parent && parent !== "/" ? `${parent.replace(/\/+$/, "")}/${cleanName}` : cleanName === "home" ? "/" : `/${cleanName}`;
                 const href = isSubmenu ? "" : isObj ? item.route !== void 0 ? item.route : defaultRoute : defaultRoute;
                 const compPath = isSubmenu ? "" : isObj ? item.path || `/${pDir}/${fname}` : `/${pDir}/${fname}`;
-                let title = isObj ? item.title || item.meta?.title || "" : "";
-                let icon = isObj ? item.icon || item.meta?.icon || "" : "";
+                const title = isObj ? item.title || item.meta?.title || "" : "";
+                const icon = isObj ? item.icon || item.meta?.icon || "" : "";
                 const order = isObj ? item.order !== void 0 ? item.order : item.meta?.order : void 0;
                 const category = isObj ? item.category !== void 0 ? item.category : item.meta?.category : void 0;
-                const defaultTitle = formatRouteTitle(href, cleanName);
-                const finalTitle = title || defaultTitle;
+                const finalTitle = title || formatRouteTitle(href, cleanName);
                 const finalIcon = icon || (parent ? void 0 : "material-symbols-light:article-outline");
                 const children = [];
                 if (isObj && Array.isArray(item.children)) {
@@ -7817,6 +7813,7 @@ ${match}</ul>
                     const chPath = chObj ? ch.path || `/${pDir}/${chName}.html` : `/${pDir}/${chName}.html`;
                     const chTitle = chObj ? ch.title || chName : chName;
                     const chParent = chObj ? ch.parent || href : href;
+                    const chMeta = { title: chTitle, parent: chParent };
                     children.push({
                       id: chName,
                       href: chHref,
@@ -7824,18 +7821,12 @@ ${match}</ul>
                       tabTitle: chTitle,
                       path: chPath,
                       parent: chParent,
-                      meta: { title: chTitle, parent: chParent }
+                      meta: chMeta
                     });
-                    if (chHref && !state.routes.find((r) => r.path === chHref)) {
-                      state.routes.push({
-                        path: chHref,
-                        component: chPath,
-                        name: chName,
-                        meta: { title: chTitle, parent: chParent }
-                      });
-                    }
+                    ensureStateRoute(chHref, chPath, chName, chMeta);
                   }
                 }
+                const itemMeta = { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0, isSubmenu };
                 discovered.push({
                   id: item.id || cleanName,
                   href,
@@ -7847,19 +7838,9 @@ ${match}</ul>
                   parent,
                   category: category || void 0,
                   children: children.length > 0 ? children : void 0,
-                  meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0, isSubmenu }
+                  meta: itemMeta
                 });
-                if (href) {
-                  const existing = state.routes.find((r) => r.path === href);
-                  if (!existing) {
-                    state.routes.push({
-                      path: href,
-                      component: compPath,
-                      name: cleanName,
-                      meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0 }
-                    });
-                  }
-                }
+                ensureStateRoute(href, compPath, cleanName, itemMeta);
               }
               const rootPages = [];
               const attachChild = (nodes, item, targetParentRoute) => {
@@ -7868,17 +7849,7 @@ ${match}</ul>
                     node.children = node.children || [];
                     if (!node.children.some((c) => c.href && c.href === item.href || c.id === item.id)) {
                       node.children.push(item);
-                      node.children.sort((a, b) => {
-                        const aOrder = a.meta?.order;
-                        const bOrder = b.meta?.order;
-                        if (aOrder !== void 0 && bOrder !== void 0)
-                          return aOrder - bOrder;
-                        if (aOrder !== void 0)
-                          return -1;
-                        if (bOrder !== void 0)
-                          return 1;
-                        return (a.title || a.href).localeCompare(b.title || b.href);
-                      });
+                      node.children.sort(compareByOrderAndTitle);
                     }
                     return true;
                   }
@@ -7899,8 +7870,7 @@ ${match}</ul>
                 const remaining = [];
                 for (const p of unattached) {
                   const parentRoute = p.parent.startsWith("/") ? p.parent : "/" + p.parent;
-                  const attached = attachChild(rootPages, p, parentRoute) || attachChild(discovered, p, parentRoute);
-                  if (!attached) {
+                  if (!attachChild(rootPages, p, parentRoute) && !attachChild(discovered, p, parentRoute)) {
                     remaining.push(p);
                   }
                 }
@@ -7910,17 +7880,7 @@ ${match}</ul>
                 }
                 unattached = remaining;
               }
-              rootPages.sort((a, b) => {
-                const aOrder = a.meta?.order;
-                const bOrder = b.meta?.order;
-                if (aOrder !== void 0 && bOrder !== void 0)
-                  return aOrder - bOrder;
-                if (aOrder !== void 0)
-                  return -1;
-                if (bOrder !== void 0)
-                  return 1;
-                return (a.title || a.href).localeCompare(b.title || b.href);
-              });
+              rootPages.sort(compareByOrderAndTitle);
               discovered.length = 0;
               discovered.push(...rootPages);
             } else {
@@ -8211,9 +8171,7 @@ ${match}</ul>
           },
           addRoute(route) {
             runtime.debug("addRoute called with path:", route.path);
-            const meta = pathToRegex(route.path);
-            matchMeta.set(route, meta);
-            routeList.push(route);
+            upsertRouteRecord(route);
             state.routes = routeList.slice();
             queueMicrotask(() => {
               buildManifest();

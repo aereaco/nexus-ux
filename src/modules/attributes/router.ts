@@ -472,86 +472,92 @@ export const routerAttributeModule: AttributeModule = {
 
       // Build the resolved manifest: declared data-route entries + optional static
       // manifest file + dynamic scan. Internal (shadow) routes are tagged and kept
+      // out of the *public* array.
       let cachedManifestUrl: string | null = null;
       let cachedManifestList: any[] | null = null;
 
-      // out of the *public* array.
+      const loadManifestEntries = async (manifestUrl?: string): Promise<any[]> => {
+        if (!manifestUrl) return [];
+        const resolvedManifestUrl = applyBase(manifestUrl);
+        if (cachedManifestList && cachedManifestUrl === resolvedManifestUrl) {
+          return cachedManifestList;
+        }
+        try {
+          let raw: string;
+          if (runtime.fetch) {
+            raw = (await runtime.fetch.request(resolvedManifestUrl, { responseType: 'text' }, el)) as string;
+          } else {
+            const res = await fetch(resolvedManifestUrl);
+            if (!res.ok) return [];
+            raw = await res.text();
+          }
+          const parsed = JSON.parse(raw);
+          const list = Array.isArray(parsed) ? parsed : (parsed.routes ?? []);
+          cachedManifestUrl = resolvedManifestUrl;
+          cachedManifestList = list;
+          return list;
+        } catch (e) {
+          reportError(new Error(`router: failed to load manifest "${manifestUrl}": ${e}`), el);
+          return [];
+        }
+      };
+
+      const upsertRouteRecord = (rec: RouteRecord, entries?: RouteRecord[]) => {
+        if (rec.path && !(rec as any).matcher) {
+          const meta = pathToRegex(rec.path);
+          Object.assign(rec, meta);
+          (rec as any).matcher = meta.regex;
+        }
+        if (entries) entries.push(rec);
+        const existing = routeList.find((r) => (rec.name && r.name === rec.name) || (rec.path && r.path === rec.path));
+        const targetRec = existing || rec;
+        if (!existing) {
+          routeList.push(rec);
+        }
+        if ((rec as any).matcher && !matchMeta.has(targetRec)) {
+          matchMeta.set(targetRec, {
+            regex: (rec as any).matcher,
+            keys: (rec as any).keys || [],
+            hasWildcard: (rec as any).hasWildcard || false,
+          });
+        }
+      };
+
       const buildManifest = async () => {
         const entries: RouteRecord[] = routeList.slice();
+        const list = await loadManifestEntries(state.config.manifest);
 
-        const manifestUrl = state.config.manifest;
-        if (manifestUrl) {
-          const resolvedManifestUrl = applyBase(manifestUrl);
-          try {
-            let list: any[];
-            if (cachedManifestList && cachedManifestUrl === resolvedManifestUrl) {
-              list = cachedManifestList;
-            } else {
-              let raw: string;
-              if (runtime.fetch) {
-                raw = (await runtime.fetch.request(resolvedManifestUrl, { responseType: 'text' }, el)) as string;
-              } else {
-                raw = await (await fetch(resolvedManifestUrl)).text();
-              }
-              const parsed = JSON.parse(raw);
-              list = Array.isArray(parsed) ? parsed : (parsed.routes ?? []);
-              cachedManifestUrl = resolvedManifestUrl;
-              cachedManifestList = list;
-            }
-            for (const entry of list) {
-              if (!entry || typeof entry !== 'object') continue;
-              const routePath = entry.route !== undefined ? entry.route : (entry.path || '');
-              const compPath = entry.path || entry.component || '';
-              const id = entry.id || entry.name || '';
-              const isInternal = entry.internal === true || !routePath || shadowMatch(routePath) || shadowMatch(compPath);
-              const meta = routePath ? pathToRegex(routePath) : null;
-              const rec: RouteRecord = {
-                path: routePath,
-                element: document.documentElement,
-                name: id,
-                redirect: entry.redirect,
-                layout: entry.layout,
-                component: compPath,
-                category: entry.category,
-                keywords: entry.keywords,
-                meta: {
-                  title: entry.title,
-                  icon: entry.icon,
-                  order: entry.order,
-                  category: entry.category,
-                  keywords: entry.keywords,
-                  ...(entry.meta || {}),
-                },
-                internal: isInternal,
-                source: 'manifest',
-                ...(meta || {}),
-              } as RouteRecord;
-              if (meta) {
-                (rec as any).matcher = meta.regex;
-              }
-              entries.push(rec);
-            }
-          } catch (e) {
-            reportError(new Error(`router: failed to load manifest "${manifestUrl}": ${e}`), el);
-          }
+        for (const entry of list) {
+          if (!entry || typeof entry !== 'object') continue;
+          const routePath = entry.route !== undefined ? entry.route : (entry.path || '');
+          const compPath = entry.path || entry.component || '';
+          const id = entry.id || entry.name || '';
+          const isInternal = entry.internal === true || !routePath || shadowMatch(routePath) || shadowMatch(compPath);
+          upsertRouteRecord({
+            path: routePath,
+            element: document.documentElement,
+            name: id,
+            redirect: entry.redirect,
+            layout: entry.layout,
+            component: compPath,
+            category: entry.category,
+            keywords: entry.keywords,
+            meta: {
+              title: entry.title,
+              icon: entry.icon,
+              order: entry.order,
+              category: entry.category,
+              keywords: entry.keywords,
+              ...(entry.meta || {}),
+            },
+            internal: isInternal,
+            source: 'manifest',
+          } as RouteRecord, entries);
         }
 
         // Public manifest = non-internal entries (what the app advertises).
         state.manifest = entries.filter((r) => !r.internal).slice();
         state.routes = entries.slice();
-        for (const rec of entries) {
-          const existing = routeList.find((r) => r.name === rec.name || (rec.path && r.path === rec.path));
-          if (!existing) {
-            routeList.push(rec);
-            if ((rec as any).matcher) {
-              matchMeta.set(rec, { regex: (rec as any).matcher, keys: (rec as any).keys || [], hasWildcard: (rec as any).hasWildcard || false });
-            }
-          } else {
-            if ((rec as any).matcher && !matchMeta.has(existing)) {
-              matchMeta.set(existing, { regex: (rec as any).matcher, keys: (rec as any).keys || [], hasWildcard: (rec as any).hasWildcard || false });
-            }
-          }
-        }
       };
 
       // Raw (non-reactive) route registry. RegExp matchers must never enter the
@@ -563,10 +569,8 @@ export const routerAttributeModule: AttributeModule = {
       if (Array.isArray(cfg.routes)) {
         for (const r of cfg.routes) {
           if (r && (r.route || r.path)) {
-            const path = r.route || r.path || '/';
-            const meta = pathToRegex(path);
-            const rec: RouteRecord = {
-              path,
+            upsertRouteRecord({
+              path: r.route || r.path || '/',
               element: el,
               name: r.id || r.name,
               redirect: r.redirect,
@@ -574,11 +578,7 @@ export const routerAttributeModule: AttributeModule = {
               component: r.path || r.component,
               meta: r.meta,
               source: 'declared',
-              ...meta
-            } as RouteRecord;
-            (rec as any).matcher = meta.regex;
-            matchMeta.set(rec, meta);
-            routeList.push(rec);
+            } as RouteRecord);
           }
         }
       }
@@ -721,36 +721,27 @@ export const routerAttributeModule: AttributeModule = {
         pages: [] as DiscoveredPage[],
 
         async discoverPages() {
-          const fetchFn = typeof globalThis.fetch === 'function' ? globalThis.fetch.bind(globalThis) : null;
-          if (!fetchFn) return;
-
           const pDir = (state.config.pagesDir || pagesDir || '_pages').replace(/^\/+|\/+$/g, '');
           const manifestUrl = state.config.manifest || `/${pDir}/manifest.json`;
-          const resolvedManifestUrl = applyBase(manifestUrl);
-          let rawList: any[] = [];
-
-          // 1. Reuse already-loaded manifest if identical URL, else fetch manifest.json
-          if (cachedManifestList && cachedManifestUrl === resolvedManifestUrl) {
-            rawList = cachedManifestList;
-          } else {
-            try {
-              const manifestRes = await fetchFn(resolvedManifestUrl);
-              if (manifestRes && manifestRes.ok) {
-                const json = await manifestRes.json();
-                if (Array.isArray(json)) {
-                  rawList = json;
-                } else if (Array.isArray(json.routes)) {
-                  rawList = json.routes;
-                }
-                cachedManifestUrl = resolvedManifestUrl;
-                cachedManifestList = rawList;
-              }
-            } catch {
-              /* ignore manifest fetch error */
-            }
-          }
-
+          const rawList = await loadManifestEntries(manifestUrl);
           const discovered: DiscoveredPage[] = [];
+
+          const compareByOrderAndTitle = (a: any, b: any) => {
+            const aOrder = a.meta?.order;
+            const bOrder = b.meta?.order;
+            if (aOrder !== undefined && bOrder !== undefined) return aOrder - bOrder;
+            if (aOrder !== undefined) return -1;
+            if (bOrder !== undefined) return 1;
+            return (a.title || a.href).localeCompare(b.title || b.href);
+          };
+
+          const ensureStateRoute = (path: string, component: string, name: string, meta: Record<string, unknown>) => {
+            if (path && !state.routes.find((r) => r.path === path)) {
+              const rec = { path, component, name, meta } as unknown as RouteRecord;
+              state.routes.push(rec);
+              upsertRouteRecord(rec);
+            }
+          };
 
           if (rawList.length > 0) {
             for (const item of rawList) {
@@ -766,16 +757,14 @@ export const routerAttributeModule: AttributeModule = {
               const defaultRoute = (parent && parent !== '/') ? `${parent.replace(/\/+$/, '')}/${cleanName}` : (cleanName === 'home' ? '/' : `/${cleanName}`);
               const href = isSubmenu ? '' : (isObj ? (item.route !== undefined ? item.route : defaultRoute) : defaultRoute);
               const compPath = isSubmenu ? '' : (isObj ? (item.path || `/${pDir}/${fname}`) : `/${pDir}/${fname}`);
-              let title = isObj ? (item.title || item.meta?.title || '') : '';
-              let icon = isObj ? (item.icon || item.meta?.icon || '') : '';
+              const title = isObj ? (item.title || item.meta?.title || '') : '';
+              const icon = isObj ? (item.icon || item.meta?.icon || '') : '';
               const order = isObj ? (item.order !== undefined ? item.order : item.meta?.order) : undefined;
               const category = isObj ? (item.category !== undefined ? item.category : item.meta?.category) : undefined;
 
-              const defaultTitle = formatRouteTitle(href, cleanName);
-              const finalTitle = title || defaultTitle;
+              const finalTitle = title || formatRouteTitle(href, cleanName);
               const finalIcon = icon || (parent ? undefined : 'material-symbols-light:article-outline');
 
-              // Parse children if declared in manifest
               const children: DiscoveredPage[] = [];
               if (isObj && Array.isArray(item.children)) {
                 for (const ch of item.children) {
@@ -785,6 +774,7 @@ export const routerAttributeModule: AttributeModule = {
                   const chPath = chObj ? (ch.path || `/${pDir}/${chName}.html`) : `/${pDir}/${chName}.html`;
                   const chTitle = chObj ? (ch.title || chName) : chName;
                   const chParent = chObj ? (ch.parent || href) : href;
+                  const chMeta = { title: chTitle, parent: chParent };
 
                   children.push({
                     id: chName,
@@ -793,21 +783,14 @@ export const routerAttributeModule: AttributeModule = {
                     tabTitle: chTitle,
                     path: chPath,
                     parent: chParent,
-                    meta: { title: chTitle, parent: chParent }
+                    meta: chMeta,
                   } as DiscoveredPage);
 
-                  // Register route in state.routes if not already present
-                  if (chHref && !state.routes.find((r) => r.path === chHref)) {
-                    state.routes.push({
-                      path: chHref,
-                      component: chPath,
-                      name: chName,
-                      meta: { title: chTitle, parent: chParent }
-                    } as any);
-                  }
+                  ensureStateRoute(chHref, chPath, chName, chMeta);
                 }
               }
 
+              const itemMeta = { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined, isSubmenu };
               discovered.push({
                 id: item.id || cleanName,
                 href,
@@ -819,40 +802,20 @@ export const routerAttributeModule: AttributeModule = {
                 parent,
                 category: category || undefined,
                 children: children.length > 0 ? children : undefined,
-                meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined, isSubmenu }
+                meta: itemMeta,
               } as any);
 
-              // Dynamically register route in state.routes if not already present
-              if (href) {
-                const existing = state.routes.find((r) => r.path === href);
-                if (!existing) {
-                  state.routes.push({
-                    path: href,
-                    component: compPath,
-                    name: cleanName,
-                    meta: { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined }
-                  } as any);
-                }
-              }
+              ensureStateRoute(href, compPath, cleanName, itemMeta);
             }
 
-            // Assemble parent-child tree hierarchy recursively across arbitrary depth
             const rootPages: DiscoveredPage[] = [];
-
             const attachChild = (nodes: DiscoveredPage[], item: DiscoveredPage, targetParentRoute: string): boolean => {
               for (const node of nodes) {
                 if (node.href === targetParentRoute || (node as any).id === targetParentRoute) {
                   node.children = node.children || [];
                   if (!node.children.some((c) => (c.href && c.href === item.href) || (c as any).id === (item as any).id)) {
                     node.children.push(item);
-                    node.children.sort((a: any, b: any) => {
-                      const aOrder = a.meta?.order;
-                      const bOrder = b.meta?.order;
-                      if (aOrder !== undefined && bOrder !== undefined) return aOrder - bOrder;
-                      if (aOrder !== undefined) return -1;
-                      if (bOrder !== undefined) return 1;
-                      return (a.title || a.href).localeCompare(b.title || b.href);
-                    });
+                    node.children.sort(compareByOrderAndTitle);
                   }
                   return true;
                 }
@@ -875,8 +838,7 @@ export const routerAttributeModule: AttributeModule = {
               const remaining: DiscoveredPage[] = [];
               for (const p of unattached) {
                 const parentRoute = p.parent!.startsWith('/') ? p.parent! : '/' + p.parent!;
-                const attached = attachChild(rootPages, p, parentRoute) || attachChild(discovered, p, parentRoute);
-                if (!attached) {
+                if (!attachChild(rootPages, p, parentRoute) && !attachChild(discovered, p, parentRoute)) {
                   remaining.push(p);
                 }
               }
@@ -887,15 +849,7 @@ export const routerAttributeModule: AttributeModule = {
               unattached = remaining;
             }
 
-            // Sort root pages by declared order priority (numeric ascending), then alphabetical fallback
-            rootPages.sort((a: any, b: any) => {
-              const aOrder = a.meta?.order;
-              const bOrder = b.meta?.order;
-              if (aOrder !== undefined && bOrder !== undefined) return aOrder - bOrder;
-              if (aOrder !== undefined) return -1;
-              if (bOrder !== undefined) return 1;
-              return (a.title || a.href).localeCompare(b.title || b.href);
-            });
+            rootPages.sort(compareByOrderAndTitle);
             discovered.length = 0;
             discovered.push(...rootPages);
           } else {
@@ -1211,9 +1165,7 @@ export const routerAttributeModule: AttributeModule = {
 
         addRoute(route: RouteRecord) {
           runtime.debug('addRoute called with path:', route.path);
-          const meta = pathToRegex(route.path);
-          matchMeta.set(route, meta);
-          routeList.push(route);
+          upsertRouteRecord(route);
           state.routes = routeList.slice();
           queueMicrotask(() => {
             buildManifest();
