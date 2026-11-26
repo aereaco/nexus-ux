@@ -56,10 +56,61 @@ const signalModule: AttributeModule = {
 
     // 2. Parse Attribute to check for modifiers (use passed parsedAttr or fallback)
     const parsed = parsedAttr || runtime.parseAttribute('data-signal', runtime, el);
+    const isSrcModule = parsed?.argument === 'src' || parsed?.modifiers.includes('src');
     const isGlobal = parsed?.argument === 'global' || 
                      parsed?.modifiers.includes('global') || 
                      el.hasAttribute('data-init') ||
                      el.hasAttribute('data-ux-init');
+
+    // 2.2 Support declarative external ES module state via `data-signal-src="/path/to/state.js"`
+    if (isSrcModule) {
+      const rawPath = expression.trim().replace(/^['"]|['"]$/g, '');
+      if (!rawPath) return;
+      const scopeId = el.id || `el_${Math.random().toString(36).slice(2)}`;
+      const stateRef = isGlobal
+        ? runtime.ref(runtime.globalSignals())
+        : unifiedRef<Record<string, unknown>>({}, scopeId);
+      const scopeProxy = createScopeProxy(
+        stateRef as Ref<Record<string, unknown>>,
+        (key, val) => {
+          if (isGlobal) {
+            (runtime.globalSignals() as Record<string, unknown>)[key] = val;
+          }
+        },
+        () => runtime.triggerRef(stateRef)
+      );
+      let addCleanup: (() => void) | undefined;
+      if (!isGlobal) {
+        addCleanup = addScopeToNode(el, scopeProxy);
+      }
+      const resolvedUrl = typeof window !== 'undefined' ? new URL(rawPath, window.location.href).href : rawPath;
+      import(resolvedUrl)
+        .then((mod) => {
+          const exported = mod?.default ?? mod;
+          const nextState = typeof exported === 'function' ? exported(scopeProxy, runtime, el) : exported;
+          if (nextState && typeof nextState === 'object') {
+            if (isGlobal) {
+              const globals = runtime.globalSignals() as Record<string, unknown>;
+              Object.keys(nextState as object).forEach((key) => {
+                const v = (nextState as Record<string, unknown>)[key];
+                if (!(key in globals) || (globals[key] === undefined && v !== undefined)) {
+                  globals[key] = v;
+                }
+              });
+              stateRef.value = globals;
+            } else {
+              Object.assign(stateRef.value as Record<string, unknown>, nextState);
+            }
+            runtime.triggerRef(stateRef);
+          }
+        })
+        .catch((err) => {
+          runtime.reportError(toError(err), el, `data-signal-src="${rawPath}"`);
+        });
+      return () => {
+        if (addCleanup) addCleanup();
+      };
+    }
 
     // 2.5 Parse Ghost Keys for pre-allocation
     const { ghostKeys, typeHints } = parseGhostKeys(expression);
@@ -105,7 +156,16 @@ const signalModule: AttributeModule = {
         }
       }
     } catch (e) {
-      runtime.reportError(toError(e), el, expression);
+      const err = toError(e);
+      const trimmed = expression.trim();
+      if (trimmed.startsWith('{') && !trimmed.endsWith('}')) {
+        const tag = el.id ? `<${el.tagName.toLowerCase()}#${el.id}>` : `<${el.tagName.toLowerCase()}>`;
+        console.error(
+          `[Nexus Signal] Possible unescaped double-quote (") truncated data-signal on ${tag}. ` +
+          `Use single quotes ('...'), \\x22, or move complex state/actions into an external module with data-signal-src="/path/to/state.js".`
+        );
+      }
+      runtime.reportError(err, el, expression);
       return;
     }
 

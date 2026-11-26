@@ -1,4 +1,4 @@
-// src/engine/logic.worker.ts
+// ux/src/engine/logic.worker.ts
 var _heapView = null;
 var compiledFnCache = /* @__PURE__ */ new Map();
 function describeWorkerFnError(err) {

@@ -3,271 +3,562 @@ import { heap } from '../../engine/reactivity.ts';
 import { errMsg } from '../../engine/debug.ts';
 
 /**
- * Real SurrealDB Client via WebSocket
- * Implements the SurrealDB RPC protocol over WebSocket
- * Supports LIVE queries for real-time updates
- * 
- * ZCZS: Uses typed arrays for numeric data when >50% of fields are numeric
+ * SurrealDB / Nexus-DB WebSocket JSON-RPC 2.0 Client (`$sql` sprite).
+ *
+ * Implements standard SurrealDB JSON-RPC 2.0 positional parameters:
+ *   - `use`:          [namespace, database]
+ *   - `authenticate`: [token]
+ *   - `query`:        [sql, vars]
+ *   - `live`:         [table]
+ *   - `kill`:         [liveId]
+ *
+ * Supports race-free `LIVE SELECT` (subscribe -> buffer -> seed -> replay -> stream),
+ * automatic reconnection with subscription restoration, and `KILL` cleanup on
+ * unsubscribe or reactive scope disposal.
  */
+
+interface LiveNotificationEvent {
+  id: string;
+  action: 'CREATE' | 'UPDATE' | 'DELETE' | string;
+  result: unknown;
+}
+
+interface LiveSubscription {
+  url: string;
+  ns: string;
+  db: string;
+  table: string;
+  seedSql: string;
+  vars?: Record<string, unknown>;
+  liveId: string | null;
+  buffering: boolean;
+  buffer: LiveNotificationEvent[];
+  closed: boolean;
+  onRows: (rows: unknown[]) => void;
+  onEvent: (event: LiveNotificationEvent) => void;
+  onStatus: (status: string, error?: string | null) => void;
+}
+
+interface PendingRpc {
+  ws: WebSocket;
+  resolve: (value: unknown) => void;
+  reject: (err: Error) => void;
+  timer: ReturnType<typeof setTimeout>;
+}
+
 interface SurrealConnection {
+  url: string;
   ws: WebSocket | null;
   connected: boolean;
   ready: boolean;
+  connectPromise: Promise<boolean> | null;
+  ns: string;
+  db: string;
+  reconnectAttempts: number;
+  reconnectTimer: ReturnType<typeof setTimeout> | null;
+  subscriptions: Set<LiveSubscription>;
 }
 
-// Connection pool for multi-database support
 const connectionPool = new Map<string, SurrealConnection>();
-const pendingRequests = new Map<string, { resolve: Function; reject: Function }>();
-const liveQueries = new Map<string, (data: unknown) => void>();
+const pendingRequests = new Map<string, PendingRpc>();
+const liveQueries = new Map<string, LiveSubscription>();
 let requestId = 0;
 
-// Default connection config
-let defaultNs = 'test';
-let defaultDb = 'test';
+// Configurable defaults (reusable against any SurrealDB / Nexus-DB endpoint)
+let defaultUrl: string | null = null;
+let defaultNs = 'nexus';
+let defaultDb = 'system';
 let authToken: string | null = null;
 
-/**
- * Get or create a connection for the given URL
- */
-function getConnection(url: string): SurrealConnection {
-  if (!connectionPool.has(url)) {
-    connectionPool.set(url, {
-      ws: null,
-      connected: false,
-      ready: false
-    });
+function resolveDefaultUrl(runtime?: RuntimeContext): string {
+  const runtimeUrl = (runtime as any)?.config?.sqlUrl;
+  if (typeof runtimeUrl === 'string' && runtimeUrl.trim()) return runtimeUrl.trim();
+  if (defaultUrl) return defaultUrl;
+  if (typeof globalThis.location !== 'undefined' && globalThis.location.host) {
+    const proto = globalThis.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${proto}//${globalThis.location.host}/rpc`;
   }
-  return connectionPool.get(url)!;
+  return 'ws://localhost:8000/rpc';
 }
 
-/**
- * Connect to SurrealDB via WebSocket
- */
-function connect(url: string, ns?: string, db?: string): Promise<boolean> {
+function getConnection(url: string, ns: string, db: string): SurrealConnection {
+  let conn = connectionPool.get(url);
+  if (!conn) {
+    conn = {
+      url,
+      ws: null,
+      connected: false,
+      ready: false,
+      connectPromise: null,
+      ns,
+      db,
+      reconnectAttempts: 0,
+      reconnectTimer: null,
+      subscriptions: new Set(),
+    };
+    connectionPool.set(url, conn);
+  }
+  return conn;
+}
+
+function sendRequest(ws: WebSocket, method: string, params: unknown[] = []): Promise<unknown> {
   return new Promise((resolve, reject) => {
-    const conn = getConnection(url);
-    
-    if (conn.ready) {
-      resolve(true);
+    if (ws.readyState !== WebSocket.OPEN) {
+      reject(new Error(`WebSocket is not open for method "${method}"`));
       return;
     }
 
-    if (conn.ws) {
+    const id = String(++requestId);
+    const timer = setTimeout(() => {
+      if (pendingRequests.has(id)) {
+        pendingRequests.delete(id);
+        reject(new Error(`RPC request "${method}" timed out`));
+      }
+    }, 30000);
+
+    pendingRequests.set(id, { ws, resolve, reject, timer });
+
+    const payload = JSON.stringify({
+      id,
+      method,
+      params,
+    });
+    ws.send(payload);
+  });
+}
+
+function dispatchLiveNotification(notif: LiveNotificationEvent): void {
+  const sub = liveQueries.get(notif.id);
+  if (!sub || sub.closed) return;
+  if (sub.buffering) {
+    sub.buffer.push(notif);
+  } else {
+    sub.onEvent(notif);
+  }
+}
+
+function scheduleReconnect(conn: SurrealConnection): void {
+  if (conn.subscriptions.size === 0 || conn.reconnectTimer !== null) return;
+  const delayMs = Math.min(15000, 500 * Math.pow(2, conn.reconnectAttempts));
+  conn.reconnectAttempts++;
+
+  conn.reconnectTimer = setTimeout(async () => {
+    conn.reconnectTimer = null;
+    if (conn.subscriptions.size === 0) return;
+
+    try {
+      await connect(conn.url, conn.ns, conn.db);
+      conn.reconnectAttempts = 0;
+      await restoreSubscriptions(conn);
+    } catch {
+      scheduleReconnect(conn);
+    }
+  }, delayMs);
+}
+
+function connect(url: string, ns?: string, db?: string): Promise<boolean> {
+  const targetNs = ns || defaultNs;
+  const targetDb = db || defaultDb;
+  const conn = getConnection(url, targetNs, targetDb);
+
+  if (conn.ready && conn.ws && conn.ws.readyState === WebSocket.OPEN) {
+    if (conn.ns !== targetNs || conn.db !== targetDb) {
+      return sendRequest(conn.ws, 'use', [targetNs, targetDb]).then(() => {
+        conn.ns = targetNs;
+        conn.db = targetDb;
+        return true;
+      });
+    }
+    return Promise.resolve(true);
+  }
+
+  if (conn.connectPromise) {
+    return conn.connectPromise;
+  }
+
+  conn.connectPromise = new Promise<boolean>((resolve, reject) => {
+    if (conn.ws && conn.ws.readyState === WebSocket.OPEN) {
       conn.ws.close();
     }
 
-    conn.ws = new WebSocket(url);
+    let settled = false;
+    const settleResolve = (val: boolean) => {
+      if (!settled) {
+        settled = true;
+        conn.connectPromise = null;
+        resolve(val);
+      }
+    };
+    const settleReject = (err: Error) => {
+      if (!settled) {
+        settled = true;
+        conn.connectPromise = null;
+        reject(err);
+      }
+    };
+
+    const ws = new WebSocket(url);
+    conn.ws = ws;
     conn.connected = false;
     conn.ready = false;
 
-    conn.ws.onopen = () => {
+    ws.onopen = async () => {
       conn.connected = true;
-      // Use namespace/database
-      if (ns || defaultNs || db || defaultDb) {
-        sendRequest(conn.ws!, 'use', { 
-          namespace: ns || defaultNs, 
-          database: db || defaultDb 
-        }).then(() => {
-          conn.ready = true;
-          resolve(true);
-        }).catch(reject);
-      } else {
+      try {
+        // 1. Authenticate once per connection (fail closed if token is rejected)
+        if (authToken) {
+          await sendRequest(ws, 'authenticate', [authToken]);
+        }
+        // 2. Scope connection namespace/database using positional JSON-RPC params
+        if (targetNs || targetDb) {
+          await sendRequest(ws, 'use', [targetNs, targetDb]);
+          conn.ns = targetNs;
+          conn.db = targetDb;
+        }
         conn.ready = true;
-        resolve(true);
+        conn.reconnectAttempts = 0;
+        settleResolve(true);
+      } catch (err) {
+        conn.ready = false;
+        try { ws.close(); } catch { /* noop */ }
+        settleReject(err instanceof Error ? err : new Error(errMsg(err)));
       }
     };
 
-    conn.ws.onmessage = (event) => {
+    ws.onmessage = (event) => {
       try {
-        const response = JSON.parse(event.data);
-        
-        // Handle response to a request
-        if (response.id && pendingRequests.has(response.id)) {
-          const { resolve: res, reject: rej } = pendingRequests.get(response.id)!;
-          pendingRequests.delete(response.id);
-          
-          if (response.error) {
-            rej(new Error(response.error.message));
-          } else {
-            res(response.result);
+        const msg = JSON.parse(typeof event.data === 'string' ? event.data : String(event.data));
+
+        // 1. Direct JSON-RPC response matched by `id`
+        if (msg.id !== undefined && msg.id !== null) {
+          const reqKey = String(msg.id);
+          const pending = pendingRequests.get(reqKey);
+          if (pending) {
+            clearTimeout(pending.timer);
+            pendingRequests.delete(reqKey);
+            if (msg.error) {
+              pending.reject(new Error(msg.error.message || 'RPC error'));
+            } else {
+              pending.resolve(msg.result);
+            }
+            return;
           }
         }
-        
-        // Handle LIVE query notifications
-        if (response.method === 'notify' && response.params) {
-          const [notification] = response.params;
-          if (notification.id && liveQueries.has(notification.id)) {
-            liveQueries.get(notification.id)!(notification.result);
+
+        // 2. SurrealDB v2 / Nexus-DB LIVE push frame: { result: { id, action, result } }
+        if (
+          (msg.id === undefined || msg.id === null) &&
+          msg.result &&
+          typeof msg.result === 'object' &&
+          typeof msg.result.id === 'string' &&
+          typeof msg.result.action === 'string'
+        ) {
+          dispatchLiveNotification({
+            id: msg.result.id,
+            action: msg.result.action.toUpperCase(),
+            result: msg.result.result,
+          });
+          return;
+        }
+
+        // 3. Legacy SurrealDB v1 `notify` frame fallback
+        if (msg.method === 'notify' && Array.isArray(msg.params) && msg.params[0]) {
+          const n = msg.params[0];
+          if (typeof n.id === 'string') {
+            dispatchLiveNotification({
+              id: n.id,
+              action: String(n.action || 'UPDATE').toUpperCase(),
+              result: n.result,
+            });
           }
         }
       } catch (e) {
-        console.error('[Nexus SQL] Failed to parse WebSocket message:', e);
+        console.error('[UX SQL] Failed to parse WebSocket message:', e);
       }
     };
 
-    conn.ws.onerror = () => {
+    ws.onerror = () => {
       conn.connected = false;
       conn.ready = false;
-      reject(new Error('WebSocket connection failed'));
+      settleReject(new Error(`WebSocket connection failed (${url})`));
     };
 
-    conn.ws.onclose = () => {
-      conn.connected = false;
-      conn.ready = false;
-      // Reject pending requests
-      pendingRequests.forEach(({ reject }) => reject(new Error('Connection closed')));
-      pendingRequests.clear();
-    };
-  });
-}
-
-/**
- * Send a request via WebSocket
- */
-function sendRequest(ws: WebSocket, method: string, params?: unknown): Promise<unknown> {
-  return new Promise((resolve, reject) => {
-    const id = String(++requestId);
-    pendingRequests.set(id, { resolve, reject });
-    
-    const message = JSON.stringify({
-      id,
-      method,
-      params: params || []
-    });
-    
-    ws.send(message);
-    
-    // Timeout after 30 seconds
-    setTimeout(() => {
-      if (pendingRequests.has(id)) {
-        pendingRequests.delete(id);
-        reject(new Error(`Request ${method} timed out`));
+    ws.onclose = () => {
+      const wasCurrent = conn.ws === ws;
+      if (wasCurrent) {
+        conn.connected = false;
+        conn.ready = false;
+        conn.ws = null;
       }
-    }, 30000);
+
+      // Reject only requests belonging to this closed socket
+      for (const [id, pending] of Array.from(pendingRequests.entries())) {
+        if (pending.ws === ws) {
+          clearTimeout(pending.timer);
+          pendingRequests.delete(id);
+          pending.reject(new Error('WebSocket connection closed'));
+        }
+      }
+
+      settleReject(new Error('WebSocket connection closed during handshake'));
+
+      if (wasCurrent && conn.subscriptions.size > 0) {
+        for (const sub of conn.subscriptions) {
+          if (!sub.closed) sub.onStatus('reconnecting');
+        }
+        scheduleReconnect(conn);
+      }
+    };
   });
+
+  return conn.connectPromise;
 }
 
-/**
- * Execute a SurrealQL query
- */
-async function executeQuery(
-  url: string, 
-  query: string, 
-  vars?: Record<string, unknown>,
-  ns?: string, 
-  db?: string
-): Promise<unknown> {
-  await connect(url, ns, db);
-  const conn = getConnection(url);
-  
-  // Authenticate if token is set
-  if (authToken && conn.ws) {
-    try {
-      await sendRequest(conn.ws!, 'authenticate', { token: authToken });
-    } catch (e) {
-      console.warn('[Nexus SQL] Authentication failed:', e);
+function extractQueryRows(rpcResult: unknown): unknown[] {
+  if (Array.isArray(rpcResult)) {
+    const first = rpcResult[0] as any;
+    if (first && typeof first === 'object' && 'status' in first && 'result' in first) {
+      if (first.status && first.status !== 'OK') {
+        throw new Error(typeof first.result === 'string' ? first.result : `Query failed (${first.status})`);
+      }
+      return Array.isArray(first.result) ? first.result : (first.result !== undefined && first.result !== null ? [first.result] : []);
     }
+    return rpcResult;
   }
-  
-  return sendRequest(conn.ws!, 'query', { 
-    sql: query, 
-    vars: vars || {}
-  });
+  return rpcResult !== undefined && rpcResult !== null ? [rpcResult] : [];
 }
 
-/**
- * Subscribe to a LIVE query
- */
-async function subscribeLive(
-  url: string,
-  query: string,
-  callback: (data: unknown) => void,
-  ns?: string,
-  db?: string
-): Promise<string> {
-  await connect(url, ns, db);
-  const conn = getConnection(url);
-  
-  const result = await sendRequest(conn.ws!, 'query', {
-    sql: query,
-    vars: {}
-  }) as { id: string }[];
-  
-  const liveId = result[0]?.id;
-  if (liveId) {
-    liveQueries.set(liveId, callback);
+function recordKey(row: unknown): string | null {
+  if (row && typeof row === 'object' && 'id' in (row as Record<string, unknown>)) {
+    const id = (row as Record<string, unknown>).id;
+    if (id !== undefined && id !== null) return String(id);
   }
-  
+  return null;
+}
+
+function applyLiveEventToRows(rows: unknown[], event: LiveNotificationEvent): unknown[] {
+  const action = event.action.toUpperCase();
+  const payload = event.result;
+  const key = recordKey(payload);
+
+  if (action === 'DELETE') {
+    if (key !== null) {
+      return rows.filter((r) => recordKey(r) !== key);
+    }
+    if (typeof payload === 'string') {
+      return rows.filter((r) => recordKey(r) !== payload);
+    }
+    return rows;
+  }
+
+  if (action === 'CREATE' || action === 'UPDATE') {
+    if (key !== null) {
+      const idx = rows.findIndex((r) => recordKey(r) === key);
+      if (idx >= 0) {
+        const next = rows.slice();
+        next[idx] = payload;
+        return next;
+      }
+      return [...rows, payload];
+    }
+    return payload !== undefined ? [...rows, payload] : rows;
+  }
+
+  return rows;
+}
+
+function parseLiveTableAndSeed(query: string): { table: string; seedSql: string } {
+  const trimmed = query.trim();
+  const seedSql = trimmed.replace(/^LIVE\s+/i, '');
+  const tableMatch = seedSql.match(/\bFROM\s+([a-zA-Z0-9_:`-]+)/i);
+  const table = tableMatch ? tableMatch[1].replace(/`/g, '') : '';
+  if (!table) {
+    throw new Error(`Unable to determine table name from LIVE query: "${query}"`);
+  }
+  return { table, seedSql };
+}
+
+async function activateSubscription(conn: SurrealConnection, sub: LiveSubscription): Promise<string> {
+  if (sub.closed) return '';
+  await connect(conn.url, sub.ns, sub.db);
+  if (!conn.ws || conn.ws.readyState !== WebSocket.OPEN) {
+    throw new Error('WebSocket unavailable for LIVE subscription');
+  }
+
+  // Clean up any prior liveId mapping before re-registering (prevents duplicate delivery on reconnect)
+  if (sub.liveId) {
+    liveQueries.delete(sub.liveId);
+    sub.liveId = null;
+  }
+
+  // 1. Subscribe FIRST while buffering incoming notifications to eliminate seed/live race
+  sub.buffering = true;
+  sub.buffer.length = 0;
+
+  const liveIdRaw = await sendRequest(conn.ws, 'live', [sub.table]);
+  const liveId = typeof liveIdRaw === 'string' ? liveIdRaw : String(liveIdRaw || '');
+  if (!liveId) {
+    sub.buffering = false;
+    throw new Error(`LIVE subscription on "${sub.table}" did not return a subscription ID`);
+  }
+
+  if (sub.closed) {
+    try { await sendRequest(conn.ws, 'kill', [liveId]); } catch { /* noop */ }
+    return '';
+  }
+
+  sub.liveId = liveId;
+  liveQueries.set(liveId, sub);
+
+  // 2. Seed initial rows via standard SELECT query
+  const seedResp = await sendRequest(conn.ws, 'query', [sub.seedSql, sub.vars || {}]);
+  let rows = extractQueryRows(seedResp);
+
+  // 3. Replay & deduplicate buffered notifications received during seeding
+  for (const bufferedEvent of sub.buffer) {
+    rows = applyLiveEventToRows(rows, bufferedEvent);
+  }
+  sub.buffer.length = 0;
+  sub.buffering = false;
+
+  if (!sub.closed) {
+    sub.onRows(rows);
+    sub.onStatus('live', null);
+  }
+
   return liveId;
 }
 
-/**
- * Kill a LIVE query
- */
-async function unsubscribeLive(url: string, liveId: string): Promise<void> {
-  const conn = getConnection(url);
-  if (conn.ws && conn.ready) {
-    await sendRequest(conn.ws, 'kill', { id: liveId });
+async function restoreSubscriptions(conn: SurrealConnection): Promise<void> {
+  for (const sub of Array.from(conn.subscriptions)) {
+    if (sub.closed) {
+      conn.subscriptions.delete(sub);
+      continue;
+    }
+    try {
+      await activateSubscription(conn, sub);
+    } catch (err) {
+      sub.onStatus('error', errMsg(err));
+    }
+  }
+}
+
+async function executeQuery(
+  url: string,
+  query: string,
+  vars?: Record<string, unknown>,
+  ns?: string,
+  db?: string
+): Promise<unknown> {
+  await connect(url, ns, db);
+  const conn = getConnection(url, ns || defaultNs, db || defaultDb);
+  return sendRequest(conn.ws!, 'query', [query, vars || {}]);
+}
+
+async function unsubscribeLive(sub: LiveSubscription): Promise<void> {
+  if (sub.closed) return;
+  sub.closed = true;
+  sub.buffering = false;
+  sub.buffer.length = 0;
+
+  const conn = connectionPool.get(sub.url);
+  if (conn) {
+    conn.subscriptions.delete(sub);
+    if (conn.subscriptions.size === 0 && conn.reconnectTimer !== null) {
+      clearTimeout(conn.reconnectTimer);
+      conn.reconnectTimer = null;
+    }
+  }
+
+  const liveId = sub.liveId;
+  sub.liveId = null;
+  if (liveId) {
     liveQueries.delete(liveId);
+    if (conn?.ws && conn.ready && conn.ws.readyState === WebSocket.OPEN) {
+      try {
+        await sendRequest(conn.ws, 'kill', [liveId]);
+      } catch {
+        // Connection may already be closing
+      }
+    }
   }
 }
 
 /**
- * Configure the SQL client
+ * Configure default SQL client connection parameters.
+ * Works with Nexus-IO `/rpc` or any SurrealDB JSON-RPC 2.0 WebSocket endpoint.
  */
 export function configureSqlClient(config: {
   url?: string;
   namespace?: string;
   database?: string;
-  token?: string;
+  token?: string | null;
 }) {
-  if (config.namespace) defaultNs = config.namespace;
-  if (config.database) defaultDb = config.database;
-  if (config.token) authToken = config.token;
+  if (config.url !== undefined) defaultUrl = config.url;
+  if (config.namespace !== undefined) defaultNs = config.namespace;
+  if (config.database !== undefined) defaultDb = config.database;
+  if (config.token !== undefined) authToken = config.token;
+}
+
+function syncNumericFieldsToHeap(rows: unknown[], numericFields: string[]): void {
+  if (numericFields.length === 0) return;
+  rows.forEach((row, idx) => {
+    if (row && typeof row === 'object') {
+      const rec = row as Record<string, unknown>;
+      numericFields.forEach((field) => {
+        if (typeof rec[field] === 'number') {
+          heap.setNumeric(`${field}_${idx}`, rec[field] as number);
+        }
+      });
+    }
+  });
 }
 
 /**
- * The $sql sprite.
- * Usage: $sql('SELECT * FROM user') or $sql('LIVE SELECT * FROM user')
- * 
- * ZCZS Optimization: For numeric-heavy results, uses typed arrays via SignalHeap
+ * The `$sql` sprite.
+ * Usage: `$sql('SELECT * FROM task')` or `$sql('LIVE SELECT * FROM task')`
  */
 export function sqlSprite(runtime: RuntimeContext) {
-  // Get connection config from runtime or use defaults
-  const url = (runtime as any).config?.sqlUrl || 'ws://localhost:8000/rpc';
-  const ns = (runtime as any).config?.sqlNs || defaultNs;
-  const db = (runtime as any).config?.sqlDb || defaultDb;
+  return async (
+    query: string,
+    vars?: Record<string, unknown>,
+    opts?: { url?: string; namespace?: string; database?: string }
+  ) => {
+    const url = opts?.url || resolveDefaultUrl(runtime);
+    const ns = opts?.namespace || (runtime as any).config?.sqlNs || defaultNs;
+    const db = opts?.database || (runtime as any).config?.sqlDb || defaultDb;
+    const isLive = /^LIVE\s+/i.test(query.trim());
 
-  return async (query: string, vars?: Record<string, unknown>) => {
-    // 1. Check if this is a LIVE query
-    const isLive = query.trim().toUpperCase().startsWith('LIVE');
-    
-    // 2. Create reactive container for the result
+    let activeSub: LiveSubscription | null = null;
+
     const result: {
       data: unknown[];
       status: string;
       error: string | null;
       liveId: string | null;
+      unsubscribe: () => Promise<void>;
     } = runtime.reactive({
       data: [],
       status: isLive ? 'connecting' : 'loading',
       error: null,
-      liveId: null
+      liveId: null,
+      unsubscribe: async () => {
+        if (activeSub) {
+          await unsubscribeLive(activeSub);
+          result.liveId = null;
+          result.status = 'closed';
+        }
+      },
     });
 
     try {
       if (isLive) {
-        // ZCZS: For live queries, use heap for numeric data if beneficial
         const numericFields: string[] = [];
-        
-        // Extract field names from query for heap pre-allocation
         const fieldMatch = query.match(/SELECT\s+(.+?)\s+FROM/i);
         if (fieldMatch) {
-          const fields = fieldMatch[1].split(',').map(f => f.trim());
-          fields.forEach(f => {
+          fieldMatch[1].split(',').map((f) => f.trim()).forEach((f) => {
             if (f !== '*' && !f.includes('(')) {
-              const fieldName = f.split(' AS ').pop()?.trim() || f.trim();
-              // Heuristic: fields ending in _id, _count, _at, _time are likely numeric
+              const fieldName = f.split(/\s+AS\s+/i).pop()?.trim() || f.trim();
               if (/_id|_count|_at|_time|_amount|_price|_qty$/.test(fieldName.toLowerCase())) {
                 numericFields.push(fieldName);
                 heap.allocateNumeric(fieldName);
@@ -276,61 +567,65 @@ export function sqlSprite(runtime: RuntimeContext) {
           });
         }
 
-        // Subscribe to live query
-        const liveId = await subscribeLive(url, query, (data: unknown) => {
-          // ZCZS: Update heap directly for numeric fields
-          const arr = Array.isArray(data) ? data : [];
-          if (numericFields.length > 0) {
-            arr.forEach((row, idx) => {
-              if (row && typeof row === 'object') {
-                numericFields.forEach(field => {
-                  if (typeof (row as Record<string, unknown>)[field] === 'number') {
-                    heap.setNumeric(`${field}_${idx}`, (row as Record<string, unknown>)[field] as number);
-                  }
-                });
-              }
-            });
-          }
-          
-          result.data = arr;
-          result.status = 'live';
-        }, ns, db);
-        
-        result.liveId = liveId;
-        result.status = 'live';
+        const { table, seedSql } = parseLiveTableAndSeed(query);
+        const conn = getConnection(url, ns, db);
+
+        const sub: LiveSubscription = {
+          url,
+          ns,
+          db,
+          table,
+          seedSql,
+          vars,
+          liveId: null,
+          buffering: true,
+          buffer: [],
+          closed: false,
+          onRows: (rows) => {
+            syncNumericFieldsToHeap(rows, numericFields);
+            result.data = rows;
+          },
+          onEvent: (event) => {
+            const next = applyLiveEventToRows(result.data, event);
+            syncNumericFieldsToHeap(next, numericFields);
+            result.data = next;
+            result.status = 'live';
+          },
+          onStatus: (status, error) => {
+            result.status = status;
+            if (error !== undefined) result.error = error;
+          },
+        };
+
+        activeSub = sub;
+        conn.subscriptions.add(sub);
+
+        // Automatically tear down server subscription if called inside a reactive effect
+        if (typeof runtime.onEffectCleanup === 'function') {
+          runtime.onEffectCleanup(() => {
+            void unsubscribeLive(sub);
+          });
+        }
+
+        const liveId = await activateSubscription(conn, sub);
+        result.liveId = liveId || null;
       } else {
-        // Standard query
-        const response = await executeQuery(url, query, vars, ns, db) as { result: unknown[] }[];
-        const queryResult = response[0]?.result || response;
-        
-        // ZCZS: Check if result would benefit from heap storage
+        const response = await executeQuery(url, query, vars, ns, db);
+        const queryResult = extractQueryRows(response);
+
         if (Array.isArray(queryResult) && queryResult.length > 10) {
           const sample = queryResult[0];
           if (sample && typeof sample === 'object') {
             const keys = Object.keys(sample);
-            const numericCount = keys.filter(k => typeof (sample as any)[k] === 'number').length;
-            
-            // If >50% numeric, use heap
-            if (numericCount / keys.length >= 0.5) {
-              keys.forEach(k => {
-                if (typeof (sample as any)[k] === 'number') {
-                  heap.allocateNumeric(k);
-                }
-              });
-              
-queryResult.forEach((row, idx) => {
-                if (row && typeof row === 'object') {
-                  keys.forEach(k => {
-                    if (typeof (row as Record<string, unknown>)[k] === 'number') {
-                      heap.setNumeric(`${k}_${idx}`, (row as Record<string, unknown>)[k] as number);
-                    }
-                  });
-                }
-                });
+            const numericCount = keys.filter((k) => typeof (sample as any)[k] === 'number').length;
+            if (keys.length > 0 && numericCount / keys.length >= 0.5) {
+              const numKeys = keys.filter((k) => typeof (sample as any)[k] === 'number');
+              numKeys.forEach((k) => heap.allocateNumeric(k));
+              syncNumericFieldsToHeap(queryResult, numKeys);
             }
           }
         }
-        
+
         result.data = queryResult;
         result.status = 'ready';
       }
@@ -343,13 +638,51 @@ queryResult.forEach((row, idx) => {
   };
 }
 
+/**
+ * Close all pooled WebSocket connections and clear stale live subscriptions.
+ * Automatically invoked when IAM identity changes (`nexus:auth-changed`) so
+ * subsequent `$sql` calls re-authenticate cleanly over a fresh WebSocket handshake.
+ */
+export function resetSqlConnections(): void {
+  for (const [, conn] of connectionPool.entries()) {
+    if (conn.reconnectTimer !== null) {
+      clearTimeout(conn.reconnectTimer);
+      conn.reconnectTimer = null;
+    }
+    for (const sub of conn.subscriptions) {
+      sub.closed = true;
+      if (sub.liveId) {
+        liveQueries.delete(sub.liveId);
+      }
+    }
+    conn.subscriptions.clear();
+    try {
+      conn.ws?.close(1000, 'auth-changed');
+    } catch {
+      // ignore close errors
+    }
+  }
+  connectionPool.clear();
+}
+
+let authListenerBound = false;
+function ensureAuthChangeListener(): void {
+  if (authListenerBound || typeof window === 'undefined') return;
+  authListenerBound = true;
+  window.addEventListener('nexus:auth-changed', () => {
+    resetSqlConnections();
+  });
+}
+
 import type { SpriteModule } from '../../engine/modules.ts';
 
 export const sqlSpriteModule: SpriteModule = {
   name: 'sql',
   key: '$sql',
-  sprites: (runtime: RuntimeContext) => sqlSprite(runtime)
+  sprites: (runtime: RuntimeContext) => {
+    ensureAuthChangeListener();
+    return sqlSprite(runtime);
+  },
 };
 
 export default sqlSpriteModule;
-

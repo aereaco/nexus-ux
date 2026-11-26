@@ -9,10 +9,10 @@
       __defProp(target, name, { get: all[name], enumerable: true });
   };
 
-  // src/engine/consts.ts
+  // ux/src/engine/consts.ts
   var ROOT_SELECTOR, STATE, ATTRIBUTE_PREFIX, CUSTOM_EVENT_PREFIX, DATA_PRESERVE_ATTR, NEG_TOKENS, MODIFIER_DELIMITER, DATA_STACK_KEY, LOCAL_SCOPES_KEY, COMPONENT_CONTEXT_KEY, CLEANUP_FUNCTIONS_KEY, EFFECT_RUNNERS_KEY, RUN_EFFECT_RUNNERS_KEY, MARKER_KEY, IS_TEMPLATE_KEY, TIMER_MAP_KEY, DEFAULT_DEBOUNCE_TIME, DEFAULT_THROTTLE_TIME;
   var init_consts = __esm({
-    "src/engine/consts.ts"() {
+    "ux/src/engine/consts.ts"() {
       ROOT_SELECTOR = "[data-init], [data-ux-init], [data-signal], [data-router], [data-import], [data-stylesheet], [data-ux-theme], body";
       STATE = "nexus";
       ATTRIBUTE_PREFIX = "data-";
@@ -45,14 +45,14 @@
     }
   });
 
-  // src/engine/mcp.ts
+  // ux/src/engine/mcp.ts
   var mcp_exports = {};
   __export(mcp_exports, {
     MCPClient: () => MCPClient
   });
   var MCPClient;
   var init_mcp = __esm({
-    "src/engine/mcp.ts"() {
+    "ux/src/engine/mcp.ts"() {
       init_debug();
       MCPClient = class {
         url;
@@ -151,7 +151,7 @@
     }
   });
 
-  // src/engine/debug.ts
+  // ux/src/engine/debug.ts
   function reportError(error, element, expression) {
     const errorMessage = `[UX Error] ${error.message}`;
     console.error(errorMessage, { element, expression, originalError: error });
@@ -249,7 +249,7 @@ ${suggestion}`);
   }
   var errMsg, toError, UXError, logger;
   var init_debug = __esm({
-    "src/engine/debug.ts"() {
+    "ux/src/engine/debug.ts"() {
       init_consts();
       errMsg = (e) => e instanceof Error ? e.message : String(e);
       toError = (e) => e instanceof Error ? e : new Error(String(e));
@@ -286,14 +286,14 @@ ${suggestion}`);
     }
   });
 
-  // src/engine/modules.ts
+  // ux/src/engine/modules.ts
   init_consts();
 
-  // src/engine/reactivity.ts
+  // ux/src/engine/reactivity.ts
   init_consts();
   init_debug();
 
-  // src/engine/scheduler.ts
+  // ux/src/engine/scheduler.ts
   var currentEvalFrame = 0;
   function getEvalFrame() {
     return currentEvalFrame;
@@ -406,7 +406,7 @@ ${suggestion}`);
   };
   var scheduler = new Scheduler();
 
-  // src/engine/reactivity.ts
+  // ux/src/engine/reactivity.ts
   var ZCZS_SUPPORTED = typeof SharedArrayBuffer !== "undefined";
   var SignalHeap = class {
     _floatHeap;
@@ -1239,10 +1239,10 @@ ${suggestion}`);
     });
   }
 
-  // src/engine/reconciler.ts
+  // ux/src/engine/reconciler.ts
   init_consts();
 
-  // src/modules/attributes/stylesheet.ts
+  // ux/src/modules/attributes/stylesheet.ts
   var stylesheet_exports = {};
   __export(stylesheet_exports, {
     NexusStyleSheet: () => NexusStyleSheet,
@@ -1257,7 +1257,7 @@ ${suggestion}`);
     stylesheet: () => stylesheet
   });
 
-  // src/engine/cache.ts
+  // ux/src/engine/cache.ts
   var DB_NAME = "nexus-media-cache";
   var DB_VERSION = 1;
   var STORE_NAME = "media_blobs";
@@ -1467,7 +1467,7 @@ ${suggestion}`);
   };
   var cacheEngine = new UniversalCacheEngine();
 
-  // src/modules/attributes/assert.ts
+  // ux/src/modules/attributes/assert.ts
   var assert_exports = {};
   __export(assert_exports, {
     default: () => assert_default
@@ -1491,7 +1491,7 @@ ${suggestion}`);
   };
   var assert_default = assertModule;
 
-  // src/modules/attributes/bind.ts
+  // ux/src/modules/attributes/bind.ts
   var bind_exports = {};
   __export(bind_exports, {
     default: () => bind_default
@@ -1702,17 +1702,17 @@ ${suggestion}`);
   };
   var bind_default = bindModule;
 
-  // src/modules/attributes/build.ts
+  // ux/src/modules/attributes/build.ts
   var build_exports = {};
   __export(build_exports, {
     default: () => build_default
   });
   init_debug();
 
-  // src/engine/scope.ts
+  // ux/src/engine/scope.ts
   init_consts();
 
-  // src/engine/reflect.ts
+  // ux/src/engine/reflect.ts
   function createStorageProxy(storage) {
     const ITERATE_KEY2 = Symbol.for("iterate");
     return new Proxy(storage, {
@@ -2102,7 +2102,7 @@ ${suggestion}`);
     return proxy;
   }
 
-  // src/engine/scope.ts
+  // ux/src/engine/scope.ts
   var frameDataStackCache = /* @__PURE__ */ new WeakMap();
   function getDataStack(element) {
     const currentFrame = getEvalFrame();
@@ -2459,7 +2459,7 @@ ${suggestion}`);
     return proxy;
   }
 
-  // src/modules/attributes/build.ts
+  // ux/src/modules/attributes/build.ts
   var BUILD_STORE = "builds";
   async function writeToIDB(key, data, meta) {
     await getIndexedDBProxy()[BUILD_STORE].put({ id: key, data, meta, updatedAt: Date.now() }, key);
@@ -2593,7 +2593,7 @@ ${scripts}
   };
   var build_default = buildModule;
 
-  // src/modules/attributes/class.ts
+  // ux/src/modules/attributes/class.ts
   var class_exports = {};
   __export(class_exports, {
     default: () => class_default
@@ -2621,7 +2621,7 @@ ${scripts}
   };
   var class_default = classModule;
 
-  // src/modules/attributes/component.ts
+  // ux/src/modules/attributes/component.ts
   var component_exports = {};
   __export(component_exports, {
     BaseComponent: () => BaseComponent,
@@ -3068,7 +3068,7 @@ ${scripts}
   };
   var component_default = componentModule;
 
-  // src/modules/attributes/computed.ts
+  // ux/src/modules/attributes/computed.ts
   var computed_exports = {};
   __export(computed_exports, {
     default: () => computed_default
@@ -3178,7 +3178,7 @@ ${scripts}
   };
   var computed_default = computedModule;
 
-  // src/modules/attributes/debug.ts
+  // ux/src/modules/attributes/debug.ts
   var debug_exports = {};
   __export(debug_exports, {
     default: () => debug_default
@@ -3205,7 +3205,7 @@ ${scripts}
   };
   var debug_default = debugModule;
 
-  // src/modules/attributes/drag.ts
+  // ux/src/modules/attributes/drag.ts
   var drag_exports2 = {};
   __export(drag_exports2, {
     CONTAINER_SELECTOR: () => CONTAINER_SELECTOR,
@@ -3223,7 +3223,7 @@ ${scripts}
   });
   init_debug();
 
-  // src/engine/animation.ts
+  // ux/src/engine/animation.ts
   async function flip(targets, changeCallback, options = {}) {
     const { duration = 300, easing = "ease-out" } = options;
     let targetArray = [];
@@ -3278,10 +3278,10 @@ ${scripts}
     });
   }
 
-  // src/modules/attributes/drag.ts
+  // ux/src/modules/attributes/drag.ts
   init_consts();
 
-  // src/modules/sprites/drag.ts
+  // ux/src/modules/sprites/drag.ts
   var drag_exports = {};
   __export(drag_exports, {
     $drag: () => $drag,
@@ -3352,7 +3352,7 @@ ${scripts}
   };
   var drag_default = dragSprite;
 
-  // src/engine/utils/styles.ts
+  // ux/src/engine/utils/styles.ts
   function minifyCSS2(css) {
     return css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s+/g, " ").replace(/\s*([{:;,>+~])\s*/g, "$1").replace(/;}/g, "}").trim();
   }
@@ -3378,7 +3378,7 @@ ${scripts}
     return sheet;
   }
 
-  // src/modules/attributes/drag.ts
+  // ux/src/modules/attributes/drag.ts
   var DRAG_CSS = `[data-drag-item],[data-drag]:not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]){user-select:none;-webkit-user-select:none;touch-action:none}[data-drag-item]:not([data-drag-handle]),[data-drag]:not([data-drag-handle]):not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]){cursor:grab}[data-drag-item]:not([data-drag-handle]):active,[data-drag]:not([data-drag-handle]):not([data-drag*="{"]):not([data-drag*="="]):not([data-drag-container]):active{cursor:grabbing}[data-drag-handle],.handle{cursor:grab;touch-action:none}[data-drag-handle]:active,.handle:active{cursor:grabbing}[data-drag-nodrag]{cursor:default !important;touch-action:auto !important;pointer-events:auto !important}.draggable-drag,.drag-active{opacity:1 !important;box-shadow:0 25px 50px -12px rgba(0,0,0,0.35) !important;transform:scale(1.03) !important;cursor:grabbing !important;z-index:9999 !important;pointer-events:none !important}.draggable-ghost,.drag-ghost{opacity:0.4 !important;pointer-events:none !important;border:2px dashed color-mix(in srgb,currentColor 25%,transparent) !important;background-color:color-mix(in srgb,currentColor 10%,transparent) !important}.draggable-chosen,.drag-chosen{cursor:grabbing !important;opacity:0.85}.draggable-selected,[data-drag-item].selected{outline:2px solid var(--color-primary,#3b82f6) !important;outline-offset:2px !important}.draggable-swap-highlight{outline:2px dashed var(--color-warning,#f59e0b) !important;outline-offset:2px !important;transition:outline 0.15s ease !important}`;
   var dragSheetRef = { sheet: null };
   function ensureDragStyles(root) {
@@ -4610,7 +4610,7 @@ ${scripts}
   };
   var drag_default2 = dragAttribute;
 
-  // src/modules/attributes/effect.ts
+  // ux/src/modules/attributes/effect.ts
   var effect_exports = {};
   __export(effect_exports, {
     default: () => effect_default
@@ -4634,7 +4634,7 @@ ${scripts}
   };
   var effect_default = effectModule;
 
-  // src/modules/attributes/flow.ts
+  // ux/src/modules/attributes/flow.ts
   var flow_exports = {};
   __export(flow_exports, {
     default: () => flow_default,
@@ -4657,7 +4657,7 @@ ${scripts}
     toFlowCoords: () => toFlowCoords
   });
 
-  // src/engine/utils/pointer.ts
+  // ux/src/engine/utils/pointer.ts
   function trackPointerDrag(element, callbacks) {
     let isTracking = false;
     let startX = 0;
@@ -4723,7 +4723,7 @@ ${scripts}
     };
   }
 
-  // src/modules/attributes/flow.ts
+  // ux/src/modules/attributes/flow.ts
   var SVG_NS = "http://www.w3.org/2000/svg";
   var MIN_ZOOM = 0.2;
   var MAX_ZOOM = 4;
@@ -5971,7 +5971,7 @@ ${scripts}
   };
   var flow_default = flowAttribute;
 
-  // src/modules/attributes/for.ts
+  // ux/src/modules/attributes/for.ts
   var for_exports = {};
   __export(for_exports, {
     default: () => for_default
@@ -6174,7 +6174,7 @@ ${scripts}
   };
   var for_default = forModule;
 
-  // src/modules/attributes/html.ts
+  // ux/src/modules/attributes/html.ts
   var html_exports = {};
   __export(html_exports, {
     default: () => html_default
@@ -6201,7 +6201,7 @@ ${scripts}
   };
   var html_default = htmlModule;
 
-  // src/modules/attributes/if.ts
+  // ux/src/modules/attributes/if.ts
   var if_exports = {};
   __export(if_exports, {
     default: () => if_default
@@ -6274,7 +6274,7 @@ ${scripts}
   };
   var if_default = ifModule;
 
-  // src/modules/attributes/import.ts
+  // ux/src/modules/attributes/import.ts
   var import_exports = {};
   __export(import_exports, {
     default: () => import_default
@@ -6700,7 +6700,7 @@ ${scripts}
   };
   var import_default = importModule;
 
-  // src/modules/attributes/markdown.ts
+  // ux/src/modules/attributes/markdown.ts
   var markdown_exports = {};
   __export(markdown_exports, {
     default: () => markdown_default,
@@ -6883,14 +6883,14 @@ ${match}</ul>
   };
   var markdown_default = markdownModule;
 
-  // src/modules/attributes/mask.ts
+  // ux/src/modules/attributes/mask.ts
   var mask_exports2 = {};
   __export(mask_exports2, {
     default: () => mask_default2,
     maskModule: () => maskModule
   });
 
-  // src/modules/sprites/mask.ts
+  // ux/src/modules/sprites/mask.ts
   var mask_exports = {};
   __export(mask_exports, {
     default: () => mask_default,
@@ -6958,7 +6958,7 @@ ${match}</ul>
   };
   var mask_default = maskSpriteModule;
 
-  // src/modules/attributes/mask.ts
+  // ux/src/modules/attributes/mask.ts
   var maskModule = {
     name: "mask",
     handle(el, value, runtime) {
@@ -6997,7 +6997,7 @@ ${match}</ul>
   };
   var mask_default2 = maskModule;
 
-  // src/modules/attributes/on.ts
+  // ux/src/modules/attributes/on.ts
   var on_exports = {};
   __export(on_exports, {
     default: () => on_default
@@ -7078,7 +7078,7 @@ ${match}</ul>
   };
   var on_default = onModule;
 
-  // src/modules/attributes/preserve.ts
+  // ux/src/modules/attributes/preserve.ts
   var preserve_exports = {};
   __export(preserve_exports, {
     default: () => preserve_default
@@ -7095,7 +7095,7 @@ ${match}</ul>
   };
   var preserve_default = preserveModule;
 
-  // src/modules/attributes/pwa.ts
+  // ux/src/modules/attributes/pwa.ts
   var pwa_exports = {};
   __export(pwa_exports, {
     default: () => pwa_default
@@ -7224,7 +7224,7 @@ ${match}</ul>
   };
   var pwa_default = pwaModule;
 
-  // src/modules/attributes/raf.ts
+  // ux/src/modules/attributes/raf.ts
   var raf_exports = {};
   __export(raf_exports, {
     default: () => raf_default
@@ -7256,7 +7256,7 @@ ${match}</ul>
   };
   var raf_default = rafModule;
 
-  // src/modules/attributes/route.ts
+  // ux/src/modules/attributes/route.ts
   var route_exports = {};
   __export(route_exports, {
     default: () => route_default,
@@ -7385,7 +7385,7 @@ ${match}</ul>
   };
   var route_default = routeAttributeModule;
 
-  // src/modules/attributes/router.ts
+  // ux/src/modules/attributes/router.ts
   var router_exports = {};
   __export(router_exports, {
     default: () => router_default,
@@ -8708,7 +8708,7 @@ ${match}</ul>
   };
   var router_default = routerAttributeModule;
 
-  // src/modules/attributes/scrollbar.ts
+  // ux/src/modules/attributes/scrollbar.ts
   var scrollbar_exports = {};
   __export(scrollbar_exports, {
     OverlayScrollbarInstance: () => OverlayScrollbarInstance,
@@ -9194,7 +9194,7 @@ ${match}</ul>
   };
   var scrollbar_default = scrollbarModule;
 
-  // src/modules/attributes/show.ts
+  // ux/src/modules/attributes/show.ts
   var show_exports = {};
   __export(show_exports, {
     default: () => show_default
@@ -9233,7 +9233,7 @@ ${match}</ul>
   };
   var show_default = showModule;
 
-  // src/modules/attributes/signal.ts
+  // ux/src/modules/attributes/signal.ts
   var signal_exports = {};
   __export(signal_exports, {
     default: () => signal_default
@@ -9255,7 +9255,54 @@ ${match}</ul>
       if (!expression.trim())
         return;
       const parsed = parsedAttr || runtime.parseAttribute("data-signal", runtime, el);
+      const isSrcModule = parsed?.argument === "src" || parsed?.modifiers.includes("src");
       const isGlobal = parsed?.argument === "global" || parsed?.modifiers.includes("global") || el.hasAttribute("data-init") || el.hasAttribute("data-ux-init");
+      if (isSrcModule) {
+        const rawPath = expression.trim().replace(/^['"]|['"]$/g, "");
+        if (!rawPath)
+          return;
+        const scopeId2 = el.id || `el_${Math.random().toString(36).slice(2)}`;
+        const stateRef2 = isGlobal ? runtime.ref(runtime.globalSignals()) : unifiedRef({}, scopeId2);
+        const scopeProxy2 = createScopeProxy(
+          stateRef2,
+          (key, val) => {
+            if (isGlobal) {
+              runtime.globalSignals()[key] = val;
+            }
+          },
+          () => runtime.triggerRef(stateRef2)
+        );
+        let addCleanup2;
+        if (!isGlobal) {
+          addCleanup2 = addScopeToNode(el, scopeProxy2);
+        }
+        const resolvedUrl = typeof window !== "undefined" ? new URL(rawPath, window.location.href).href : rawPath;
+        import(resolvedUrl).then((mod) => {
+          const exported = mod?.default ?? mod;
+          const nextState = typeof exported === "function" ? exported(scopeProxy2, runtime, el) : exported;
+          if (nextState && typeof nextState === "object") {
+            if (isGlobal) {
+              const globals = runtime.globalSignals();
+              Object.keys(nextState).forEach((key) => {
+                const v = nextState[key];
+                if (!(key in globals) || globals[key] === void 0 && v !== void 0) {
+                  globals[key] = v;
+                }
+              });
+              stateRef2.value = globals;
+            } else {
+              Object.assign(stateRef2.value, nextState);
+            }
+            runtime.triggerRef(stateRef2);
+          }
+        }).catch((err) => {
+          runtime.reportError(toError(err), el, `data-signal-src="${rawPath}"`);
+        });
+        return () => {
+          if (addCleanup2)
+            addCleanup2();
+        };
+      }
       const { ghostKeys, typeHints } = parseGhostKeys(expression);
       const initialGhostState = {};
       ghostKeys.forEach((key) => initialGhostState[key] = void 0);
@@ -9289,7 +9336,15 @@ ${match}</ul>
           }
         }
       } catch (e) {
-        runtime.reportError(toError(e), el, expression);
+        const err = toError(e);
+        const trimmed = expression.trim();
+        if (trimmed.startsWith("{") && !trimmed.endsWith("}")) {
+          const tag = el.id ? `<${el.tagName.toLowerCase()}#${el.id}>` : `<${el.tagName.toLowerCase()}>`;
+          console.error(
+            `[Nexus Signal] Possible unescaped double-quote (") truncated data-signal on ${tag}. Use single quotes ('...'), \\x22, or move complex state/actions into an external module with data-signal-src="/path/to/state.js".`
+          );
+        }
+        runtime.reportError(err, el, expression);
         return;
       }
       if (!isGlobal) {
@@ -9303,7 +9358,7 @@ ${match}</ul>
   };
   var signal_default = signalModule;
 
-  // src/modules/attributes/style.ts
+  // ux/src/modules/attributes/style.ts
   var style_exports = {};
   __export(style_exports, {
     default: () => style_default
@@ -9320,7 +9375,7 @@ ${match}</ul>
   };
   var style_default = styleModule;
 
-  // src/modules/attributes/switcher.ts
+  // ux/src/modules/attributes/switcher.ts
   var switcher_exports = {};
   __export(switcher_exports, {
     default: () => switcher_default
@@ -9400,7 +9455,7 @@ ${match}</ul>
   };
   var switcher_default = switcherModule;
 
-  // src/modules/attributes/teleport.ts
+  // ux/src/modules/attributes/teleport.ts
   var teleport_exports = {};
   __export(teleport_exports, {
     default: () => teleport_default,
@@ -9629,7 +9684,7 @@ ${match}</ul>
   };
   var teleport_default = teleportAttribute;
 
-  // src/modules/attributes/theme.ts
+  // ux/src/modules/attributes/theme.ts
   var theme_exports = {};
   __export(theme_exports, {
     default: () => theme_default
@@ -9848,7 +9903,7 @@ ${match}</ul>
   };
   var theme_default = themeModule;
 
-  // src/modules/sprites/animate.ts
+  // ux/src/modules/sprites/animate.ts
   var animate_exports = {};
   __export(animate_exports, {
     animate: () => animate,
@@ -9925,7 +9980,7 @@ ${match}</ul>
   };
   var animate_default = animateSpriteModule;
 
-  // src/modules/sprites/bgFetch.ts
+  // ux/src/modules/sprites/bgFetch.ts
   var bgFetch_exports = {};
   __export(bgFetch_exports, {
     bgFetchSpriteModule: () => bgFetchSpriteModule,
@@ -9933,7 +9988,7 @@ ${match}</ul>
     default: () => bgFetch_default
   });
 
-  // src/engine/utils/pwa.ts
+  // ux/src/engine/utils/pwa.ts
   init_debug();
   function hasServiceWorker() {
     return typeof navigator !== "undefined" && "serviceWorker" in navigator;
@@ -9987,7 +10042,7 @@ ${match}</ul>
     );
   }
 
-  // src/modules/sprites/bgFetch.ts
+  // ux/src/modules/sprites/bgFetch.ts
   function createBgFetchApi(runtime) {
     return {
       /**
@@ -10050,7 +10105,7 @@ ${match}</ul>
   };
   var bgFetch_default = bgFetchSpriteModule;
 
-  // src/modules/sprites/bgSync.ts
+  // ux/src/modules/sprites/bgSync.ts
   var bgSync_exports = {};
   __export(bgSync_exports, {
     bgSyncSpriteModule: () => bgSyncSpriteModule,
@@ -10096,7 +10151,7 @@ ${match}</ul>
   };
   var bgSync_default = bgSyncSpriteModule;
 
-  // src/modules/sprites/flow.ts
+  // ux/src/modules/sprites/flow.ts
   var flow_exports2 = {};
   __export(flow_exports2, {
     default: () => flow_default2,
@@ -10449,7 +10504,7 @@ ${match}</ul>
   };
   var flow_default2 = flowModule;
 
-  // src/modules/sprites/gql.ts
+  // ux/src/modules/sprites/gql.ts
   var gql_exports = {};
   __export(gql_exports, {
     configureGqlClient: () => configureGqlClient,
@@ -10546,7 +10601,7 @@ ${match}</ul>
   };
   var gql_default = gqlSpriteModule;
 
-  // src/modules/sprites/mcp.ts
+  // ux/src/modules/sprites/mcp.ts
   var mcp_exports2 = {};
   __export(mcp_exports2, {
     default: () => mcp_default,
@@ -10625,7 +10680,7 @@ ${match}</ul>
   };
   var mcp_default = mcpModule;
 
-  // src/modules/sprites/periodicSync.ts
+  // ux/src/modules/sprites/periodicSync.ts
   var periodicSync_exports = {};
   __export(periodicSync_exports, {
     createPeriodicSyncApi: () => createPeriodicSyncApi,
@@ -10683,7 +10738,7 @@ ${match}</ul>
   };
   var periodicSync_default = periodicSyncSpriteModule;
 
-  // src/modules/sprites/predictive.ts
+  // ux/src/modules/sprites/predictive.ts
   var predictive_exports = {};
   __export(predictive_exports, {
     default: () => predictive_default,
@@ -10691,7 +10746,7 @@ ${match}</ul>
     predictiveModule: () => predictiveModule
   });
 
-  // src/engine/topology.ts
+  // ux/src/engine/topology.ts
   var TIER_CONFIGS = {
     0: {
       level: 0,
@@ -11082,7 +11137,7 @@ ${match}</ul>
     });
   }
 
-  // src/engine/predictive.ts
+  // ux/src/engine/predictive.ts
   var Quadtree = class _Quadtree {
     bounds;
     capacity;
@@ -11666,7 +11721,7 @@ ${match}</ul>
   };
   var corePredictiveEngine = new CorePredictiveEngine();
 
-  // src/modules/sprites/predictive.ts
+  // ux/src/modules/sprites/predictive.ts
   var predictive = corePredictiveEngine;
   var predictiveModule = {
     name: "predictive",
@@ -11678,7 +11733,7 @@ ${match}</ul>
   };
   var predictive_default = predictiveModule;
 
-  // src/modules/sprites/push.ts
+  // ux/src/modules/sprites/push.ts
   var push_exports = {};
   __export(push_exports, {
     createPushApi: () => createPushApi,
@@ -11777,7 +11832,7 @@ ${match}</ul>
   };
   var push_default = pushSpriteModule;
 
-  // src/modules/sprites/selector.ts
+  // ux/src/modules/sprites/selector.ts
   var selector_exports = {};
   __export(selector_exports, {
     default: () => selector_default,
@@ -11785,7 +11840,7 @@ ${match}</ul>
     resolveTargetElements: () => resolveTargetElements
   });
 
-  // src/engine/agent.ts
+  // ux/src/engine/agent.ts
   init_debug();
   init_consts();
   var DEFAULT_CONFIG = {
@@ -12155,7 +12210,7 @@ ${match}</ul>
     return getSelfHealAgent().getBeaconHistory();
   }
 
-  // src/modules/sprites/selector.ts
+  // ux/src/modules/sprites/selector.ts
   function resolveSelector(contextEl, selector) {
     if (!selector)
       return null;
@@ -12334,11 +12389,12 @@ ${match}</ul>
   };
   var selector_default = selectorSpriteModule;
 
-  // src/modules/sprites/sql.ts
+  // ux/src/modules/sprites/sql.ts
   var sql_exports = {};
   __export(sql_exports, {
     configureSqlClient: () => configureSqlClient,
     default: () => sql_default,
+    resetSqlConnections: () => resetSqlConnections,
     sqlSprite: () => sqlSprite,
     sqlSpriteModule: () => sqlSpriteModule
   });
@@ -12347,157 +12403,419 @@ ${match}</ul>
   var pendingRequests = /* @__PURE__ */ new Map();
   var liveQueries = /* @__PURE__ */ new Map();
   var requestId = 0;
-  var defaultNs = "test";
-  var defaultDb = "test";
+  var defaultUrl = null;
+  var defaultNs = "nexus";
+  var defaultDb = "system";
   var authToken = null;
-  function getConnection(url) {
-    if (!connectionPool.has(url)) {
-      connectionPool.set(url, {
+  function resolveDefaultUrl(runtime) {
+    const runtimeUrl = runtime?.config?.sqlUrl;
+    if (typeof runtimeUrl === "string" && runtimeUrl.trim())
+      return runtimeUrl.trim();
+    if (defaultUrl)
+      return defaultUrl;
+    if (typeof globalThis.location !== "undefined" && globalThis.location.host) {
+      const proto = globalThis.location.protocol === "https:" ? "wss:" : "ws:";
+      return `${proto}//${globalThis.location.host}/rpc`;
+    }
+    return "ws://localhost:8000/rpc";
+  }
+  function getConnection(url, ns, db) {
+    let conn = connectionPool.get(url);
+    if (!conn) {
+      conn = {
+        url,
         ws: null,
         connected: false,
-        ready: false
-      });
+        ready: false,
+        connectPromise: null,
+        ns,
+        db,
+        reconnectAttempts: 0,
+        reconnectTimer: null,
+        subscriptions: /* @__PURE__ */ new Set()
+      };
+      connectionPool.set(url, conn);
     }
-    return connectionPool.get(url);
+    return conn;
   }
-  function connect(url, ns, db) {
+  function sendRequest(ws, method, params = []) {
     return new Promise((resolve, reject) => {
-      const conn = getConnection(url);
-      if (conn.ready) {
-        resolve(true);
+      if (ws.readyState !== WebSocket.OPEN) {
+        reject(new Error(`WebSocket is not open for method "${method}"`));
         return;
       }
-      if (conn.ws) {
+      const id = String(++requestId);
+      const timer = setTimeout(() => {
+        if (pendingRequests.has(id)) {
+          pendingRequests.delete(id);
+          reject(new Error(`RPC request "${method}" timed out`));
+        }
+      }, 3e4);
+      pendingRequests.set(id, { ws, resolve, reject, timer });
+      const payload = JSON.stringify({
+        id,
+        method,
+        params
+      });
+      ws.send(payload);
+    });
+  }
+  function dispatchLiveNotification(notif) {
+    const sub = liveQueries.get(notif.id);
+    if (!sub || sub.closed)
+      return;
+    if (sub.buffering) {
+      sub.buffer.push(notif);
+    } else {
+      sub.onEvent(notif);
+    }
+  }
+  function scheduleReconnect(conn) {
+    if (conn.subscriptions.size === 0 || conn.reconnectTimer !== null)
+      return;
+    const delayMs = Math.min(15e3, 500 * Math.pow(2, conn.reconnectAttempts));
+    conn.reconnectAttempts++;
+    conn.reconnectTimer = setTimeout(async () => {
+      conn.reconnectTimer = null;
+      if (conn.subscriptions.size === 0)
+        return;
+      try {
+        await connect(conn.url, conn.ns, conn.db);
+        conn.reconnectAttempts = 0;
+        await restoreSubscriptions(conn);
+      } catch {
+        scheduleReconnect(conn);
+      }
+    }, delayMs);
+  }
+  function connect(url, ns, db) {
+    const targetNs = ns || defaultNs;
+    const targetDb = db || defaultDb;
+    const conn = getConnection(url, targetNs, targetDb);
+    if (conn.ready && conn.ws && conn.ws.readyState === WebSocket.OPEN) {
+      if (conn.ns !== targetNs || conn.db !== targetDb) {
+        return sendRequest(conn.ws, "use", [targetNs, targetDb]).then(() => {
+          conn.ns = targetNs;
+          conn.db = targetDb;
+          return true;
+        });
+      }
+      return Promise.resolve(true);
+    }
+    if (conn.connectPromise) {
+      return conn.connectPromise;
+    }
+    conn.connectPromise = new Promise((resolve, reject) => {
+      if (conn.ws && conn.ws.readyState === WebSocket.OPEN) {
         conn.ws.close();
       }
-      conn.ws = new WebSocket(url);
-      conn.connected = false;
-      conn.ready = false;
-      conn.ws.onopen = () => {
-        conn.connected = true;
-        if (ns || defaultNs || db || defaultDb) {
-          sendRequest(conn.ws, "use", {
-            namespace: ns || defaultNs,
-            database: db || defaultDb
-          }).then(() => {
-            conn.ready = true;
-            resolve(true);
-          }).catch(reject);
-        } else {
-          conn.ready = true;
-          resolve(true);
+      let settled = false;
+      const settleResolve = (val) => {
+        if (!settled) {
+          settled = true;
+          conn.connectPromise = null;
+          resolve(val);
         }
       };
-      conn.ws.onmessage = (event) => {
+      const settleReject = (err) => {
+        if (!settled) {
+          settled = true;
+          conn.connectPromise = null;
+          reject(err);
+        }
+      };
+      const ws = new WebSocket(url);
+      conn.ws = ws;
+      conn.connected = false;
+      conn.ready = false;
+      ws.onopen = async () => {
+        conn.connected = true;
         try {
-          const response = JSON.parse(event.data);
-          if (response.id && pendingRequests.has(response.id)) {
-            const { resolve: res, reject: rej } = pendingRequests.get(response.id);
-            pendingRequests.delete(response.id);
-            if (response.error) {
-              rej(new Error(response.error.message));
-            } else {
-              res(response.result);
+          if (authToken) {
+            await sendRequest(ws, "authenticate", [authToken]);
+          }
+          if (targetNs || targetDb) {
+            await sendRequest(ws, "use", [targetNs, targetDb]);
+            conn.ns = targetNs;
+            conn.db = targetDb;
+          }
+          conn.ready = true;
+          conn.reconnectAttempts = 0;
+          settleResolve(true);
+        } catch (err) {
+          conn.ready = false;
+          try {
+            ws.close();
+          } catch {
+          }
+          settleReject(err instanceof Error ? err : new Error(errMsg(err)));
+        }
+      };
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(typeof event.data === "string" ? event.data : String(event.data));
+          if (msg.id !== void 0 && msg.id !== null) {
+            const reqKey = String(msg.id);
+            const pending = pendingRequests.get(reqKey);
+            if (pending) {
+              clearTimeout(pending.timer);
+              pendingRequests.delete(reqKey);
+              if (msg.error) {
+                pending.reject(new Error(msg.error.message || "RPC error"));
+              } else {
+                pending.resolve(msg.result);
+              }
+              return;
             }
           }
-          if (response.method === "notify" && response.params) {
-            const [notification] = response.params;
-            if (notification.id && liveQueries.has(notification.id)) {
-              liveQueries.get(notification.id)(notification.result);
+          if ((msg.id === void 0 || msg.id === null) && msg.result && typeof msg.result === "object" && typeof msg.result.id === "string" && typeof msg.result.action === "string") {
+            dispatchLiveNotification({
+              id: msg.result.id,
+              action: msg.result.action.toUpperCase(),
+              result: msg.result.result
+            });
+            return;
+          }
+          if (msg.method === "notify" && Array.isArray(msg.params) && msg.params[0]) {
+            const n = msg.params[0];
+            if (typeof n.id === "string") {
+              dispatchLiveNotification({
+                id: n.id,
+                action: String(n.action || "UPDATE").toUpperCase(),
+                result: n.result
+              });
             }
           }
         } catch (e) {
-          console.error("[Nexus SQL] Failed to parse WebSocket message:", e);
+          console.error("[UX SQL] Failed to parse WebSocket message:", e);
         }
       };
-      conn.ws.onerror = () => {
+      ws.onerror = () => {
         conn.connected = false;
         conn.ready = false;
-        reject(new Error("WebSocket connection failed"));
+        settleReject(new Error(`WebSocket connection failed (${url})`));
       };
-      conn.ws.onclose = () => {
-        conn.connected = false;
-        conn.ready = false;
-        pendingRequests.forEach(({ reject: reject2 }) => reject2(new Error("Connection closed")));
-        pendingRequests.clear();
-      };
-    });
-  }
-  function sendRequest(ws, method, params) {
-    return new Promise((resolve, reject) => {
-      const id = String(++requestId);
-      pendingRequests.set(id, { resolve, reject });
-      const message = JSON.stringify({
-        id,
-        method,
-        params: params || []
-      });
-      ws.send(message);
-      setTimeout(() => {
-        if (pendingRequests.has(id)) {
-          pendingRequests.delete(id);
-          reject(new Error(`Request ${method} timed out`));
+      ws.onclose = () => {
+        const wasCurrent = conn.ws === ws;
+        if (wasCurrent) {
+          conn.connected = false;
+          conn.ready = false;
+          conn.ws = null;
         }
-      }, 3e4);
+        for (const [id, pending] of Array.from(pendingRequests.entries())) {
+          if (pending.ws === ws) {
+            clearTimeout(pending.timer);
+            pendingRequests.delete(id);
+            pending.reject(new Error("WebSocket connection closed"));
+          }
+        }
+        settleReject(new Error("WebSocket connection closed during handshake"));
+        if (wasCurrent && conn.subscriptions.size > 0) {
+          for (const sub of conn.subscriptions) {
+            if (!sub.closed)
+              sub.onStatus("reconnecting");
+          }
+          scheduleReconnect(conn);
+        }
+      };
     });
+    return conn.connectPromise;
   }
-  async function executeQuery(url, query, vars, ns, db) {
-    await connect(url, ns, db);
-    const conn = getConnection(url);
-    if (authToken && conn.ws) {
-      try {
-        await sendRequest(conn.ws, "authenticate", { token: authToken });
-      } catch (e) {
-        console.warn("[Nexus SQL] Authentication failed:", e);
+  function extractQueryRows(rpcResult) {
+    if (Array.isArray(rpcResult)) {
+      const first = rpcResult[0];
+      if (first && typeof first === "object" && "status" in first && "result" in first) {
+        if (first.status && first.status !== "OK") {
+          throw new Error(typeof first.result === "string" ? first.result : `Query failed (${first.status})`);
+        }
+        return Array.isArray(first.result) ? first.result : first.result !== void 0 && first.result !== null ? [first.result] : [];
       }
+      return rpcResult;
     }
-    return sendRequest(conn.ws, "query", {
-      sql: query,
-      vars: vars || {}
-    });
+    return rpcResult !== void 0 && rpcResult !== null ? [rpcResult] : [];
   }
-  async function subscribeLive(url, query, callback, ns, db) {
-    await connect(url, ns, db);
-    const conn = getConnection(url);
-    const result = await sendRequest(conn.ws, "query", {
-      sql: query,
-      vars: {}
-    });
-    const liveId = result[0]?.id;
-    if (liveId) {
-      liveQueries.set(liveId, callback);
+  function recordKey(row) {
+    if (row && typeof row === "object" && "id" in row) {
+      const id = row.id;
+      if (id !== void 0 && id !== null)
+        return String(id);
+    }
+    return null;
+  }
+  function applyLiveEventToRows(rows, event) {
+    const action = event.action.toUpperCase();
+    const payload = event.result;
+    const key = recordKey(payload);
+    if (action === "DELETE") {
+      if (key !== null) {
+        return rows.filter((r) => recordKey(r) !== key);
+      }
+      if (typeof payload === "string") {
+        return rows.filter((r) => recordKey(r) !== payload);
+      }
+      return rows;
+    }
+    if (action === "CREATE" || action === "UPDATE") {
+      if (key !== null) {
+        const idx = rows.findIndex((r) => recordKey(r) === key);
+        if (idx >= 0) {
+          const next = rows.slice();
+          next[idx] = payload;
+          return next;
+        }
+        return [...rows, payload];
+      }
+      return payload !== void 0 ? [...rows, payload] : rows;
+    }
+    return rows;
+  }
+  function parseLiveTableAndSeed(query) {
+    const trimmed = query.trim();
+    const seedSql = trimmed.replace(/^LIVE\s+/i, "");
+    const tableMatch = seedSql.match(/\bFROM\s+([a-zA-Z0-9_:`-]+)/i);
+    const table = tableMatch ? tableMatch[1].replace(/`/g, "") : "";
+    if (!table) {
+      throw new Error(`Unable to determine table name from LIVE query: "${query}"`);
+    }
+    return { table, seedSql };
+  }
+  async function activateSubscription(conn, sub) {
+    if (sub.closed)
+      return "";
+    await connect(conn.url, sub.ns, sub.db);
+    if (!conn.ws || conn.ws.readyState !== WebSocket.OPEN) {
+      throw new Error("WebSocket unavailable for LIVE subscription");
+    }
+    if (sub.liveId) {
+      liveQueries.delete(sub.liveId);
+      sub.liveId = null;
+    }
+    sub.buffering = true;
+    sub.buffer.length = 0;
+    const liveIdRaw = await sendRequest(conn.ws, "live", [sub.table]);
+    const liveId = typeof liveIdRaw === "string" ? liveIdRaw : String(liveIdRaw || "");
+    if (!liveId) {
+      sub.buffering = false;
+      throw new Error(`LIVE subscription on "${sub.table}" did not return a subscription ID`);
+    }
+    if (sub.closed) {
+      try {
+        await sendRequest(conn.ws, "kill", [liveId]);
+      } catch {
+      }
+      return "";
+    }
+    sub.liveId = liveId;
+    liveQueries.set(liveId, sub);
+    const seedResp = await sendRequest(conn.ws, "query", [sub.seedSql, sub.vars || {}]);
+    let rows = extractQueryRows(seedResp);
+    for (const bufferedEvent of sub.buffer) {
+      rows = applyLiveEventToRows(rows, bufferedEvent);
+    }
+    sub.buffer.length = 0;
+    sub.buffering = false;
+    if (!sub.closed) {
+      sub.onRows(rows);
+      sub.onStatus("live", null);
     }
     return liveId;
   }
+  async function restoreSubscriptions(conn) {
+    for (const sub of Array.from(conn.subscriptions)) {
+      if (sub.closed) {
+        conn.subscriptions.delete(sub);
+        continue;
+      }
+      try {
+        await activateSubscription(conn, sub);
+      } catch (err) {
+        sub.onStatus("error", errMsg(err));
+      }
+    }
+  }
+  async function executeQuery(url, query, vars, ns, db) {
+    await connect(url, ns, db);
+    const conn = getConnection(url, ns || defaultNs, db || defaultDb);
+    return sendRequest(conn.ws, "query", [query, vars || {}]);
+  }
+  async function unsubscribeLive(sub) {
+    if (sub.closed)
+      return;
+    sub.closed = true;
+    sub.buffering = false;
+    sub.buffer.length = 0;
+    const conn = connectionPool.get(sub.url);
+    if (conn) {
+      conn.subscriptions.delete(sub);
+      if (conn.subscriptions.size === 0 && conn.reconnectTimer !== null) {
+        clearTimeout(conn.reconnectTimer);
+        conn.reconnectTimer = null;
+      }
+    }
+    const liveId = sub.liveId;
+    sub.liveId = null;
+    if (liveId) {
+      liveQueries.delete(liveId);
+      if (conn?.ws && conn.ready && conn.ws.readyState === WebSocket.OPEN) {
+        try {
+          await sendRequest(conn.ws, "kill", [liveId]);
+        } catch {
+        }
+      }
+    }
+  }
   function configureSqlClient(config) {
-    if (config.namespace)
+    if (config.url !== void 0)
+      defaultUrl = config.url;
+    if (config.namespace !== void 0)
       defaultNs = config.namespace;
-    if (config.database)
+    if (config.database !== void 0)
       defaultDb = config.database;
-    if (config.token)
+    if (config.token !== void 0)
       authToken = config.token;
   }
+  function syncNumericFieldsToHeap(rows, numericFields) {
+    if (numericFields.length === 0)
+      return;
+    rows.forEach((row, idx) => {
+      if (row && typeof row === "object") {
+        const rec = row;
+        numericFields.forEach((field) => {
+          if (typeof rec[field] === "number") {
+            heap.setNumeric(`${field}_${idx}`, rec[field]);
+          }
+        });
+      }
+    });
+  }
   function sqlSprite(runtime) {
-    const url = runtime.config?.sqlUrl || "ws://localhost:8000/rpc";
-    const ns = runtime.config?.sqlNs || defaultNs;
-    const db = runtime.config?.sqlDb || defaultDb;
-    return async (query, vars) => {
-      const isLive = query.trim().toUpperCase().startsWith("LIVE");
+    return async (query, vars, opts) => {
+      const url = opts?.url || resolveDefaultUrl(runtime);
+      const ns = opts?.namespace || runtime.config?.sqlNs || defaultNs;
+      const db = opts?.database || runtime.config?.sqlDb || defaultDb;
+      const isLive = /^LIVE\s+/i.test(query.trim());
+      let activeSub = null;
       const result = runtime.reactive({
         data: [],
         status: isLive ? "connecting" : "loading",
         error: null,
-        liveId: null
+        liveId: null,
+        unsubscribe: async () => {
+          if (activeSub) {
+            await unsubscribeLive(activeSub);
+            result.liveId = null;
+            result.status = "closed";
+          }
+        }
       });
       try {
         if (isLive) {
           const numericFields = [];
           const fieldMatch = query.match(/SELECT\s+(.+?)\s+FROM/i);
           if (fieldMatch) {
-            const fields = fieldMatch[1].split(",").map((f) => f.trim());
-            fields.forEach((f) => {
+            fieldMatch[1].split(",").map((f) => f.trim()).forEach((f) => {
               if (f !== "*" && !f.includes("(")) {
-                const fieldName = f.split(" AS ").pop()?.trim() || f.trim();
+                const fieldName = f.split(/\s+AS\s+/i).pop()?.trim() || f.trim();
                 if (/_id|_count|_at|_time|_amount|_price|_qty$/.test(fieldName.toLowerCase())) {
                   numericFields.push(fieldName);
                   heap.allocateNumeric(fieldName);
@@ -12505,47 +12823,56 @@ ${match}</ul>
               }
             });
           }
-          const liveId = await subscribeLive(url, query, (data) => {
-            const arr = Array.isArray(data) ? data : [];
-            if (numericFields.length > 0) {
-              arr.forEach((row, idx) => {
-                if (row && typeof row === "object") {
-                  numericFields.forEach((field) => {
-                    if (typeof row[field] === "number") {
-                      heap.setNumeric(`${field}_${idx}`, row[field]);
-                    }
-                  });
-                }
-              });
+          const { table, seedSql } = parseLiveTableAndSeed(query);
+          const conn = getConnection(url, ns, db);
+          const sub = {
+            url,
+            ns,
+            db,
+            table,
+            seedSql,
+            vars,
+            liveId: null,
+            buffering: true,
+            buffer: [],
+            closed: false,
+            onRows: (rows) => {
+              syncNumericFieldsToHeap(rows, numericFields);
+              result.data = rows;
+            },
+            onEvent: (event) => {
+              const next = applyLiveEventToRows(result.data, event);
+              syncNumericFieldsToHeap(next, numericFields);
+              result.data = next;
+              result.status = "live";
+            },
+            onStatus: (status, error) => {
+              result.status = status;
+              if (error !== void 0)
+                result.error = error;
             }
-            result.data = arr;
-            result.status = "live";
-          }, ns, db);
-          result.liveId = liveId;
-          result.status = "live";
+          };
+          activeSub = sub;
+          conn.subscriptions.add(sub);
+          if (typeof runtime.onEffectCleanup === "function") {
+            runtime.onEffectCleanup(() => {
+              void unsubscribeLive(sub);
+            });
+          }
+          const liveId = await activateSubscription(conn, sub);
+          result.liveId = liveId || null;
         } else {
           const response = await executeQuery(url, query, vars, ns, db);
-          const queryResult = response[0]?.result || response;
+          const queryResult = extractQueryRows(response);
           if (Array.isArray(queryResult) && queryResult.length > 10) {
             const sample = queryResult[0];
             if (sample && typeof sample === "object") {
               const keys = Object.keys(sample);
               const numericCount = keys.filter((k) => typeof sample[k] === "number").length;
-              if (numericCount / keys.length >= 0.5) {
-                keys.forEach((k) => {
-                  if (typeof sample[k] === "number") {
-                    heap.allocateNumeric(k);
-                  }
-                });
-                queryResult.forEach((row, idx) => {
-                  if (row && typeof row === "object") {
-                    keys.forEach((k) => {
-                      if (typeof row[k] === "number") {
-                        heap.setNumeric(`${k}_${idx}`, row[k]);
-                      }
-                    });
-                  }
-                });
+              if (keys.length > 0 && numericCount / keys.length >= 0.5) {
+                const numKeys = keys.filter((k) => typeof sample[k] === "number");
+                numKeys.forEach((k) => heap.allocateNumeric(k));
+                syncNumericFieldsToHeap(queryResult, numKeys);
               }
             }
           }
@@ -12559,14 +12886,46 @@ ${match}</ul>
       return result;
     };
   }
+  function resetSqlConnections() {
+    for (const [, conn] of connectionPool.entries()) {
+      if (conn.reconnectTimer !== null) {
+        clearTimeout(conn.reconnectTimer);
+        conn.reconnectTimer = null;
+      }
+      for (const sub of conn.subscriptions) {
+        sub.closed = true;
+        if (sub.liveId) {
+          liveQueries.delete(sub.liveId);
+        }
+      }
+      conn.subscriptions.clear();
+      try {
+        conn.ws?.close(1e3, "auth-changed");
+      } catch {
+      }
+    }
+    connectionPool.clear();
+  }
+  var authListenerBound = false;
+  function ensureAuthChangeListener() {
+    if (authListenerBound || typeof window === "undefined")
+      return;
+    authListenerBound = true;
+    window.addEventListener("nexus:auth-changed", () => {
+      resetSqlConnections();
+    });
+  }
   var sqlSpriteModule = {
     name: "sql",
     key: "$sql",
-    sprites: (runtime) => sqlSprite(runtime)
+    sprites: (runtime) => {
+      ensureAuthChangeListener();
+      return sqlSprite(runtime);
+    }
   };
   var sql_default = sqlSpriteModule;
 
-  // src/modules/sprites/svg.ts
+  // ux/src/modules/sprites/svg.ts
   var svg_exports = {};
   __export(svg_exports, {
     default: () => svg_default,
@@ -12690,7 +13049,7 @@ ${match}</ul>
   };
   var svg_default = svgModule;
 
-  // src/modules/sprites/sw.ts
+  // ux/src/modules/sprites/sw.ts
   var sw_exports = {};
   __export(sw_exports, {
     createSwApi: () => createSwApi,
@@ -12836,7 +13195,7 @@ ${match}</ul>
   };
   var sw_default = swSpriteModule;
 
-  // src/modules/scopes/auth.ts
+  // ux/src/modules/scopes/auth.ts
   var auth_exports = {};
   __export(auth_exports, {
     authScope: () => authScope,
@@ -12844,39 +13203,290 @@ ${match}</ul>
     default: () => auth_default,
     scopeRule: () => scopeRule
   });
+  function dispatchAuthChanged(authenticated, actor) {
+    if (typeof window !== "undefined" && typeof CustomEvent === "function") {
+      window.dispatchEvent(
+        new CustomEvent("nexus:auth-changed", {
+          detail: { authenticated, actor }
+        })
+      );
+    }
+  }
   var authScope = reactive({
     user: null,
+    actor: null,
+    level: "anonymous",
     isAuthenticated: false,
     roles: [],
+    capabilities: [],
     token: null,
-    // Methods to simulate login/logout for now
-    login: (userData) => {
-      authScope.user = userData;
-      authScope.isAuthenticated = true;
-      authScope.roles = userData.roles || [];
+    loading: false,
+    hydrated: false,
+    initialized: true,
+    error: null,
+    endpoint: "/_nexus/auth/me",
+    setupStatusEndpoint: "/_nexus/setup/status",
+    bootstrapEndpoint: "/_nexus/setup/bootstrap",
+    signinEndpoint: "/signin",
+    signoutEndpoint: "/signout",
+    hasRole: (role) => {
+      const target = String(role || "").trim().toUpperCase();
+      if (!target)
+        return false;
+      return (authScope.roles || []).some((r) => String(r).toUpperCase() === target);
     },
-    logout: () => {
+    can: (capability) => {
+      const target = String(capability || "").trim().toLowerCase();
+      if (!target)
+        return false;
+      return (authScope.capabilities || []).some((c) => String(c).toLowerCase() === target);
+    },
+    refresh: async () => {
+      if (typeof fetch !== "function") {
+        authScope.hydrated = true;
+        return null;
+      }
+      authScope.loading = true;
+      try {
+        const res = await fetch(authScope.endpoint, {
+          method: "GET",
+          credentials: "same-origin",
+          headers: { "Accept": "application/json" }
+        });
+        if (!res.ok) {
+          authScope.user = null;
+          authScope.actor = null;
+          authScope.level = "anonymous";
+          authScope.isAuthenticated = false;
+          authScope.roles = [];
+          authScope.capabilities = [];
+          authScope.hydrated = true;
+          return null;
+        }
+        const data = await res.json();
+        if (data && data.authenticated) {
+          const roles = Array.isArray(data.roles) ? data.roles.map(String) : [];
+          const capabilities = Array.isArray(data.capabilities) ? data.capabilities.map(String) : [];
+          const actor = data.actor ? String(data.actor) : null;
+          const level = data.level ? String(data.level) : "database";
+          authScope.actor = actor;
+          authScope.level = level;
+          authScope.roles = roles;
+          authScope.capabilities = capabilities;
+          authScope.isAuthenticated = true;
+          authScope.user = {
+            actor,
+            name: actor,
+            level,
+            ns: data.ns || "nexus",
+            db: data.db || "system",
+            roles,
+            capabilities
+          };
+          authScope.error = null;
+          authScope.hydrated = true;
+          return {
+            authenticated: true,
+            actor,
+            level,
+            ns: data.ns,
+            db: data.db,
+            roles,
+            capabilities
+          };
+        }
+        authScope.user = null;
+        authScope.actor = null;
+        authScope.level = "anonymous";
+        authScope.isAuthenticated = false;
+        authScope.roles = [];
+        authScope.capabilities = [];
+        try {
+          const setupRes = await fetch(authScope.setupStatusEndpoint, {
+            method: "GET",
+            credentials: "same-origin",
+            headers: { "Accept": "application/json" }
+          });
+          if (setupRes.ok) {
+            const setupData = await setupRes.json().catch(() => ({}));
+            if (typeof setupData?.initialized === "boolean") {
+              authScope.initialized = setupData.initialized;
+            }
+          }
+        } catch {
+        }
+        authScope.hydrated = true;
+        return {
+          authenticated: false,
+          actor: null,
+          level: "anonymous",
+          roles: [],
+          capabilities: []
+        };
+      } catch {
+        authScope.user = null;
+        authScope.actor = null;
+        authScope.level = "anonymous";
+        authScope.isAuthenticated = false;
+        authScope.roles = [];
+        authScope.capabilities = [];
+        authScope.hydrated = true;
+        return null;
+      } finally {
+        authScope.loading = false;
+      }
+    },
+    bootstrap: async (credentials) => {
+      if (typeof fetch !== "function")
+        return false;
+      authScope.loading = true;
+      authScope.error = null;
+      try {
+        const payload = {
+          user: (credentials?.user || "").trim(),
+          pass: credentials?.pass || ""
+        };
+        if (!payload.user || payload.pass.length < 4) {
+          authScope.error = "Username and password (min 4 chars) are required";
+          return false;
+        }
+        const res = await fetch(authScope.bootstrapEndpoint, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          authScope.error = body?.details || `Setup failed (${res.status})`;
+          return false;
+        }
+        authScope.initialized = true;
+        const identity = await authScope.refresh();
+        const ok = Boolean(identity?.authenticated);
+        if (ok) {
+          dispatchAuthChanged(true, authScope.actor);
+        }
+        return ok;
+      } catch (err) {
+        authScope.error = err instanceof Error ? err.message : "Network error during setup";
+        return false;
+      } finally {
+        authScope.loading = false;
+      }
+    },
+    signin: async (credentials) => {
+      if (typeof fetch !== "function")
+        return false;
+      authScope.loading = true;
+      authScope.error = null;
+      try {
+        const payload = {
+          user: (credentials?.user || "").trim(),
+          pass: credentials?.pass || "",
+          ns: credentials?.ns || "nexus",
+          db: credentials?.db || "system"
+        };
+        if (!payload.user || !payload.pass) {
+          authScope.error = "Username and password are required";
+          return false;
+        }
+        const res = await fetch(authScope.signinEndpoint, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          authScope.error = body?.details || `Sign-in failed (${res.status})`;
+          return false;
+        }
+        const identity = await authScope.refresh();
+        const ok = Boolean(identity?.authenticated);
+        if (!ok) {
+          authScope.error = "Session could not be verified after sign-in";
+          return false;
+        }
+        dispatchAuthChanged(true, authScope.actor);
+        return true;
+      } catch (err) {
+        authScope.error = err instanceof Error ? err.message : "Network error during sign-in";
+        return false;
+      } finally {
+        authScope.loading = false;
+      }
+    },
+    signout: async () => {
+      if (typeof fetch === "function") {
+        try {
+          await fetch(authScope.signoutEndpoint, {
+            method: "POST",
+            credentials: "same-origin"
+          });
+        } catch {
+        }
+      }
       authScope.user = null;
+      authScope.actor = null;
+      authScope.level = "anonymous";
       authScope.isAuthenticated = false;
       authScope.roles = [];
+      authScope.capabilities = [];
       authScope.token = null;
+      authScope.error = null;
+      dispatchAuthChanged(false, null);
+    },
+    // Backwards-compatible local helpers for offline labs/tests
+    login: (userData) => {
+      const roles = Array.isArray(userData?.roles) ? userData.roles.map(String) : [];
+      const capabilities = Array.isArray(userData?.capabilities) ? userData.capabilities.map(String) : [];
+      authScope.user = userData;
+      authScope.actor = String(userData?.actor || userData?.name || userData?.email || "user");
+      authScope.isAuthenticated = true;
+      authScope.roles = roles;
+      authScope.capabilities = capabilities;
+      authScope.hydrated = true;
+    },
+    logout: () => {
+      void authScope.signout();
     }
   });
   var scopeRule = (q, body) => {
-    if (q === "isAuthenticated")
+    const query = String(q || "").trim();
+    if (query === "isAuthenticated" || query === "authenticated") {
       return authScope.isAuthenticated ? body() : void 0;
-    if (authScope.roles.includes(q))
+    }
+    if (query === "anonymous" || query === "!isAuthenticated") {
+      return !authScope.isAuthenticated ? body() : void 0;
+    }
+    if (authScope.hasRole(query) || authScope.can(query)) {
       return body();
+    }
     return void 0;
   };
+  var bootHydrationScheduled = false;
   var authScopeModule = {
     name: "auth",
     rule: "auth",
-    scopeRule
+    scopeRule,
+    onRegister: () => {
+      registerScopeProvider("$auth", () => authScope);
+      if (!bootHydrationScheduled && typeof window !== "undefined" && typeof fetch === "function") {
+        bootHydrationScheduled = true;
+        void authScope.refresh();
+      }
+    }
   };
   var auth_default = authScopeModule;
 
-  // src/modules/scopes/container.ts
+  // ux/src/modules/scopes/container.ts
   var container_exports = {};
   __export(container_exports, {
     containerScopeModule: () => containerScopeModule,
@@ -12920,7 +13530,7 @@ ${match}</ul>
   };
   var container_default = containerScopeModule;
 
-  // src/modules/scopes/media.ts
+  // ux/src/modules/scopes/media.ts
   var media_exports = {};
   __export(media_exports, {
     default: () => media_default,
@@ -12960,7 +13570,7 @@ ${match}</ul>
   };
   var media_default = mediaScopeModule;
 
-  // src/modules/scopes/native.ts
+  // ux/src/modules/scopes/native.ts
   var native_exports = {};
   __export(native_exports, {
     default: () => native_default,
@@ -12991,7 +13601,7 @@ ${match}</ul>
   };
   var native_default = nativeScopeModule;
 
-  // src/modules/scopes/os.ts
+  // ux/src/modules/scopes/os.ts
   var os_exports = {};
   __export(os_exports, {
     default: () => os_default,
@@ -13060,7 +13670,7 @@ ${match}</ul>
   };
   var os_default = osScopeModule;
 
-  // src/modules/scopes/view.ts
+  // ux/src/modules/scopes/view.ts
   var view_exports = {};
   __export(view_exports, {
     default: () => view_default,
@@ -13141,7 +13751,7 @@ ${match}</ul>
   };
   var view_default = viewScopeModule;
 
-  // src/modules/modifiers/debounce.ts
+  // ux/src/modules/modifiers/debounce.ts
   var debounce_exports = {};
   __export(debounce_exports, {
     debounceModifier: () => debounceModifier,
@@ -13149,7 +13759,7 @@ ${match}</ul>
   });
   init_consts();
 
-  // src/engine/utils/timer.ts
+  // ux/src/engine/utils/timer.ts
   init_consts();
   function getTimerMap(el) {
     let map = el[TIMER_MAP_KEY];
@@ -13279,7 +13889,7 @@ ${match}</ul>
     };
   }
 
-  // src/modules/modifiers/debounce.ts
+  // ux/src/modules/modifiers/debounce.ts
   var debounceModifier = createTimerModifier(
     "debounce",
     DEFAULT_DEBOUNCE_TIME,
@@ -13297,7 +13907,7 @@ ${match}</ul>
   );
   var debounce_default = debounceModifier;
 
-  // src/modules/modifiers/delay.ts
+  // ux/src/modules/modifiers/delay.ts
   var delay_exports = {};
   __export(delay_exports, {
     default: () => delay_default,
@@ -13320,14 +13930,14 @@ ${match}</ul>
   );
   var delay_default = delayModifier;
 
-  // src/modules/modifiers/document.ts
+  // ux/src/modules/modifiers/document.ts
   var document_exports = {};
   __export(document_exports, {
     default: () => document_default,
     documentModifier: () => documentModifier
   });
 
-  // src/engine/utils/modifier.ts
+  // ux/src/engine/utils/modifier.ts
   function createModifier(name, handle) {
     return { name, handle };
   }
@@ -13343,11 +13953,11 @@ ${match}</ul>
     };
   }
 
-  // src/modules/modifiers/document.ts
+  // ux/src/modules/modifiers/document.ts
   var documentModifier = createModifier("document", (payload) => payload);
   var document_default = documentModifier;
 
-  // src/modules/modifiers/drag.ts
+  // ux/src/modules/modifiers/drag.ts
   var drag_exports3 = {};
   __export(drag_exports3, {
     default: () => drag_default3,
@@ -13393,7 +14003,7 @@ ${match}</ul>
   };
   var drag_default3 = dragModifier;
 
-  // src/modules/modifiers/hold.ts
+  // ux/src/modules/modifiers/hold.ts
   var hold_exports = {};
   __export(hold_exports, {
     default: () => hold_default,
@@ -13440,7 +14050,7 @@ ${match}</ul>
   );
   var hold_default = holdModifier;
 
-  // src/modules/modifiers/keys.ts
+  // ux/src/modules/modifiers/keys.ts
   var keys_exports = {};
   __export(keys_exports, {
     KEY_MODIFIERS: () => KEY_MODIFIERS,
@@ -13512,7 +14122,7 @@ ${match}</ul>
   };
   var keys_default = keysModifier;
 
-  // src/modules/modifiers/morph.ts
+  // ux/src/modules/modifiers/morph.ts
   var morph_exports = {};
   __export(morph_exports, {
     default: () => morph_default,
@@ -13547,7 +14157,7 @@ ${match}</ul>
   };
   var morph_default = morphModifier;
 
-  // src/modules/modifiers/once.ts
+  // ux/src/modules/modifiers/once.ts
   var once_exports = {};
   __export(once_exports, {
     default: () => once_default,
@@ -13572,7 +14182,7 @@ ${match}</ul>
   });
   var once_default = onceModifier;
 
-  // src/modules/modifiers/outside.ts
+  // ux/src/modules/modifiers/outside.ts
   var outside_exports = {};
   __export(outside_exports, {
     default: () => outside_default,
@@ -13585,7 +14195,7 @@ ${match}</ul>
   });
   var outside_default = outsideModifier;
 
-  // src/modules/modifiers/prevent.ts
+  // ux/src/modules/modifiers/prevent.ts
   var prevent_exports = {};
   __export(prevent_exports, {
     default: () => prevent_default,
@@ -13597,7 +14207,7 @@ ${match}</ul>
   });
   var prevent_default = preventModifier;
 
-  // src/modules/modifiers/self.ts
+  // ux/src/modules/modifiers/self.ts
   var self_exports = {};
   __export(self_exports, {
     default: () => self_default,
@@ -13609,7 +14219,7 @@ ${match}</ul>
   });
   var self_default = selfModifier;
 
-  // src/modules/modifiers/stop.ts
+  // ux/src/modules/modifiers/stop.ts
   var stop_exports = {};
   __export(stop_exports, {
     default: () => stop_default,
@@ -13621,7 +14231,7 @@ ${match}</ul>
   });
   var stop_default = stopModifier;
 
-  // src/modules/modifiers/throttle.ts
+  // ux/src/modules/modifiers/throttle.ts
   var throttle_exports = {};
   __export(throttle_exports, {
     default: () => throttle_default,
@@ -13649,7 +14259,7 @@ ${match}</ul>
   );
   var throttle_default = throttleModifier;
 
-  // src/modules/modifiers/window.ts
+  // ux/src/modules/modifiers/window.ts
   var window_exports = {};
   __export(window_exports, {
     default: () => window_default,
@@ -13658,7 +14268,7 @@ ${match}</ul>
   var windowModifier = createModifier("window", (payload) => payload);
   var window_default = windowModifier;
 
-  // src/modules/modifiers/zoom.ts
+  // ux/src/modules/modifiers/zoom.ts
   var zoom_exports = {};
   __export(zoom_exports, {
     default: () => zoom_default,
@@ -13690,7 +14300,7 @@ ${match}</ul>
   };
   var zoom_default = zoomModifier;
 
-  // src/modules/listeners/bfcache.ts
+  // ux/src/modules/listeners/bfcache.ts
   var bfcache_exports = {};
   __export(bfcache_exports, {
     default: () => bfcache_default
@@ -13763,7 +14373,7 @@ ${match}</ul>
   };
   var bfcache_default = bfcacheListener;
 
-  // src/modules/listeners/executeScript.ts
+  // ux/src/modules/listeners/executeScript.ts
   var executeScript_exports = {};
   __export(executeScript_exports, {
     default: () => executeScript_default
@@ -13788,7 +14398,7 @@ ${match}</ul>
   };
   var executeScript_default = executeScriptModule;
 
-  // src/modules/listeners/history.ts
+  // ux/src/modules/listeners/history.ts
   var history_exports = {};
   __export(history_exports, {
     default: () => history_default
@@ -13826,7 +14436,7 @@ ${match}</ul>
   };
   var history_default = historyModule;
 
-  // src/modules/listeners/linkRewriter.ts
+  // ux/src/modules/listeners/linkRewriter.ts
   var linkRewriter_exports = {};
   __export(linkRewriter_exports, {
     default: () => linkRewriter_default
@@ -13899,7 +14509,7 @@ ${match}</ul>
   };
   var linkRewriter_default = linkRewriterModule;
 
-  // src/engine/mutation.ts
+  // ux/src/engine/mutation.ts
   var mutation_exports = {};
   __export(mutation_exports, {
     default: () => mutation_default
@@ -14032,11 +14642,11 @@ ${match}</ul>
   };
   var mutation_default = mutationObserverModule;
 
-  // src/engine/styleConstants.ts
+  // ux/src/engine/styleConstants.ts
   var PACKED_COMPONENTS = ".draggable-chosen{background-color:var(--color-base-300,#d4d4d8);box-shadow:inset 0 0 0 2px var(--color-primary,#3b82f6)}.draggable-drag{opacity:1;background-color:var(--color-base-300,#d4d4d8);box-shadow:0 25px 50px -12px rgba(0,0,0,.25);transform:scale(1.05);cursor:grabbing;z-index:9999}.draggable-ghost{opacity:1;background-color:var(--color-base-300,#d4d4d8);border:2px solid var(--color-primary,#3b82f6);box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}.draggable-selected{box-shadow:inset 0 0 0 2px var(--color-accent,var(--color-secondary,#ec4899))}.draggable-swap-highlight{background-color:color-mix(in srgb,var(--color-warning,#eab308) 20%,transparent);box-shadow:inset 0 0 0 2px var(--color-warning,#eab308)}.drop-target-before{background:linear-gradient(to bottom,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 2px 0 0 var(--color-primary,#3b82f6)}.drop-target-after{background:linear-gradient(to top,color-mix(in srgb,var(--color-primary,#3b82f6) 30%,transparent) 0%,transparent 20%);box-shadow:inset 0 -2px 0 0 var(--color-primary,#3b82f6)}";
   var PACKED_KEYFRAMES = "@keyframes spin{to{transform:rotate(360deg)}}@keyframes ping{75%,100%{transform:scale(2);opacity:0}}@keyframes pulse{50%{opacity:.5}}@keyframes bounce{0%,100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}";
 
-  // src/manifest.ts
+  // ux/src/manifest.ts
   var autoAttributes = [
     { name: "assert", module: assert_exports },
     { name: "bind", module: bind_exports },
@@ -14119,7 +14729,7 @@ ${match}</ul>
   ];
   var autoObservers = [{ name: "mutation", module: mutation_exports }];
 
-  // src/modules/attributes/stylesheet.ts
+  // ux/src/modules/attributes/stylesheet.ts
   var PREFLIGHT_CSS = PACKED_COMPONENTS;
   async function resolveImports(cssText, baseUrl, onUpdate) {
     const defaultBase = typeof window !== "undefined" ? window.location.href : "http://localhost";
@@ -14633,7 +15243,7 @@ ${bridge}`, {
   };
   var stylesheet_default = stylesheetModule;
 
-  // src/engine/utils/hash.ts
+  // ux/src/engine/utils/hash.ts
   init_consts();
   var Hash = class {
     #value = 0;
@@ -14709,7 +15319,7 @@ ${bridge}`, {
     return String(hash);
   }
 
-  // src/engine/reconciler.ts
+  // ux/src/engine/reconciler.ts
   function teardownSubtree(root, includeRoot = true) {
     if (!(root instanceof Element))
       return;
@@ -15212,7 +15822,7 @@ ${bridge}`, {
     return true;
   }
 
-  // src/engine/fetch.ts
+  // ux/src/engine/fetch.ts
   init_debug();
   init_consts();
   var fetchCache = /* @__PURE__ */ new Map();
@@ -15364,7 +15974,7 @@ ${bridge}`, {
     }
   };
 
-  // src/engine/evaluator.ts
+  // ux/src/engine/evaluator.ts
   init_debug();
   registerScopeProvider("__global", (_, runtime) => runtime.globalSignals());
   var currentEvalDepth = 0;
@@ -15735,7 +16345,7 @@ ${bridge}`, {
     };
   }
 
-  // src/engine/attributeParser.ts
+  // ux/src/engine/attributeParser.ts
   init_consts();
   var parsedAttributeStructureCache = /* @__PURE__ */ new Map();
   function parseAttribute(name, _runtime, element) {
@@ -15822,12 +16432,12 @@ ${bridge}`, {
     };
   }
 
-  // src/engine/modules.ts
+  // ux/src/engine/modules.ts
   init_debug();
   init_debug();
   init_consts();
 
-  // src/engine/observers.ts
+  // ux/src/engine/observers.ts
   var registry = /* @__PURE__ */ new Map();
   function registerObserver(name, module) {
     registry.set(name, {
@@ -15859,7 +16469,7 @@ ${bridge}`, {
     registry.clear();
   }
 
-  // src/engine/modules.ts
+  // ux/src/engine/modules.ts
   init_debug();
   var globalReactiveState = reactive({});
   var ModuleCoordinator = class {
@@ -16309,7 +16919,7 @@ ${bridge}`, {
     return actions;
   }
 
-  // src/index.ts
+  // ux/src/index.ts
   init_consts();
   var _idCounters = {};
   function $id(groupName = "default") {

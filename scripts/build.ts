@@ -145,14 +145,25 @@ async function buildBundle(options: BuildOptions = {}) {
   }
 
   try {
-    await Deno.mkdir("./dist", { recursive: true });
-
     const cwd = Deno.cwd();
-    const entryPoint = "./src/index.ts";
-    const outFile = path.resolve(cwd, "dist", `${outputName}.js`);
+    const hasUxSubdir = (() => {
+      try {
+        return Deno.statSync(path.resolve(cwd, "ux", "src", "index.ts")).isFile;
+      } catch {
+        return false;
+      }
+    })();
+    const uxRoot = hasUxSubdir ? path.resolve(cwd, "ux") : cwd;
+    const srcRoot = path.resolve(uxRoot, "src");
+    const distRoot = path.resolve(uxRoot, "dist");
+
+    await Deno.mkdir(distRoot, { recursive: true });
+
+    const entryPoint = hasUxSubdir ? "./ux/src/index.ts" : "./src/index.ts";
+    const outFile = path.resolve(distRoot, `${outputName}.js`);
     const configPath = path.resolve(cwd, "deno.json");
-    const manifestPath = path.resolve(cwd, "src", "manifest.ts");
-    const manifestJsonPath = path.resolve(cwd, "dist", "manifest.json");
+    const manifestPath = path.resolve(srcRoot, "manifest.ts");
+    const manifestJsonPath = path.resolve(distRoot, "manifest.json");
 
     let analysisResult: any = null;
     let packedThemeCss = "";
@@ -274,9 +285,9 @@ async function buildBundle(options: BuildOptions = {}) {
     };
 
     // Load available module names
-    const availableAttrs = await listModuleNames(path.resolve(cwd, "src", "modules", "attributes"));
-    const availableSprites = await listModuleNames(path.resolve(cwd, "src", "modules", "sprites"));
-    const availableModifiers = await listModuleNames(path.resolve(cwd, "src", "modules", "modifiers"));
+    const availableAttrs = await listModuleNames(path.resolve(srcRoot, "modules", "attributes"));
+    const availableSprites = await listModuleNames(path.resolve(srcRoot, "modules", "sprites"));
+    const availableModifiers = await listModuleNames(path.resolve(srcRoot, "modules", "modifiers"));
 
     async function generateRegistry(
       dir: string,
@@ -286,7 +297,7 @@ async function buildBundle(options: BuildOptions = {}) {
     ) {
       const arr: string[] = [];
       try {
-        const fullPath = path.resolve(cwd, "src", dir);
+        const fullPath = path.resolve(srcRoot, dir);
         for await (const entry of Deno.readDir(fullPath)) {
           if (entry.isFile && entry.name.endsWith(".ts") && entry.name !== "index.ts") {
             const nameWithoutExt = entry.name.replace(".ts", "");
@@ -325,7 +336,7 @@ async function buildBundle(options: BuildOptions = {}) {
     await generateRegistry("modules/listeners", "autoListeners", "listeners", undefined);
 
     // Mutation observer
-    const mutationPath = path.resolve(cwd, "src", "engine", "mutation.ts");
+    const mutationPath = path.resolve(srcRoot, "engine", "mutation.ts");
     try {
       const stat = await Deno.stat(mutationPath);
       if (stat.isFile && !excludeModules.includes("mutation")) {
@@ -370,8 +381,8 @@ async function buildBundle(options: BuildOptions = {}) {
     console.log(`Build complete: ${outFile}`);
 
     // Build dedicated lightweight logic worker bundle
-    const workerEntryPoint = "./src/engine/logic.worker.ts";
-    const workerOutFile = path.resolve(cwd, "dist", "logic.worker.js");
+    const workerEntryPoint = hasUxSubdir ? "./ux/src/engine/logic.worker.ts" : "./src/engine/logic.worker.ts";
+    const workerOutFile = path.resolve(distRoot, "logic.worker.js");
     await esbuild.build({
       plugins: [...denoPlugins({ configPath })],
       entryPoints: [workerEntryPoint],
