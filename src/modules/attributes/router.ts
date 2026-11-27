@@ -790,20 +790,22 @@ export const routerAttributeModule: AttributeModule = {
                 }
               }
 
-              const itemMeta = { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined, isSubmenu };
-              discovered.push({
-                id: item.id || cleanName,
-                href,
-                title: finalTitle,
-                icon: finalIcon || '',
-                tabTitle: finalTitle,
-                tabIcon: finalIcon || '',
-                path: compPath,
-                parent,
-                category: category || undefined,
-                children: children.length > 0 ? children : undefined,
-                meta: itemMeta,
-              } as any);
+              const itemMeta = { title: finalTitle, icon: finalIcon, order, parent, category: category || undefined, isSubmenu, hidden: isObj && item.hidden === true };
+              if (!(isObj && item.hidden === true)) {
+                discovered.push({
+                  id: item.id || cleanName,
+                  href,
+                  title: finalTitle,
+                  icon: finalIcon || '',
+                  tabTitle: finalTitle,
+                  tabIcon: finalIcon || '',
+                  path: compPath,
+                  parent,
+                  category: category || undefined,
+                  children: children.length > 0 ? children : undefined,
+                  meta: itemMeta,
+                } as any);
+              }
 
               ensureStateRoute(href, compPath, cleanName, itemMeta);
             }

@@ -324,7 +324,12 @@ export function createScopeProxy(
     },
     set(_, key, value) {
       const target = stateRef.value;
+      const hadKey = typeof key === 'string' && Reflect.has(target, key);
+      const oldVal = Reflect.get(target, key);
       const res = Reflect.set(target, key, value);
+      if (hadKey && Object.is(oldVal, value)) {
+        return res;
+      }
       if (typeof key === 'string') trigger(target, key);
       if (onSet) onSet(key as string, value);
       if (onTrigger) onTrigger();

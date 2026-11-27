@@ -2305,7 +2305,12 @@ ${suggestion}`);
       },
       set(_, key, value) {
         const target = stateRef.value;
+        const hadKey = typeof key === "string" && Reflect.has(target, key);
+        const oldVal = Reflect.get(target, key);
         const res = Reflect.set(target, key, value);
+        if (hadKey && Object.is(oldVal, value)) {
+          return res;
+        }
         if (typeof key === "string")
           trigger(target, key);
         if (onSet)
@@ -7826,20 +7831,22 @@ ${match}</ul>
                     ensureStateRoute(chHref, chPath, chName, chMeta);
                   }
                 }
-                const itemMeta = { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0, isSubmenu };
-                discovered.push({
-                  id: item.id || cleanName,
-                  href,
-                  title: finalTitle,
-                  icon: finalIcon || "",
-                  tabTitle: finalTitle,
-                  tabIcon: finalIcon || "",
-                  path: compPath,
-                  parent,
-                  category: category || void 0,
-                  children: children.length > 0 ? children : void 0,
-                  meta: itemMeta
-                });
+                const itemMeta = { title: finalTitle, icon: finalIcon, order, parent, category: category || void 0, isSubmenu, hidden: isObj && item.hidden === true };
+                if (!(isObj && item.hidden === true)) {
+                  discovered.push({
+                    id: item.id || cleanName,
+                    href,
+                    title: finalTitle,
+                    icon: finalIcon || "",
+                    tabTitle: finalTitle,
+                    tabIcon: finalIcon || "",
+                    path: compPath,
+                    parent,
+                    category: category || void 0,
+                    children: children.length > 0 ? children : void 0,
+                    meta: itemMeta
+                  });
+                }
                 ensureStateRoute(href, compPath, cleanName, itemMeta);
               }
               const rootPages = [];
