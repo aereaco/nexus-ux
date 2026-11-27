@@ -13215,10 +13215,14 @@ ${match}</ul>
   var authScope = reactive({
     user: null,
     actor: null,
+    identity_id: null,
+    org_id: null,
     level: "anonymous",
     isAuthenticated: false,
     roles: [],
     capabilities: [],
+    permissions: [],
+    authorized_orgs: [],
     token: null,
     loading: false,
     hydrated: false,
@@ -13240,6 +13244,17 @@ ${match}</ul>
       if (!target)
         return false;
       return (authScope.capabilities || []).some((c) => String(c).toLowerCase() === target);
+    },
+    hasPermission: (permission) => {
+      const target = String(permission || "").trim().toLowerCase();
+      if (!target)
+        return false;
+      if ((authScope.roles || []).some((r) => String(r).toUpperCase() === "OWNER"))
+        return true;
+      return (authScope.permissions || []).some((p) => {
+        const lp = String(p).toLowerCase();
+        return lp === "*" || lp === target;
+      });
     },
     refresh: async () => {
       if (typeof fetch !== "function") {
@@ -13267,32 +13282,48 @@ ${match}</ul>
         if (data && data.authenticated) {
           const roles = Array.isArray(data.roles) ? data.roles.map(String) : [];
           const capabilities = Array.isArray(data.capabilities) ? data.capabilities.map(String) : [];
+          const permissions = Array.isArray(data.permissions) ? data.permissions.map(String) : [];
+          const authorized_orgs = Array.isArray(data.authorized_orgs) ? data.authorized_orgs : [];
           const actor = data.actor ? String(data.actor) : null;
+          const identity_id = data.identity_id ? String(data.identity_id) : actor;
+          const org_id = data.org_id ? String(data.org_id) : "default";
           const level = data.level ? String(data.level) : "database";
           authScope.actor = actor;
+          authScope.identity_id = identity_id;
+          authScope.org_id = org_id;
           authScope.level = level;
           authScope.roles = roles;
           authScope.capabilities = capabilities;
+          authScope.permissions = permissions;
+          authScope.authorized_orgs = authorized_orgs;
           authScope.isAuthenticated = true;
           authScope.user = {
             actor,
+            identity_id,
+            org_id,
             name: actor,
             level,
             ns: data.ns || "nexus",
             db: data.db || "system",
             roles,
-            capabilities
+            capabilities,
+            permissions,
+            authorized_orgs
           };
           authScope.error = null;
           authScope.hydrated = true;
           return {
             authenticated: true,
             actor,
+            identity_id,
+            org_id,
             level,
             ns: data.ns,
             db: data.db,
             roles,
-            capabilities
+            capabilities,
+            permissions,
+            authorized_orgs
           };
         }
         authScope.user = null;

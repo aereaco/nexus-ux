@@ -12,11 +12,15 @@ export interface AuthCredentials {
 export interface AuthIdentityPayload {
   authenticated: boolean;
   actor: string | null;
+  identity_id?: string | null;
   level: string;
   ns?: string;
   db?: string;
+  org_id?: string | null;
   roles: string[];
   capabilities: string[];
+  permissions?: string[];
+  authorized_orgs?: Record<string, unknown>[];
 }
 
 function dispatchAuthChanged(authenticated: boolean, actor: string | null): void {
@@ -41,10 +45,14 @@ function dispatchAuthChanged(authenticated: boolean, actor: string | null): void
 export const authScope = reactive({
   user: null as Record<string, unknown> | null,
   actor: null as string | null,
+  identity_id: null as string | null,
+  org_id: null as string | null,
   level: 'anonymous' as string,
   isAuthenticated: false,
   roles: [] as string[],
   capabilities: [] as string[],
+  permissions: [] as string[],
+  authorized_orgs: [] as Record<string, unknown>[],
   token: null as string | null,
   loading: false,
   hydrated: false,
@@ -66,6 +74,16 @@ export const authScope = reactive({
     const target = String(capability || '').trim().toLowerCase();
     if (!target) return false;
     return (authScope.capabilities || []).some((c: string) => String(c).toLowerCase() === target);
+  },
+
+  hasPermission: (permission: string): boolean => {
+    const target = String(permission || '').trim().toLowerCase();
+    if (!target) return false;
+    if ((authScope.roles || []).some((r: string) => String(r).toUpperCase() === 'OWNER')) return true;
+    return (authScope.permissions || []).some((p: string) => {
+      const lp = String(p).toLowerCase();
+      return lp === '*' || lp === target;
+    });
   },
 
   refresh: async (): Promise<AuthIdentityPayload | null> => {
@@ -94,32 +112,48 @@ export const authScope = reactive({
       if (data && data.authenticated) {
         const roles = Array.isArray(data.roles) ? data.roles.map(String) : [];
         const capabilities = Array.isArray(data.capabilities) ? data.capabilities.map(String) : [];
+        const permissions = Array.isArray(data.permissions) ? data.permissions.map(String) : [];
+        const authorized_orgs = Array.isArray(data.authorized_orgs) ? data.authorized_orgs : [];
         const actor = data.actor ? String(data.actor) : null;
+        const identity_id = data.identity_id ? String(data.identity_id) : actor;
+        const org_id = data.org_id ? String(data.org_id) : 'default';
         const level = data.level ? String(data.level) : 'database';
         authScope.actor = actor;
+        authScope.identity_id = identity_id;
+        authScope.org_id = org_id;
         authScope.level = level;
         authScope.roles = roles;
         authScope.capabilities = capabilities;
+        authScope.permissions = permissions;
+        authScope.authorized_orgs = authorized_orgs;
         authScope.isAuthenticated = true;
         authScope.user = {
           actor,
+          identity_id,
+          org_id,
           name: actor,
           level,
           ns: data.ns || 'nexus',
           db: data.db || 'system',
           roles,
-          capabilities
+          capabilities,
+          permissions,
+          authorized_orgs
         };
         authScope.error = null;
         authScope.hydrated = true;
         return {
           authenticated: true,
           actor,
+          identity_id,
+          org_id,
           level,
           ns: data.ns,
           db: data.db,
           roles,
-          capabilities
+          capabilities,
+          permissions,
+          authorized_orgs
         };
       }
       authScope.user = null;

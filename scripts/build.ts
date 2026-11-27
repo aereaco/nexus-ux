@@ -502,6 +502,22 @@ async function gitPush(opts: { remote?: string; branch?: string }) {
   }
 }
 
+async function copyTreeInto(srcDir: string, dstDir: string) {
+  try {
+    const st = await Deno.stat(srcDir);
+    if (!st.isDirectory) return;
+  } catch {
+    return;
+  }
+  for await (const entry of walk(srcDir, { includeDirs: false })) {
+    const rel = path.relative(srcDir, entry.path).replace(/\\/g, "/");
+    if (rel.startsWith(".git/") || rel.startsWith(".nexus/") || rel.endsWith(".redb")) continue;
+    const dest = path.join(dstDir, rel);
+    await Deno.mkdir(path.dirname(dest), { recursive: true });
+    await Deno.copyFile(entry.path, dest);
+  }
+}
+
 async function publishToCloudflare(opts: { projectName?: string; branch?: string }) {
   const projectName = opts.projectName ?? "aerea-nexus";
   const branch = opts.branch ?? (git(["rev-parse", "--abbrev-ref", "HEAD"]).out || "main");
@@ -528,23 +544,56 @@ async function publishToCloudflare(opts: { projectName?: string; branch?: string
     Deno.exit(1);
   }
 
-  console.log(`\n☁️  Differential deploy: site/ → Cloudflare Pages (${projectName})...`);
+  // Detect 9-domain monorepo layout (shell/ + ux/dist/) vs standalone repo layout (site/)
+  const cwd = Deno.cwd();
+  const isNineDomain = await Deno.stat(path.join(cwd, "shell", "index.html"))
+    .then((s) => s.isFile)
+    .catch(() => false);
+
+  let deployDir = "site";
+  let tempStageDir: string | null = null;
+
+  if (isNineDomain) {
+    tempStageDir = await Deno.makeTempDir({ prefix: "nexus-cf-stage-" });
+    console.log(`\n📦 Staging 9-domain overlay → ${tempStageDir}`);
+    // Overlay order: shell/ -> site/ -> platform/ -> mapped _pages/{apps,labs,docs} -> ux/dist -> dist/
+    await copyTreeInto(path.join(cwd, "shell"), tempStageDir);
+    await copyTreeInto(path.join(cwd, "site"), tempStageDir);
+    await copyTreeInto(path.join(cwd, "platform", "_components"), path.join(tempStageDir, "_components"));
+    await copyTreeInto(path.join(cwd, "platform", "_internal"), path.join(tempStageDir, "_internal"));
+    for (const mod of ["iam", "profile", "flow", "builder"]) {
+      await copyTreeInto(path.join(cwd, "platform", mod), path.join(tempStageDir, "_pages", "apps", mod));
+    }
+    await copyTreeInto(path.join(cwd, "apps"), path.join(tempStageDir, "_pages", "apps"));
+    await copyTreeInto(path.join(cwd, "labs"), path.join(tempStageDir, "_pages", "labs"));
+    await copyTreeInto(path.join(cwd, "docs"), path.join(tempStageDir, "_pages", "docs"));
+    await copyTreeInto(path.join(cwd, "ux", "dist"), path.join(tempStageDir, "dist"));
+    deployDir = tempStageDir;
+  }
+
+  console.log(`\n☁️  Differential deploy: ${isNineDomain ? "9-domain overlay" : "site/"} → Cloudflare Pages (${projectName})...`);
   const isWindows = Deno.build.os === "windows";
   const cmd = isWindows ? "cmd.exe" : "npx";
   const cmdArgs = isWindows
-    ? ["/c", `set CLOUDFLARE_ACCOUNT_ID=${accountId}&& set CLOUDFLARE_API_TOKEN=${apiToken}&& npx -y wrangler pages deploy site --project-name ${projectName} --branch ${branch} --commit-dirty=true`]
-    : ["-y", "wrangler", "pages", "deploy", "site", "--project-name", projectName, "--branch", branch, "--commit-dirty=true"];
+    ? ["/c", "npx", "-y", "wrangler", "pages", "deploy", deployDir, "--project-name", projectName, "--branch", branch, "--commit-dirty=true"]
+    : ["-y", "wrangler", "pages", "deploy", deployDir, "--project-name", projectName, "--branch", branch, "--commit-dirty=true"];
 
-  const env = isWindows ? undefined : {
+  const env = {
     CLOUDFLARE_ACCOUNT_ID: accountId,
     CLOUDFLARE_API_TOKEN: apiToken,
   };
 
-  const p = new Deno.Command(cmd, { args: cmdArgs, env, stdout: "inherit", stderr: "inherit" });
-  const res = await p.output();
-  if (!res.success) {
-    console.error("❌ Cloudflare Pages publishing failed.");
-    Deno.exit(res.code);
+  try {
+    const p = new Deno.Command(cmd, { args: cmdArgs, env, stdout: "inherit", stderr: "inherit" });
+    const res = await p.output();
+    if (!res.success) {
+      console.error("❌ Cloudflare Pages publishing failed.");
+      Deno.exit(res.code);
+    }
+  } finally {
+    if (tempStageDir) {
+      await Deno.remove(tempStageDir, { recursive: true }).catch(() => {});
+    }
   }
   console.log("✅ Differential deployment complete on Cloudflare Pages!");
 
